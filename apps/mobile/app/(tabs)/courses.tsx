@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { api } from '../../src/lib/api';
 import { Course } from '@fairwayiq/shared';
+import { CreateCourseModal } from '../../src/components/CreateCourseModal';
 
 const hazardIcons: Record<string, string> = { WATER: '💧', BUNKER: '⛱️', OB: '🚫', ROUGH: '🌿', TREES: '🌳' };
 
@@ -146,6 +147,7 @@ export default function CoursesScreen() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedHole, setSelectedHole] = useState<any | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchCourses = async () => {
@@ -209,9 +211,19 @@ export default function CoursesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-base">
-      <View className="px-5 pt-4 pb-4">
-        <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Plätze</Text>
-        <Text className="text-ink-primary text-2xl font-bold mt-0.5">Platzkenntnisse</Text>
+      <View className="px-5 pt-4 pb-4 flex-row items-end justify-between">
+        <View>
+          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Plätze</Text>
+          <Text className="text-ink-primary text-2xl font-bold mt-0.5">Platzkenntnisse</Text>
+        </View>
+        <TouchableOpacity
+          className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl border border-neon-green"
+          style={{ backgroundColor: '#00e87a15' }}
+          onPress={() => setShowCreate(true)}
+        >
+          <Ionicons name="add" size={16} color="#00e87a" />
+          <Text className="text-neon-green text-xs font-bold">PLATZ HINZUFÜGEN</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -274,6 +286,13 @@ export default function CoursesScreen() {
         )}
         <View className="h-8" />
       </ScrollView>
+
+      {showCreate && (
+        <CreateCourseModal
+          onClose={() => setShowCreate(false)}
+          onCreated={fetchCourses}
+        />
+      )}
     </SafeAreaView>
   );
 }

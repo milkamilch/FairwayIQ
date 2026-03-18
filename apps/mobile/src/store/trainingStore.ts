@@ -2,6 +2,13 @@ import { create } from 'zustand';
 import { TrainingPlan, UserTrainingPlan } from '@fairwayiq/shared';
 import { api } from '../lib/api';
 
+export interface WorkoutSummary {
+  highlights: string[];
+  focusPoints: string[];
+  nextTip: string;
+  mood: 'excellent' | 'good' | 'okay' | 'tough';
+}
+
 interface TrainingState {
   plans: TrainingPlan[];
   activePlan: UserTrainingPlan | null;
@@ -10,7 +17,7 @@ interface TrainingState {
   fetchPlans: () => Promise<void>;
   fetchActivePlan: () => Promise<void>;
   startPlan: (planId: string) => Promise<void>;
-  completeDay: (dayNumber: number) => Promise<void>;
+  completeDay: (dayNumber: number, feedback: { feeling: number; difficulty: number; notes?: string }) => Promise<{ adaptation: { direction: 'harder' | 'easier' | null; message: string }; summary: WorkoutSummary | null }>;
 }
 
 export const useTrainingStore = create<TrainingState>((set) => ({
@@ -48,12 +55,18 @@ export const useTrainingStore = create<TrainingState>((set) => ({
     }
   },
 
-  completeDay: async (dayNumber) => {
+  completeDay: async (dayNumber, feedback) => {
     try {
-      const { data } = await api.post('/training/my-plan/complete-day', { dayNumber });
+      const { data } = await api.post<{
+        updated: any;
+        sessionLog: any;
+        adaptation: { direction: 'harder' | 'easier' | null; message: string };
+        summary: WorkoutSummary | null;
+      }>('/training/my-plan/complete-day', { dayNumber, ...feedback });
       set((state) => ({
-        activePlan: state.activePlan ? { ...state.activePlan, ...data } : null,
+        activePlan: state.activePlan ? { ...state.activePlan, ...data.updated } : null,
       }));
+      return { adaptation: data.adaptation, summary: data.summary };
     } catch {
       throw new Error('Tag konnte nicht abgeschlossen werden');
     }

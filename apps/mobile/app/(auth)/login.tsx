@@ -12,8 +12,12 @@ export default function LoginScreen() {
     if (!email || !password) { Alert.alert('Fehler', 'Bitte alle Felder ausfüllen'); return; }
     try {
       await login({ email: email.trim().toLowerCase(), password });
-    } catch {
-      Alert.alert('Fehler', 'E-Mail oder Passwort ungültig');
+    } catch (err: any) {
+      if (!err?.response) {
+        Alert.alert('Verbindungsfehler', `Backend nicht erreichbar.\nURL: ${process.env.EXPO_PUBLIC_API_URL}`);
+      } else {
+        Alert.alert('Fehler', 'E-Mail oder Passwort ungültig');
+      }
     }
   };
 

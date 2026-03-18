@@ -15,8 +15,15 @@ export default function RegisterScreen() {
     if (password.length < 8) { Alert.alert('Fehler', 'Passwort muss mindestens 8 Zeichen haben'); return; }
     try {
       await register({ name: name.trim(), email: email.trim().toLowerCase(), password, handicap: handicap ? parseFloat(handicap) : undefined });
-    } catch {
-      Alert.alert('Fehler', 'Registrierung fehlgeschlagen. E-Mail könnte bereits vergeben sein.');
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 409) {
+        Alert.alert('Fehler', 'Diese E-Mail ist bereits registriert.');
+      } else if (!err?.response) {
+        Alert.alert('Verbindungsfehler', `Backend nicht erreichbar.\nURL: ${process.env.EXPO_PUBLIC_API_URL}\n\nLäuft das Backend? Ist die IP korrekt?`);
+      } else {
+        Alert.alert('Fehler', err?.response?.data?.error ?? 'Registrierung fehlgeschlagen.');
+      }
     }
   };
 

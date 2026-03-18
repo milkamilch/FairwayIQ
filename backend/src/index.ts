@@ -5,6 +5,7 @@ import { authRouter } from './routes/auth';
 import { trainingRouter } from './routes/training';
 import { courseRouter } from './routes/course';
 import { roundRouter } from './routes/round';
+import { progressRouter } from './routes/progress';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/training', trainingRouter);
 app.use('/api/courses', courseRouter);
 app.use('/api/rounds', roundRouter);
+app.use('/api/progress', progressRouter);
 
 app.listen(PORT, () => {
   console.log(`FairwayIQ Backend running on port ${PORT}`);

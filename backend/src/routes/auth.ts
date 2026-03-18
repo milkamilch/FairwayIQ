@@ -48,7 +48,7 @@ authRouter.post('/register', async (req: Request, res: Response) => {
 
   const user = await prisma.user.create({
     data: { email, password: hashedPassword, name, handicap, level },
-    select: { id: true, email: true, name: true, handicap: true, level: true, createdAt: true },
+    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, createdAt: true },
   });
 
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '30d' });
@@ -86,7 +86,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 authRouter.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.userId },
-    select: { id: true, email: true, name: true, handicap: true, level: true, createdAt: true },
+    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, createdAt: true },
   });
 
   if (!user) {
@@ -101,6 +101,7 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
   const updateSchema = z.object({
     name: z.string().min(2).optional(),
     handicap: z.number().min(-10).max(54).optional(),
+    homeClub: z.string().max(100).optional().nullable(),
   });
 
   const parsed = updateSchema.safeParse(req.body);
@@ -109,7 +110,7 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
     return;
   }
 
-  const { handicap, ...rest } = parsed.data;
+  const { handicap, homeClub, ...rest } = parsed.data;
 
   const level = handicap !== undefined
     ? handicap <= 5
@@ -123,8 +124,13 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
 
   const user = await prisma.user.update({
     where: { id: req.userId },
-    data: { ...rest, ...(handicap !== undefined && { handicap }), ...(level && { level }) },
-    select: { id: true, email: true, name: true, handicap: true, level: true, createdAt: true },
+    data: {
+      ...rest,
+      ...(handicap !== undefined && { handicap }),
+      ...(level && { level }),
+      ...(homeClub !== undefined && { homeClub }),
+    },
+    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, createdAt: true },
   });
 
   res.json(user);

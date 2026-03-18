@@ -50,12 +50,28 @@ model User {
   name      String
   handicap  Float?
   level     GolferLevel @default(BEGINNER)
+  homeClub  String?
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
   userTrainingPlans UserTrainingPlan[]
   courses           Course[]
   rounds            Round[]
+  assessments       Assessment[]
+  sessionLogs       TrainingSessionLog[]
+  drillResults      DrillResult[]
+  handicapEntries   HandicapEntry[]
+}
+
+model Assessment {
+  id        String   @id @default(cuid())
+  userId    String
+  answers   Json
+  scores    Json
+  weaknesses String[]
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model TrainingDrill {
@@ -67,8 +83,24 @@ model TrainingDrill {
   difficulty  TrainingDifficulty
   videoUrl    String?
   tips        String[]
+  isLibrary   Boolean            @default(false)
 
   trainingDayDrills TrainingDayDrill[]
+  results           DrillResult[]
+}
+
+model DrillResult {
+  id         String   @id @default(cuid())
+  userId     String
+  drillId    String
+  userPlanId String?
+  dayNumber  Int?
+  hits       Int
+  attempts   Int
+  createdAt  DateTime @default(now())
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drill TrainingDrill @relation(fields: [drillId], references: [id], onDelete: Cascade)
 }
 
 model TrainingDay {
@@ -117,10 +149,35 @@ model UserTrainingPlan {
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
 
-  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan        TrainingPlan         @relation(fields: [planId], references: [id], onDelete: Cascade)
+  sessionLogs TrainingSessionLog[]
 
   @@unique([userId, planId])
+}
+
+model TrainingSessionLog {
+  id         String   @id @default(cuid())
+  userId     String
+  userPlanId String
+  dayNumber  Int
+  feeling    Int      // 1–5: 1=sehr schlecht, 3=okay, 5=großartig
+  difficulty Int      // 1–5: 1=zu leicht, 3=genau richtig, 5=zu schwer
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userPlan UserTrainingPlan @relation(fields: [userPlanId], references: [id], onDelete: Cascade)
+}
+
+model HandicapEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  handicap  Float
+  note      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Hazard {

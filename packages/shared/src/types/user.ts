@@ -6,6 +6,7 @@ export interface User {
   name: string;
   handicap: number | null;
   level: GolferLevel;
+  homeClub: string | null;
   createdAt: string;
 }
 

@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTrainingStore } from '../../src/store/trainingStore';
-import { TrainingPlan, TrainingDay } from '@fairwayiq/shared';
+import { TrainingPlan, TrainingDay, UserTrainingPlan } from '@fairwayiq/shared';
+import { AssessmentModal } from '../../src/components/AssessmentModal';
+import { SessionFeedbackModal, FeedbackResult } from '../../src/components/SessionFeedbackModal';
+import { DrillTracker } from '../../src/components/DrillTracker';
+import { api } from '../../src/lib/api';
 
 const categoryLabels: Record<string, string> = {
   PUTTING: 'Putting',
@@ -13,6 +17,244 @@ const categoryLabels: Record<string, string> = {
   COURSE_MANAGEMENT: 'Platzmanagement',
   MENTAL_GAME: 'Mental',
 };
+
+const categoryColors: Record<string, string> = {
+  PUTTING: '#6ee7b7',
+  SHORT_GAME: '#00e87a',
+  IRON_PLAY: '#60a5fa',
+  DRIVING: '#f59e0b',
+  COURSE_MANAGEMENT: '#a78bfa',
+  MENTAL_GAME: '#f472b6',
+};
+
+const difficultyMeta: Record<string, { label: string; color: string }> = {
+  EASY:   { label: 'Einfach',       color: '#00e87a' },
+  MEDIUM: { label: 'Mittel',        color: '#f59e0b' },
+  HARD:   { label: 'Anspruchsvoll', color: '#f97316' },
+};
+
+interface LibraryDrill {
+  id: string;
+  name: string;
+  description: string;
+  duration: number;
+  category: string;
+  difficulty: string;
+  tips: string[];
+}
+
+function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
+  const [expanded, setExpanded] = useState(false);
+  const [showTracker, setShowTracker] = useState(false);
+  const catColor = categoryColors[drill.category] ?? '#8888aa';
+  const diff = difficultyMeta[drill.difficulty];
+
+  return (
+    <View className="bg-bg-card border border-bg-border rounded-xl mb-3 overflow-hidden">
+      <TouchableOpacity onPress={() => setExpanded((v) => !v)} activeOpacity={0.8}>
+        <View className="p-4">
+          <View className="flex-row items-start justify-between gap-2 mb-2">
+            <Text className="text-ink-primary font-bold text-sm flex-1 leading-5">{drill.name}</Text>
+            <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color="#44445a" />
+          </View>
+          <View className="flex-row gap-2 flex-wrap">
+            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: catColor + '20' }}>
+              <Text className="text-xs font-semibold" style={{ color: catColor }}>{categoryLabels[drill.category]}</Text>
+            </View>
+            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: diff.color + '20' }}>
+              <Text className="text-xs font-semibold" style={{ color: diff.color }}>{diff.label}</Text>
+            </View>
+            <View className="px-2 py-0.5 rounded-full bg-bg-elevated">
+              <Text className="text-ink-muted text-xs">{drill.duration} Min</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {expanded && (
+        <View className="px-4 pb-4 border-t border-bg-border">
+          <Text className="text-ink-secondary text-sm leading-6 mt-3">{drill.description}</Text>
+
+          {drill.tips.length > 0 && (
+            <View className="mt-4 gap-2">
+              <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest">Tipps</Text>
+              {drill.tips.map((tip, i) => (
+                <View key={i} className="flex-row items-start gap-2">
+                  <Text style={{ color: catColor }} className="text-xs mt-0.5">▸</Text>
+                  <Text className="text-ink-secondary text-xs flex-1 leading-5">{tip}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          <TouchableOpacity
+            className="mt-4 flex-row items-center gap-2 py-2.5 px-3 rounded-xl border"
+            style={{
+              borderColor: showTracker ? '#00e87a' : '#252535',
+              backgroundColor: showTracker ? '#00e87a10' : '#14141f',
+            }}
+            onPress={() => setShowTracker((v) => !v)}
+          >
+            <Ionicons name="stats-chart-outline" size={14} color={showTracker ? '#00e87a' : '#44445a'} />
+            <Text className="text-xs font-semibold" style={{ color: showTracker ? '#00e87a' : '#8888aa' }}>
+              {showTracker ? 'Treffer ausblenden' : 'Treffer erfassen & Fortschritt'}
+            </Text>
+          </TouchableOpacity>
+
+          {showTracker && <DrillTracker drillId={drill.id} />}
+        </View>
+      )}
+    </View>
+  );
+}
+
+const ALL_CATEGORIES = ['PUTTING', 'SHORT_GAME', 'IRON_PLAY', 'DRIVING', 'COURSE_MANAGEMENT', 'MENTAL_GAME'];
+const ALL_DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'];
+
+function LibraryTab() {
+  const [drills, setDrills] = useState<LibraryDrill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeDifficulty, setActiveDifficulty] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchDrills = useCallback(async (q: string, cat: string | null, diff: string | null) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (q.trim()) params.append('search', q.trim());
+      if (cat) params.append('category', cat);
+      if (diff) params.append('difficulty', diff);
+      const { data } = await api.get<LibraryDrill[]>(`/training/library?${params.toString()}`);
+      setDrills(data);
+    } catch {}
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchDrills(search, activeCategory, activeDifficulty);
+  }, [activeCategory, activeDifficulty]);
+
+  const handleSearchChange = (text: string) => {
+    setSearch(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchDrills(text, activeCategory, activeDifficulty);
+    }, 350);
+  };
+
+  const grouped = drills.reduce<Record<string, LibraryDrill[]>>((acc, d) => {
+    if (!acc[d.category]) acc[d.category] = [];
+    acc[d.category].push(d);
+    return acc;
+  }, {});
+
+  return (
+    <View className="flex-1">
+      {/* Search Bar */}
+      <View className="mx-5 mb-2 flex-row items-center bg-bg-elevated border border-bg-border rounded-xl px-3 gap-2">
+        <Ionicons name="search-outline" size={16} color="#44445a" />
+        <TextInput
+          className="flex-1 py-3 text-ink-primary text-sm"
+          placeholder="Übung suchen..."
+          placeholderTextColor="#44445a"
+          value={search}
+          onChangeText={handleSearchChange}
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+        />
+        {search.length > 0 && (
+          <TouchableOpacity onPress={() => { setSearch(''); fetchDrills('', activeCategory, activeDifficulty); }}>
+            <Ionicons name="close-circle" size={16} color="#44445a" />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Category Filters */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, height: 34, marginBottom: 6 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: 'center' }}>
+        {ALL_CATEGORIES.map((cat) => {
+          const active = activeCategory === cat;
+          const color = categoryColors[cat];
+          return (
+            <TouchableOpacity
+              key={cat}
+              className="px-3 py-1.5 rounded-full"
+              style={{
+                backgroundColor: active ? color : color + '15',
+                borderWidth: 1,
+                borderColor: active ? color : color + '40',
+              }}
+              onPress={() => setActiveCategory(active ? null : cat)}
+            >
+              <Text className="text-xs font-semibold" style={{ color: active ? '#07070f' : color }}>
+                {categoryLabels[cat]}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Difficulty Filters */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, height: 34, marginBottom: 12 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: 'center' }}>
+        {ALL_DIFFICULTIES.map((diff) => {
+          const active = activeDifficulty === diff;
+          const meta = difficultyMeta[diff];
+          return (
+            <TouchableOpacity
+              key={diff}
+              className="px-3 py-1.5 rounded-full"
+              style={{
+                backgroundColor: active ? meta.color + '30' : '#14141f',
+                borderWidth: 1,
+                borderColor: active ? meta.color : '#252535',
+              }}
+              onPress={() => setActiveDifficulty(active ? null : diff)}
+            >
+              <Text className="text-xs font-semibold" style={{ color: active ? meta.color : '#44445a' }}>
+                {meta.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
+
+      {/* Results */}
+      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+        {loading ? (
+          <ActivityIndicator color="#00e87a" className="mt-8" />
+        ) : drills.length === 0 ? (
+          <View className="items-center py-16 gap-3">
+            <Ionicons name="search-outline" size={48} color="#252535" />
+            <Text className="text-ink-secondary font-semibold">Keine Übungen gefunden</Text>
+            <Text className="text-ink-muted text-sm text-center">Versuche andere Suchbegriffe oder Filter</Text>
+          </View>
+        ) : activeCategory || search ? (
+          // Flat list when filtered
+          <>
+            <Text className="text-ink-muted text-xs mb-3">{drills.length} Übung{drills.length !== 1 ? 'en' : ''}</Text>
+            {drills.map((d) => <LibraryDrillCard key={d.id} drill={d} />)}
+          </>
+        ) : (
+          // Grouped by category
+          Object.entries(grouped).map(([cat, catDrills]) => (
+            <View key={cat} className="mb-2">
+              <View className="flex-row items-center gap-2 mb-3">
+                <View className="w-2 h-2 rounded-full" style={{ backgroundColor: categoryColors[cat] }} />
+                <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
+                  {categoryLabels[cat]}
+                </Text>
+                <Text className="text-ink-muted text-xs">({catDrills.length})</Text>
+              </View>
+              {catDrills.map((d) => <LibraryDrillCard key={d.id} drill={d} />)}
+            </View>
+          ))
+        )}
+        <View className="h-8" />
+      </ScrollView>
+    </View>
+  );
+}
 
 const levelMeta: Record<string, { label: string; color: string }> = {
   BEGINNER:     { label: 'ANFÄNGER',      color: '#00e87a' },
@@ -59,20 +301,15 @@ function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: b
   );
 }
 
-function ActivePlanView({ activePlan }: { activePlan: NonNullable<ReturnType<typeof useTrainingStore>['activePlan']> }) {
+function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan: TrainingPlan & { days: (TrainingDay & { drills: any[] })[] } } }) {
   const { completeDay } = useTrainingStore();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
   const progress = activePlan.completedDays.length / activePlan.plan.days.length;
   const currentDay = activePlan.plan.days.find((d) => d.dayNumber === activePlan.currentDay);
 
-  const handleCompleteDay = () => {
-    Alert.alert('Tag abschließen', `"${currentDay?.title}" abgeschlossen?`, [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Abschließen', onPress: async () => {
-        try { await completeDay(activePlan.currentDay); }
-        catch { Alert.alert('Fehler', 'Konnte nicht gespeichert werden'); }
-      }},
-    ]);
+  const handleSubmitFeedback = async (feedback: FeedbackResult) => {
+    return completeDay(activePlan.currentDay, feedback);
   };
 
   return (
@@ -108,11 +345,13 @@ function ActivePlanView({ activePlan }: { activePlan: NonNullable<ReturnType<typ
             </View>
           </View>
 
-          {currentDay.drills.map((dd: any) => (
+          {currentDay.drills.map((dd: any) => {
+            const ddKey = dd.drillId ?? dd.drill?.id ?? String(dd.order);
+            return (
             <TouchableOpacity
-              key={dd.id}
+              key={ddKey}
               className="border-b border-bg-border"
-              onPress={() => setExpanded(expanded === dd.id ? null : dd.id)}
+              onPress={() => setExpanded(expanded === ddKey ? null : ddKey)}
             >
               <View className="flex-row items-center justify-between px-4 py-3">
                 <View className="flex-row items-center gap-3 flex-1">
@@ -124,10 +363,10 @@ function ActivePlanView({ activePlan }: { activePlan: NonNullable<ReturnType<typ
                     <Text className="text-ink-muted text-xs">{dd.drill?.duration} Min</Text>
                   </View>
                 </View>
-                <Ionicons name={expanded === dd.id ? 'chevron-up' : 'chevron-down'} size={14} color="#44445a" />
+                <Ionicons name={expanded === ddKey ? 'chevron-up' : 'chevron-down'} size={14} color="#44445a" />
               </View>
 
-              {expanded === dd.id && dd.drill && (
+              {expanded === ddKey && dd.drill && (
                 <View className="px-4 pb-4 bg-bg-elevated">
                   <Text className="text-ink-secondary text-sm leading-5">{dd.drill.description}</Text>
                   {dd.drill.tips?.length > 0 && (
@@ -140,15 +379,35 @@ function ActivePlanView({ activePlan }: { activePlan: NonNullable<ReturnType<typ
                       ))}
                     </View>
                   )}
+                  <DrillTracker
+                    drillId={dd.drill.id}
+                    userPlanId={activePlan.id}
+                    dayNumber={currentDay?.dayNumber}
+                  />
                 </View>
               )}
             </TouchableOpacity>
-          ))}
+            );
+          })}
 
-          <TouchableOpacity className="mx-4 my-4 rounded-xl py-3.5 items-center" style={{ backgroundColor: '#00e87a' }} onPress={handleCompleteDay}>
+          <TouchableOpacity
+            className="mx-4 my-4 rounded-xl py-3.5 items-center"
+            style={{ backgroundColor: '#00e87a' }}
+            onPress={() => setShowFeedback(true)}
+          >
             <Text className="text-bg-base font-bold tracking-wide">TRAINING ABGESCHLOSSEN</Text>
           </TouchableOpacity>
         </View>
+      )}
+
+      {showFeedback && currentDay && (
+        <SessionFeedbackModal
+          dayTitle={currentDay.title}
+          dayNumber={currentDay.dayNumber}
+          totalMinutes={currentDay.totalMinutes}
+          onSubmit={handleSubmitFeedback}
+          onClose={() => setShowFeedback(false)}
+        />
       )}
 
       {/* Plan Übersicht */}
@@ -190,8 +449,9 @@ function ActivePlanView({ activePlan }: { activePlan: NonNullable<ReturnType<typ
 
 export default function TrainingScreen() {
   const { plans, activePlan, fetchPlans, fetchActivePlan, startPlan } = useTrainingStore();
-  const [tab, setTab] = useState<'active' | 'plans'>('active');
+  const [tab, setTab] = useState<'active' | 'plans' | 'library'>('active');
   const [refreshing, setRefreshing] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
 
   const loadData = async () => { await Promise.all([fetchPlans(), fetchActivePlan()]); };
   useEffect(() => { loadData(); }, []);
@@ -211,7 +471,7 @@ export default function TrainingScreen() {
         <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Training</Text>
         <Text className="text-ink-primary text-2xl font-bold mt-0.5">Trainingsplan</Text>
         <View className="flex-row mt-4 bg-bg-elevated rounded-xl p-1">
-          {(['active', 'plans'] as const).map((t) => (
+          {(['active', 'plans', 'library'] as const).map((t) => (
             <TouchableOpacity
               key={t}
               className="flex-1 py-2.5 rounded-lg items-center"
@@ -222,41 +482,97 @@ export default function TrainingScreen() {
                 className="text-xs font-bold tracking-wider"
                 style={{ color: tab === t ? '#00e87a' : '#44445a' }}
               >
-                {t === 'active' ? 'MEIN PLAN' : 'ALLE PLÄNE'}
+                {t === 'active' ? 'MEIN PLAN' : t === 'plans' ? 'PLÄNE' : 'BIBLIOTHEK'}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
-      <ScrollView
-        className="flex-1 px-5"
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
-      >
-        {tab === 'active' ? (
-          activePlan ? (
+      {tab === 'library' ? (
+        <LibraryTab />
+      ) : tab === 'active' ? (
+        <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+        >
+          {activePlan ? (
             <ActivePlanView activePlan={activePlan} />
           ) : (
-            <View className="items-center py-16 gap-3">
-              <Ionicons name="fitness-outline" size={48} color="#252535" />
-              <Text className="text-ink-secondary font-semibold">Kein aktiver Plan</Text>
-              <Text className="text-ink-muted text-sm text-center">Starte einen Plan um dein Training zu tracken</Text>
+            <View className="gap-4 py-8">
               <TouchableOpacity
-                className="mt-2 px-6 py-3 rounded-xl border border-neon-green"
+                className="rounded-2xl overflow-hidden"
+                style={{ backgroundColor: '#00e87a' }}
+                onPress={() => setShowAssessment(true)}
+              >
+                <View className="p-5">
+                  <View className="flex-row items-center gap-3 mb-2">
+                    <View className="w-9 h-9 rounded-xl items-center justify-center" style={{ backgroundColor: '#07070f30' }}>
+                      <Ionicons name="analytics-outline" size={20} color="#07070f" />
+                    </View>
+                    <Text className="text-bg-base font-bold text-base">Persönlichen Plan erstellen</Text>
+                  </View>
+                  <Text className="text-bg-base text-sm leading-5" style={{ opacity: 0.75 }}>
+                    Beantworte gezielte Fragen zu deinem Spiel — wir erstellen einen Plan, der genau auf deine Schwächen zugeschnitten ist.
+                  </Text>
+                  <View className="flex-row items-center gap-1.5 mt-3">
+                    <Ionicons name="time-outline" size={13} color="#07070f" style={{ opacity: 0.6 }} />
+                    <Text className="text-bg-base text-xs" style={{ opacity: 0.6 }}>ca. 3 Minuten</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+              <View className="flex-row items-center gap-3">
+                <View className="flex-1 h-px bg-bg-border" />
+                <Text className="text-ink-muted text-xs uppercase tracking-widest">oder</Text>
+                <View className="flex-1 h-px bg-bg-border" />
+              </View>
+              <TouchableOpacity
+                className="py-3 rounded-xl border border-bg-border items-center"
                 onPress={() => setTab('plans')}
               >
-                <Text className="text-neon-green font-semibold text-sm">Pläne entdecken →</Text>
+                <Text className="text-ink-secondary text-sm font-semibold">Vordefinierten Plan wählen →</Text>
               </TouchableOpacity>
             </View>
-          )
-        ) : (
-          plans.map((plan) => (
+          )}
+          <View className="h-8" />
+        </ScrollView>
+      ) : (
+        <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+        >
+          <TouchableOpacity
+            className="rounded-xl mb-4 border overflow-hidden"
+            style={{ borderColor: '#00e87a40', backgroundColor: '#00e87a08' }}
+            onPress={() => setShowAssessment(true)}
+          >
+            <View className="p-4 flex-row items-center gap-3">
+              <View className="w-9 h-9 rounded-xl items-center justify-center" style={{ backgroundColor: '#00e87a20' }}>
+                <Ionicons name="analytics-outline" size={18} color="#00e87a" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-ink-primary font-bold text-sm">Personalisierten Plan erstellen</Text>
+                <Text className="text-ink-muted text-xs mt-0.5">Assessment starten und Plan auf dich zuschneiden</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={14} color="#00e87a" />
+            </View>
+          </TouchableOpacity>
+          <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-3">Vorlage-Pläne</Text>
+          {plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} isActive={activePlan?.plan.id === plan.id} onStart={() => handleStart(plan.id)} />
-          ))
-        )}
-        <View className="h-8" />
-      </ScrollView>
+          ))}
+          <View className="h-8" />
+        </ScrollView>
+      )}
+
+      {showAssessment && (
+        <AssessmentModal
+          onClose={() => setShowAssessment(false)}
+          onDone={async () => {
+            setShowAssessment(false);
+            await loadData();
+            setTab('active');
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 }

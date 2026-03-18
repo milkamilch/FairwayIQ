@@ -16,8 +16,9 @@ echo "▸ Stoppe laufende Prozesse..."
 # Backend auf Port 9001
 fuser -k ${BACKEND_PORT}/tcp 2>/dev/null && echo "  killed :${BACKEND_PORT}" || true
 
-# Expo Metro Bundler (Port 8081)
+# Expo Metro Bundler (Port 8081 / 8082)
 fuser -k 8081/tcp 2>/dev/null && echo "  killed :8081" || true
+fuser -k 8082/tcp 2>/dev/null && echo "  killed :8082" || true
 
 # Expo Dev Server (Port 19000 / 19001)
 fuser -k 19000/tcp 2>/dev/null && true
@@ -44,11 +45,17 @@ else
 fi
 
 # ── .env für Mobile ──────────────────────
+LOCAL_IP=$(ip route get 1 2>/dev/null | awk '{print $7; exit}')
+if [ -z "$LOCAL_IP" ]; then
+  LOCAL_IP="localhost"
+fi
+
 MOBILE_ENV="$ROOT/apps/mobile/.env"
 if [ ! -f "$MOBILE_ENV" ]; then
   cp "$ROOT/apps/mobile/.env.example" "$MOBILE_ENV"
 fi
-sed -i "s|^EXPO_PUBLIC_API_URL=.*|EXPO_PUBLIC_API_URL=http://localhost:${BACKEND_PORT}|" "$MOBILE_ENV"
+sed -i "s|^EXPO_PUBLIC_API_URL=.*|EXPO_PUBLIC_API_URL=http://${LOCAL_IP}:${BACKEND_PORT}|" "$MOBILE_ENV"
+echo "▸ API URL: http://${LOCAL_IP}:${BACKEND_PORT}"
 
 # ── Backend starten ───────────────────────
 echo ""
