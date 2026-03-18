@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum GolferLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  PRO
+}
+
+enum TrainingCategory {
+  PUTTING
+  SHORT_GAME
+  IRON_PLAY
+  DRIVING
+  COURSE_MANAGEMENT
+  MENTAL_GAME
+}
+
+enum TrainingDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum HazardType {
+  WATER
+  BUNKER
+  OB
+  ROUGH
+  TREES
+}
+
+enum ShotShape {
+  STRAIGHT
+  FADE
+  DRAW
+}
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  password  String
+  name      String
+  handicap  Float?
+  level     GolferLevel @default(BEGINNER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  userTrainingPlans UserTrainingPlan[]
+  courses           Course[]
+  rounds            Round[]
+}
+
+model TrainingDrill {
+  id          String             @id @default(cuid())
+  name        String
+  description String
+  duration    Int
+  category    TrainingCategory
+  difficulty  TrainingDifficulty
+  videoUrl    String?
+  tips        String[]
+
+  trainingDayDrills TrainingDayDrill[]
+}
+
+model TrainingDay {
+  id           String           @id @default(cuid())
+  dayNumber    Int
+  title        String
+  focus        TrainingCategory
+  totalMinutes Int              @default(0)
+  planId       String
+
+  plan   TrainingPlan       @relation(fields: [planId], references: [id], onDelete: Cascade)
+  drills TrainingDayDrill[]
+}
+
+model TrainingDayDrill {
+  trainingDayId String
+  drillId       String
+  order         Int    @default(0)
+
+  trainingDay TrainingDay   @relation(fields: [trainingDayId], references: [id], onDelete: Cascade)
+  drill       TrainingDrill @relation(fields: [drillId], references: [id], onDelete: Cascade)
+
+  @@id([trainingDayId, drillId])
+}
+
+model TrainingPlan {
+  id            String      @id @default(cuid())
+  name          String
+  description   String
+  targetLevel   GolferLevel
+  durationWeeks Int
+  isTemplate    Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+
+  days              TrainingDay[]
+  userTrainingPlans UserTrainingPlan[]
+}
+
+model UserTrainingPlan {
+  id             String   @id @default(cuid())
+  userId         String
+  planId         String
+  startDate      DateTime @default(now())
+  currentDay     Int      @default(1)
+  completedDays  Int[]
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, planId])
+}
+
+model Hazard {
+  id          String    @id @default(cuid())
+  type        HazardType
+  description String
+  position    String
+  holeId      String
+
+  hole Hole @relation(fields: [holeId], references: [id], onDelete: Cascade)
+}
+
+model HoleStrategy {
+  id             String    @id @default(cuid())
+  recommendedClub String
+  shotShape      ShotShape
+  aimPoint       String
+  avoidance      String
+  notes          String
+  holeId         String    @unique
+
+  hole Hole @relation(fields: [holeId], references: [id], onDelete: Cascade)
+}
+
+model Hole {
+  id              String  @id @default(cuid())
+  number          Int
+  par             Int
+  strokeIndex     Int
+  distanceMeters  Int
+  courseId        String
+
+  course   Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  hazards  Hazard[]
+  strategy HoleStrategy?
+}
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String
+  location  String
+  totalPar  Int      @default(72)
+  rating    Float?
+  slope     Float?
+  createdBy String
+  createdAt DateTime @default(now())
+
+  creator User    @relation(fields: [createdBy], references: [id])
+  holes   Hole[]
+  rounds  Round[]
+}
+
+model HoleScore {
+  id                 String   @id @default(cuid())
+  holeNumber         Int
+  par                Int
+  strokes            Int
+  putts              Int
+  fairwayHit         Boolean?
+  greenInRegulation  Boolean
+  penalties          Int      @default(0)
+  notes              String?
+  roundId            String
+
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+}
+
+model Round {
+  id         String   @id @default(cuid())
+  userId     String
+  courseId   String
+  date       DateTime
+  weather    String?
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course      @relation(fields: [courseId], references: [id])
+  scores   HoleScore[]
+}

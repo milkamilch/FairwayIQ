@@ -1,0 +1,15 @@
+{
+  "name": "fairwayiq",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/mobile",
+    "backend",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=backend",
+    "dev:mobile": "npm run start --workspace=mobile",
+    "build:backend": "npm run build --workspace=backend"
+  }
+}
