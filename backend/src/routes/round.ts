@@ -89,8 +89,23 @@ roundRouter.post('/', async (req: AuthRequest, res: Response) => {
 
   const { courseId, date, scores, weather, notes } = parsed.data;
 
-  const course = await prisma.course.findUnique({ where: { id: courseId } });
+  const [course, user] = await Promise.all([
+    prisma.course.findUnique({ where: { id: courseId } }),
+    prisma.user.findUnique({ where: { id: req.userId! }, select: { handicap: true } }),
+  ]);
   if (!course) { res.status(404).json({ error: 'Platz nicht gefunden' }); return; }
+
+  // WHS Berechnungen (nur wenn Rating + Slope vorhanden)
+  const grossScore = scores.reduce((s, h) => s + h.strokes, 0);
+  let handicapDifferential: number | null = null;
+  let courseHandicap: number | null = null;
+
+  if (course.rating && course.slope) {
+    handicapDifferential = Math.round(((grossScore - course.rating) * 113 / course.slope) * 10) / 10;
+  }
+  if (user?.handicap != null && course.slope && course.rating) {
+    courseHandicap = Math.round(user.handicap * course.slope / 113 + (course.rating - course.totalPar));
+  }
 
   const round = await prisma.round.create({
     data: {
@@ -99,6 +114,8 @@ roundRouter.post('/', async (req: AuthRequest, res: Response) => {
       date: new Date(date),
       weather,
       notes,
+      handicapDifferential,
+      courseHandicap,
       scores: {
         create: scores.map((s) => ({
           holeNumber: s.holeNumber,
@@ -114,7 +131,7 @@ roundRouter.post('/', async (req: AuthRequest, res: Response) => {
     },
     include: {
       scores: { orderBy: { holeNumber: 'asc' } },
-      course: { select: { id: true, name: true, location: true, totalPar: true } },
+      course: { select: { id: true, name: true, location: true, totalPar: true, rating: true, slope: true } },
     },
   });
 
