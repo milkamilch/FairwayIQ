@@ -33,6 +33,8 @@ export interface Round {
   stats: RoundStats;
   weather?: string;
   notes?: string;
+  handicapDifferential?: number | null;
+  courseHandicap?: number | null;
   createdAt: string;
 }
 

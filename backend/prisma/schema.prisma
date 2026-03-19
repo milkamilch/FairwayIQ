@@ -271,13 +271,15 @@ model HoleScore {
 }
 
 model Round {
-  id         String   @id @default(cuid())
-  userId     String
-  courseId   String
-  date       DateTime
-  weather    String?
-  notes      String?
-  createdAt  DateTime @default(now())
+  id                   String   @id @default(cuid())
+  userId               String
+  courseId             String
+  date                 DateTime
+  weather              String?
+  notes                String?
+  handicapDifferential Float?   // WHS-Differenzial: (Brutto - Course Rating) × 113 / Slope
+  courseHandicap       Int?     // Spielvorgabe für diese Runde
+  createdAt            DateTime @default(now())
 
   user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   course   Course      @relation(fields: [courseId], references: [id])
