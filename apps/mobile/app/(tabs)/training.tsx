@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTrainingStore } from '../../src/store/trainingStore';
+import { useTheme } from '../../src/lib/theme';
 import { TrainingPlan, TrainingDay, UserTrainingPlan } from '@fairwayiq/shared';
 import { AssessmentModal } from '../../src/components/AssessmentModal';
 import { SessionFeedbackModal, FeedbackResult } from '../../src/components/SessionFeedbackModal';
@@ -49,6 +50,7 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
   const [showTracker, setShowTracker] = useState(false);
   const catColor = categoryColors[drill.category] ?? '#8888aa';
   const diff = difficultyMeta[drill.difficulty];
+  const c = useTheme();
 
   return (
     <View className="bg-bg-card border border-bg-border rounded-xl mb-3 overflow-hidden">
@@ -56,7 +58,7 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
         <View className="p-4">
           <View className="flex-row items-start justify-between gap-2 mb-2">
             <Text className="text-ink-primary font-bold text-sm flex-1 leading-5">{drill.name}</Text>
-            <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color="#44445a" />
+            <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color={c.inkMuted} />
           </View>
           <View className="flex-row gap-2 flex-wrap">
             <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: catColor + '20' }}>
@@ -91,13 +93,13 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
           <TouchableOpacity
             className="mt-4 flex-row items-center gap-2 py-2.5 px-3 rounded-xl border"
             style={{
-              borderColor: showTracker ? '#00e87a' : '#252535',
-              backgroundColor: showTracker ? '#00e87a10' : '#14141f',
+              borderColor: showTracker ? '#00e87a' : c.bgBorder,
+              backgroundColor: showTracker ? c.neonGreen12 : c.bgCard,
             }}
             onPress={() => setShowTracker((v) => !v)}
           >
-            <Ionicons name="stats-chart-outline" size={14} color={showTracker ? '#00e87a' : '#44445a'} />
-            <Text className="text-xs font-semibold" style={{ color: showTracker ? '#00e87a' : '#8888aa' }}>
+            <Ionicons name="stats-chart-outline" size={14} color={showTracker ? '#00e87a' : c.inkMuted} />
+            <Text className="text-xs font-semibold" style={{ color: showTracker ? '#00e87a' : c.inkSecondary }}>
               {showTracker ? 'Treffer ausblenden' : 'Treffer erfassen & Fortschritt'}
             </Text>
           </TouchableOpacity>
@@ -304,6 +306,7 @@ function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: b
 
 function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan: TrainingPlan & { days: (TrainingDay & { drills: any[] })[] } } }) {
   const { completeDay } = useTrainingStore();
+  const c = useTheme();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const progress = activePlan.completedDays.length / activePlan.plan.days.length;
@@ -364,7 +367,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
                     <Text className="text-ink-muted text-xs">{dd.drill?.duration} Min</Text>
                   </View>
                 </View>
-                <Ionicons name={expanded === ddKey ? 'chevron-up' : 'chevron-down'} size={14} color="#44445a" />
+                <Ionicons name={expanded === ddKey ? 'chevron-up' : 'chevron-down'} size={14} color={c.inkMuted} />
               </View>
 
               {expanded === ddKey && dd.drill && (
@@ -421,24 +424,24 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
             key={day.id}
             className="flex-row items-center gap-3 py-3 px-3 rounded-xl"
             style={{
-              backgroundColor: done ? '#00e87a10' : isCurrent ? '#14141f' : '#0f0f1a',
+              backgroundColor: done ? c.neonGreen12 : isCurrent ? c.bgCard : c.bgSurface,
               borderWidth: 1,
-              borderColor: isCurrent ? '#00e87a40' : '#252535',
+              borderColor: isCurrent ? '#00e87a40' : c.bgBorder,
               marginBottom: 4,
             }}
           >
             <View
               className="w-7 h-7 rounded-full items-center justify-center"
-              style={{ backgroundColor: done ? '#00e87a' : isCurrent ? '#00e87a20' : '#14141f' }}
+              style={{ backgroundColor: done ? '#00e87a' : isCurrent ? c.neonGreen20 : c.bgElevated }}
             >
               {done
                 ? <Ionicons name="checkmark" size={14} color="#07070f" />
-                : <Text className="text-xs font-bold" style={{ color: isCurrent ? '#00e87a' : '#44445a' }}>{day.dayNumber}</Text>
+                : <Text className="text-xs font-bold" style={{ color: isCurrent ? '#00e87a' : c.inkMuted }}>{day.dayNumber}</Text>
               }
             </View>
             <View className="flex-1">
-              <Text className="text-sm font-medium" style={{ color: done || isCurrent ? '#f0f0ff' : '#44445a' }}>{day.title}</Text>
-              <Text className="text-xs" style={{ color: '#44445a' }}>{categoryLabels[day.focus]} · {day.totalMinutes} Min</Text>
+              <Text className="text-sm font-medium" style={{ color: done || isCurrent ? c.inkPrimary : c.inkMuted }}>{day.title}</Text>
+              <Text className="text-xs" style={{ color: c.inkMuted }}>{categoryLabels[day.focus]} · {day.totalMinutes} Min</Text>
             </View>
             {isCurrent && <View className="w-1.5 h-1.5 rounded-full bg-neon-green" />}
           </View>

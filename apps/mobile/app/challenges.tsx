@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { api } from '../src/lib/api';
+import { useTheme } from '../src/lib/theme';
 import { BadgeDefinition } from '../src/store/trainingStore';
 
 // ── API Response Types ──────────────────────────────────────────────────
@@ -34,9 +35,9 @@ const CATEGORY_ORDER = ['sessions', 'streak', 'performance', 'variety'];
 
 // ── Streak Days Display ─────────────────────────────────────────────────
 function StreakDots({ count }: { count: number }) {
+  const c = useTheme();
   const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
   const today = new Date().getDay();
-  // Sunday = 0 in JS, but we want Mo=0
   const todayIdx = today === 0 ? 6 : today - 1;
 
   return (
@@ -51,13 +52,13 @@ function StreakDots({ count }: { count: number }) {
               className="w-full rounded-md"
               style={{
                 height: 6,
-                backgroundColor: active ? '#f97316' : '#252535',
+                backgroundColor: active ? '#f97316' : c.bgBorder,
                 opacity: isToday && !active ? 0.5 : 1,
               }}
             />
             <Text
               className="text-xs"
-              style={{ color: isToday ? '#f97316' : '#44445a', fontWeight: isToday ? '700' : '400' }}
+              style={{ color: isToday ? '#f97316' : c.inkMuted, fontWeight: isToday ? '700' : '400' }}
             >
               {day}
             </Text>
@@ -70,30 +71,31 @@ function StreakDots({ count }: { count: number }) {
 
 // ── Badge Card ──────────────────────────────────────────────────────────
 function BadgeCard({ badge }: { badge: BadgeDefinition & { earned: boolean; earnedAt: string | null } }) {
+  const c = useTheme();
   return (
     <View
       className="rounded-xl p-3 items-center gap-1.5"
       style={{
-        backgroundColor: badge.earned ? badge.color + '15' : '#0f0f1a',
+        backgroundColor: badge.earned ? badge.color + '15' : c.bgSurface,
         borderWidth: 1,
-        borderColor: badge.earned ? badge.color + '40' : '#1a1a2e',
-        opacity: badge.earned ? 1 : 0.5,
+        borderColor: badge.earned ? badge.color + '40' : c.bgBorder,
+        opacity: badge.earned ? 1 : 0.6,
         width: '30%',
       }}
     >
       <View
         className="w-12 h-12 rounded-xl items-center justify-center"
-        style={{ backgroundColor: badge.earned ? badge.color + '20' : '#14141f' }}
+        style={{ backgroundColor: badge.earned ? badge.color + '20' : c.bgElevated }}
       >
         {badge.earned ? (
           <Text style={{ fontSize: 24 }}>{badge.icon}</Text>
         ) : (
-          <Ionicons name="lock-closed" size={20} color="#252535" />
+          <Ionicons name="lock-closed" size={20} color={c.bgBorder} />
         )}
       </View>
       <Text
         className="text-xs font-semibold text-center leading-4"
-        style={{ color: badge.earned ? badge.color : '#252535' }}
+        style={{ color: badge.earned ? badge.color : c.inkSecondary }}
         numberOfLines={2}
       >
         {badge.name}
@@ -103,6 +105,7 @@ function BadgeCard({ badge }: { badge: BadgeDefinition & { earned: boolean; earn
 }
 
 export default function ChallengesScreen() {
+  const c = useTheme();
   const [status, setStatus] = useState<GamificationStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -127,13 +130,13 @@ export default function ChallengesScreen() {
       {/* Header */}
       <View className="px-5 pt-4 pb-4 flex-row items-center gap-3">
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color="#f0f0ff" />
+          <Ionicons name="chevron-back" size={22} color={c.inkPrimary} />
         </TouchableOpacity>
         <View className="flex-1">
           <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Gamification</Text>
           <Text className="text-ink-primary text-xl font-bold mt-0.5">Challenges</Text>
         </View>
-        <View className="px-2.5 py-1 rounded-full" style={{ backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a40' }}>
+        <View className="px-2.5 py-1 rounded-full" style={{ backgroundColor: c.neonGreen20, borderWidth: 1, borderColor: c.neonGreen20 }}>
           <Text className="text-neon-green text-xs font-bold">{earnedCount}/{totalBadges}</Text>
         </View>
       </View>
@@ -151,21 +154,21 @@ export default function ChallengesScreen() {
           <View
             className="rounded-2xl p-4 mb-4"
             style={{
-              backgroundColor: status.dailyGoal.completed ? '#00e87a12' : '#14141f',
+              backgroundColor: status.dailyGoal.completed ? c.neonGreen12 : c.bgCard,
               borderWidth: 1,
-              borderColor: status.dailyGoal.completed ? '#00e87a40' : '#252535',
+              borderColor: status.dailyGoal.completed ? c.neonGreen20 : c.bgBorder,
             }}
           >
             <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-3">
                 <View
                   className="w-10 h-10 rounded-xl items-center justify-center"
-                  style={{ backgroundColor: status.dailyGoal.completed ? '#00e87a' : '#252535' }}
+                  style={{ backgroundColor: status.dailyGoal.completed ? '#00e87a' : c.bgElevated }}
                 >
                   <Ionicons
                     name={status.dailyGoal.completed ? 'checkmark' : 'golf-outline'}
                     size={20}
-                    color={status.dailyGoal.completed ? '#07070f' : '#44445a'}
+                    color={status.dailyGoal.completed ? '#07070f' : c.inkMuted}
                   />
                 </View>
                 <View>
@@ -187,7 +190,7 @@ export default function ChallengesScreen() {
             </View>
             {status.dailyGoal.hasActivePlan && status.dailyGoal.totalDays && (
               <View className="mt-3">
-                <View className="bg-bg-elevated rounded-full h-1.5 overflow-hidden">
+                <View className="rounded-full h-1.5 overflow-hidden" style={{ backgroundColor: c.bgElevated }}>
                   <View
                     className="h-1.5 rounded-full"
                     style={{
@@ -207,9 +210,9 @@ export default function ChallengesScreen() {
           <View
             className="rounded-2xl p-4 mb-4"
             style={{
-              backgroundColor: status.streak.currentStreak > 0 ? '#f9730312' : '#14141f',
+              backgroundColor: status.streak.currentStreak > 0 ? '#f9730312' : c.bgCard,
               borderWidth: 1,
-              borderColor: status.streak.currentStreak > 0 ? '#f9730330' : '#252535',
+              borderColor: status.streak.currentStreak > 0 ? '#f9730330' : c.bgBorder,
             }}
           >
             <View className="flex-row items-center justify-between mb-1">
@@ -219,7 +222,14 @@ export default function ChallengesScreen() {
               </Text>
             </View>
             <View className="flex-row items-end gap-2">
-              <Text className="font-bold" style={{ fontSize: 48, color: status.streak.currentStreak > 0 ? '#f97316' : '#252535', lineHeight: 56 }}>
+              <Text
+                className="font-bold"
+                style={{
+                  fontSize: 48,
+                  color: status.streak.currentStreak > 0 ? '#f97316' : c.inkMuted,
+                  lineHeight: 56,
+                }}
+              >
                 {status.streak.currentStreak}
               </Text>
               <Text className="text-ink-secondary text-base mb-2">

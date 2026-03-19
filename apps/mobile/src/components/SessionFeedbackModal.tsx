@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { WorkoutSummary, BadgeDefinition, StreakData } from '../store/trainingStore';
+import { useTheme } from '../lib/theme';
 
 // ── Typen ──────────────────────────────────────────────────────────────
 export interface FeedbackResult {
@@ -64,6 +65,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
   const [adaptation, setAdaptation] = useState<AdaptationSuggestion | null>(null);
   const [newBadges, setNewBadges] = useState<BadgeDefinition[]>([]);
   const [streak, setStreak] = useState<StreakData | null>(null);
+  const c = useTheme();
 
   const selectedFeeling = FEELINGS.find((f) => f.value === feeling)!;
   const selectedDifficulty = DIFFICULTIES.find((d) => d.value === difficulty)!;
@@ -157,7 +159,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
             <View className="w-16" />
             <Text className="text-ink-primary font-bold">Badge verdient!</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={20} color="#44445a" />
+              <Ionicons name="close" size={20} color={c.inkMuted} />
             </TouchableOpacity>
           </View>
 
@@ -240,7 +242,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
               <Text className="text-ink-muted text-xs">Tag {dayNumber} · {totalMinutes} Min</Text>
             </View>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={20} color="#44445a" />
+              <Ionicons name="close" size={20} color={c.inkMuted} />
             </TouchableOpacity>
           </View>
 
@@ -296,7 +298,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
             {/* Tipp für die nächste Einheit */}
             <View
               className="rounded-xl p-4"
-              style={{ backgroundColor: '#14141f', borderWidth: 1, borderColor: '#252535' }}
+              style={{ backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.bgBorder }}
             >
               <View className="flex-row items-center gap-2 mb-2">
                 <Ionicons name="bulb-outline" size={16} color="#a78bfa" />
@@ -368,16 +370,16 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
                   key={f.value}
                   className="flex-1 items-center rounded-xl py-3"
                   style={{
-                    backgroundColor: feeling === f.value ? '#00e87a20' : '#14141f',
+                    backgroundColor: feeling === f.value ? c.neonGreen20 : c.bgCard,
                     borderWidth: 1,
-                    borderColor: feeling === f.value ? '#00e87a' : '#252535',
+                    borderColor: feeling === f.value ? '#00e87a' : c.bgBorder,
                   }}
                   onPress={() => setFeeling(f.value)}
                 >
                   <Text style={{ fontSize: 22 }}>{f.emoji}</Text>
                   <Text
                     className="text-xs mt-1 font-semibold"
-                    style={{ color: feeling === f.value ? '#00e87a' : '#44445a' }}
+                    style={{ color: feeling === f.value ? '#00e87a' : c.inkMuted }}
                   >
                     {f.label}
                   </Text>
@@ -399,15 +401,15 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
                   key={d.value}
                   className="flex-1 h-10 rounded-lg items-center justify-center"
                   style={{
-                    backgroundColor: difficulty >= d.value ? d.color + '30' : '#14141f',
+                    backgroundColor: difficulty >= d.value ? d.color + '30' : c.bgCard,
                     borderWidth: 1,
-                    borderColor: difficulty === d.value ? d.color : '#252535',
+                    borderColor: difficulty === d.value ? d.color : c.bgBorder,
                   }}
                   onPress={() => setDifficulty(d.value)}
                 >
                   <Text
                     className="text-xs font-bold"
-                    style={{ color: difficulty >= d.value ? d.color : '#44445a' }}
+                    style={{ color: difficulty >= d.value ? d.color : c.inkMuted }}
                   >
                     {d.value}
                   </Text>
