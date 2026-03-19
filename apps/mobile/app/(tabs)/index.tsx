@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../src/store/authStore';
 import { useTrainingStore } from '../../src/store/trainingStore';
 import { api } from '../../src/lib/api';
+import { WeatherWidget } from '../../src/components/WeatherWidget';
 
 interface Stats {
   rounds: number;
@@ -82,6 +83,11 @@ export default function DashboardScreen() {
         </View>
 
         <View className="px-5 gap-4 pb-8">
+          {/* Wetter-Widget */}
+          <View>
+            <WeatherWidget />
+          </View>
+
           {/* Stats Grid */}
           {stats && stats.rounds > 0 ? (
             <View>

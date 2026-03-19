@@ -28,7 +28,13 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "FairwayIQ benötigt deinen Standort für aktuelle Wetterdaten und Spielempfehlungen."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
