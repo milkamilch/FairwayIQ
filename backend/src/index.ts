@@ -6,6 +6,7 @@ import { trainingRouter } from './routes/training';
 import { courseRouter } from './routes/course';
 import { roundRouter } from './routes/round';
 import { progressRouter } from './routes/progress';
+import { gamificationRouter } from './routes/gamification';
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use('/api/training', trainingRouter);
 app.use('/api/courses', courseRouter);
 app.use('/api/rounds', roundRouter);
 app.use('/api/progress', progressRouter);
+app.use('/api/gamification', gamificationRouter);
 
 app.listen(PORT, () => {
   console.log(`FairwayIQ Backend running on port ${PORT}`);

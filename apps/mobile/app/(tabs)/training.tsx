@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useTrainingStore } from '../../src/store/trainingStore';
 import { TrainingPlan, TrainingDay, UserTrainingPlan } from '@fairwayiq/shared';
 import { AssessmentModal } from '../../src/components/AssessmentModal';
@@ -452,8 +453,15 @@ export default function TrainingScreen() {
   const [tab, setTab] = useState<'active' | 'plans' | 'library'>('active');
   const [refreshing, setRefreshing] = useState(false);
   const [showAssessment, setShowAssessment] = useState(false);
+  const [streak, setStreak] = useState(0);
 
-  const loadData = async () => { await Promise.all([fetchPlans(), fetchActivePlan()]); };
+  const loadData = async () => {
+    await Promise.all([fetchPlans(), fetchActivePlan()]);
+    try {
+      const { data } = await api.get<{ streak: { currentStreak: number } }>('/gamification/status');
+      setStreak(data.streak.currentStreak);
+    } catch {}
+  };
   useEffect(() => { loadData(); }, []);
 
   const onRefresh = async () => { setRefreshing(true); await loadData(); setRefreshing(false); };
@@ -468,8 +476,23 @@ export default function TrainingScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-base">
       <View className="px-5 pt-4 pb-4">
-        <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Training</Text>
-        <Text className="text-ink-primary text-2xl font-bold mt-0.5">Trainingsplan</Text>
+        <View className="flex-row items-start justify-between">
+          <View>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Training</Text>
+            <Text className="text-ink-primary text-2xl font-bold mt-0.5">Trainingsplan</Text>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center gap-2 px-3 py-2 rounded-xl"
+            style={{ backgroundColor: streak > 0 ? '#f9730315' : '#14141f', borderWidth: 1, borderColor: streak > 0 ? '#f9730340' : '#252535' }}
+            onPress={() => router.push('/challenges' as any)}
+          >
+            <Text style={{ fontSize: 16 }}>{streak > 0 ? '🔥' : '⛳'}</Text>
+            <Text className="font-bold text-sm" style={{ color: streak > 0 ? '#f97316' : '#44445a' }}>
+              {streak > 0 ? `${streak}` : '0'}
+            </Text>
+            <Ionicons name="trophy-outline" size={14} color={streak > 0 ? '#f97316' : '#44445a'} />
+          </TouchableOpacity>
+        </View>
         <View className="flex-row mt-4 bg-bg-elevated rounded-xl p-1">
           {(['active', 'plans', 'library'] as const).map((t) => (
             <TouchableOpacity

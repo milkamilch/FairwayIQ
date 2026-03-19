@@ -4,6 +4,7 @@ import { prisma } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { calculateScores, generatePlan, AssessmentAnswers } from '../lib/planGenerator';
 import { generateWorkoutSummary } from '../lib/workoutSummary';
+import { updateStreak, evaluateAndAwardBadges, BADGE_MAP } from '../lib/gamification';
 
 export const trainingRouter = Router();
 
@@ -181,7 +182,12 @@ trainingRouter.post('/my-plan/complete-day', async (req: AuthRequest, res: Respo
       })
     : null;
 
-  res.json({ updated, sessionLog, adaptation, summary });
+  // Streak + Badges berechnen
+  const streakData = await updateStreak(req.userId!);
+  const newBadgeIds = await evaluateAndAwardBadges(req.userId!, streakData.currentStreak, feeling);
+  const newBadges = newBadgeIds.map((id) => BADGE_MAP[id]).filter(Boolean);
+
+  res.json({ updated, sessionLog, adaptation, summary, streak: streakData, newBadges });
 });
 
 // GET Session-Logs des aktiven Plans

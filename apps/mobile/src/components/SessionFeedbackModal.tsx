@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { WorkoutSummary } from '../store/trainingStore';
+import { WorkoutSummary, BadgeDefinition, StreakData } from '../store/trainingStore';
 
 // ── Typen ──────────────────────────────────────────────────────────────
 export interface FeedbackResult {
@@ -23,7 +23,7 @@ interface Props {
   dayTitle: string;
   dayNumber: number;
   totalMinutes: number;
-  onSubmit: (feedback: FeedbackResult) => Promise<{ adaptation: AdaptationSuggestion; summary: WorkoutSummary | null }>;
+  onSubmit: (feedback: FeedbackResult) => Promise<{ adaptation: AdaptationSuggestion; summary: WorkoutSummary | null; streak: StreakData; newBadges: BadgeDefinition[] }>;
   onClose: () => void;
 }
 
@@ -59,9 +59,11 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
   const [difficulty, setDifficulty] = useState<number>(3);
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<'feedback' | 'summary' | 'adaptation'>('feedback');
+  const [step, setStep] = useState<'feedback' | 'summary' | 'badges' | 'adaptation'>('feedback');
   const [summary, setSummary] = useState<WorkoutSummary | null>(null);
   const [adaptation, setAdaptation] = useState<AdaptationSuggestion | null>(null);
+  const [newBadges, setNewBadges] = useState<BadgeDefinition[]>([]);
+  const [streak, setStreak] = useState<StreakData | null>(null);
 
   const selectedFeeling = FEELINGS.find((f) => f.value === feeling)!;
   const selectedDifficulty = DIFFICULTIES.find((d) => d.value === difficulty)!;
@@ -72,8 +74,12 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
       const result = await onSubmit({ feeling, difficulty, notes: notes.trim() || undefined });
       setSummary(result.summary);
       setAdaptation(result.adaptation);
+      setNewBadges(result.newBadges ?? []);
+      setStreak(result.streak ?? null);
       if (result.summary) {
         setStep('summary');
+      } else if ((result.newBadges ?? []).length > 0) {
+        setStep('badges');
       } else if (result.adaptation.direction !== null) {
         setStep('adaptation');
       } else {
@@ -86,6 +92,16 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
   };
 
   const handleSummaryNext = () => {
+    if (newBadges.length > 0) {
+      setStep('badges');
+    } else if (adaptation?.direction !== null) {
+      setStep('adaptation');
+    } else {
+      onClose();
+    }
+  };
+
+  const handleBadgesNext = () => {
     if (adaptation?.direction !== null) {
       setStep('adaptation');
     } else {
@@ -125,6 +141,84 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
             </TouchableOpacity>
             <TouchableOpacity className="rounded-xl py-4 items-center border border-bg-border" onPress={onClose}>
               <Text className="text-ink-secondary font-semibold">Nein, Plan beibehalten</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </Modal>
+    );
+  }
+
+  // ── Badge Unlock Screen ─────────────────────────────────────────────
+  if (step === 'badges' && newBadges.length > 0) {
+    return (
+      <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+        <SafeAreaView className="flex-1 bg-bg-base">
+          <View className="px-5 py-4 border-b border-bg-border flex-row items-center justify-between">
+            <View className="w-16" />
+            <Text className="text-ink-primary font-bold">Badge verdient!</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Ionicons name="close" size={20} color="#44445a" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, alignItems: 'center' }} showsVerticalScrollIndicator={false}>
+            {/* Header */}
+            <Text style={{ fontSize: 56, marginBottom: 12 }}>🏅</Text>
+            <Text className="text-ink-primary font-bold text-2xl text-center mb-2">
+              {newBadges.length === 1 ? 'Neuer Badge!' : `${newBadges.length} neue Badges!`}
+            </Text>
+            <Text className="text-ink-secondary text-sm text-center mb-8">
+              {newBadges.length === 1 ? 'Du hast eine neue Auszeichnung erhalten.' : 'Du hast neue Auszeichnungen erhalten.'}
+            </Text>
+
+            {/* Badge cards */}
+            <View className="w-full gap-4">
+              {newBadges.map((badge) => (
+                <View
+                  key={badge.id}
+                  className="rounded-2xl p-5 flex-row items-center gap-4"
+                  style={{ backgroundColor: badge.color + '15', borderWidth: 1, borderColor: badge.color + '40' }}
+                >
+                  <View
+                    className="w-16 h-16 rounded-2xl items-center justify-center shrink-0"
+                    style={{ backgroundColor: badge.color + '25' }}
+                  >
+                    <Text style={{ fontSize: 32 }}>{badge.icon}</Text>
+                  </View>
+                  <View className="flex-1">
+                    <Text className="font-bold text-base" style={{ color: badge.color }}>{badge.name}</Text>
+                    <Text className="text-ink-secondary text-sm mt-1 leading-5">{badge.description}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+
+            {/* Streak bonus */}
+            {streak && streak.currentStreak > 1 && (
+              <View
+                className="w-full mt-4 rounded-xl px-4 py-3 flex-row items-center gap-3"
+                style={{ backgroundColor: '#f9730315', borderWidth: 1, borderColor: '#f9730330' }}
+              >
+                <Text style={{ fontSize: 24 }}>🔥</Text>
+                <View>
+                  <Text className="font-bold text-sm" style={{ color: '#f97316' }}>{streak.currentStreak}-Tage-Streak!</Text>
+                  <Text className="text-ink-muted text-xs">Weiter so — du bist auf einem guten Weg.</Text>
+                </View>
+              </View>
+            )}
+
+            <View className="h-8" />
+          </ScrollView>
+
+          <View className="px-5 pb-4 border-t border-bg-border pt-4">
+            <TouchableOpacity
+              className="rounded-xl py-4 items-center"
+              style={{ backgroundColor: '#00e87a' }}
+              onPress={handleBadgesNext}
+            >
+              <Text className="text-bg-base font-bold tracking-wide">
+                {adaptation?.direction !== null ? 'WEITER' : 'FERTIG'}
+              </Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
