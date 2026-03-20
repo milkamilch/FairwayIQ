@@ -371,9 +371,12 @@ trainingRouter.get('/library', async (req: AuthRequest, res: Response) => {
     difficulty?: string;
   };
 
+  const homeOnly = req.query.home === 'true';
+
   const drills = await prisma.trainingDrill.findMany({
     where: {
       isLibrary: true,
+      ...(homeOnly ? { canDoAtHome: true } : {}),
       ...(category ? { category: category as any } : {}),
       ...(difficulty ? { difficulty: difficulty as any } : {}),
       ...(search ? {

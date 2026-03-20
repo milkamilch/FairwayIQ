@@ -43,6 +43,7 @@ interface LibraryDrill {
   category: string;
   difficulty: string;
   tips: string[];
+  canDoAtHome: boolean;
 }
 
 function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
@@ -70,6 +71,11 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
             <View className="px-2 py-0.5 rounded-full bg-bg-elevated">
               <Text className="text-ink-muted text-xs">{drill.duration} Min</Text>
             </View>
+            {drill.canDoAtHome && (
+              <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: '#00e87a20' }}>
+                <Text className="text-xs font-semibold" style={{ color: '#00e87a' }}>🏠 Zuhause</Text>
+              </View>
+            )}
           </View>
         </View>
       </TouchableOpacity>
@@ -120,15 +126,17 @@ function LibraryTab() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeDifficulty, setActiveDifficulty] = useState<string | null>(null);
+  const [homeOnly, setHomeOnly] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchDrills = useCallback(async (q: string, cat: string | null, diff: string | null) => {
+  const fetchDrills = useCallback(async (q: string, cat: string | null, diff: string | null, home: boolean) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (q.trim()) params.append('search', q.trim());
       if (cat) params.append('category', cat);
       if (diff) params.append('difficulty', diff);
+      if (home) params.append('home', 'true');
       const { data } = await api.get<LibraryDrill[]>(`/training/library?${params.toString()}`);
       setDrills(data);
     } catch {}
@@ -136,14 +144,14 @@ function LibraryTab() {
   }, []);
 
   useEffect(() => {
-    fetchDrills(search, activeCategory, activeDifficulty);
-  }, [activeCategory, activeDifficulty]);
+    fetchDrills(search, activeCategory, activeDifficulty, homeOnly);
+  }, [activeCategory, activeDifficulty, homeOnly]);
 
   const handleSearchChange = (text: string) => {
     setSearch(text);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      fetchDrills(text, activeCategory, activeDifficulty);
+      fetchDrills(text, activeCategory, activeDifficulty, homeOnly);
     }, 350);
   };
 
@@ -168,13 +176,13 @@ function LibraryTab() {
           clearButtonMode="while-editing"
         />
         {search.length > 0 && (
-          <TouchableOpacity onPress={() => { setSearch(''); fetchDrills('', activeCategory, activeDifficulty); }}>
+          <TouchableOpacity onPress={() => { setSearch(''); fetchDrills('', activeCategory, activeDifficulty, homeOnly); }}>
             <Ionicons name="close-circle" size={16} color="#44445a" />
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Category Filters */}
+      {/* Category + Home Filters */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, height: 34, marginBottom: 6 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: 'center' }}>
         {ALL_CATEGORIES.map((cat) => {
           const active = activeCategory === cat;
@@ -196,6 +204,19 @@ function LibraryTab() {
             </TouchableOpacity>
           );
         })}
+        <TouchableOpacity
+          className="px-3 py-1.5 rounded-full"
+          style={{
+            backgroundColor: homeOnly ? '#00e87a' : '#00e87a15',
+            borderWidth: 1,
+            borderColor: homeOnly ? '#00e87a' : '#00e87a40',
+          }}
+          onPress={() => setHomeOnly((v) => !v)}
+        >
+          <Text className="text-xs font-semibold" style={{ color: homeOnly ? '#07070f' : '#00e87a' }}>
+            🏠 Zuhause
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
 
       {/* Difficulty Filters */}

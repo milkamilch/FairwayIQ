@@ -10,13 +10,13 @@ export default function TabsLayout() {
           backgroundColor: '#0f0f1a',
           borderTopColor: '#252535',
           borderTopWidth: 1,
-          paddingBottom: 10,
-          paddingTop: 10,
-          height: 68,
+          paddingBottom: 8,
+          paddingTop: 8,
+          height: 60,
         },
         tabBarActiveTintColor: '#00e87a',
         tabBarInactiveTintColor: '#44445a',
-        tabBarLabelStyle: { fontSize: 10, fontWeight: '700', letterSpacing: 0.5 },
+        tabBarLabelStyle: { fontSize: 9, fontWeight: '700', letterSpacing: 0.3 },
       }}
     >
       <Tabs.Screen
@@ -45,6 +45,13 @@ export default function TabsLayout() {
         options={{
           title: 'RUNDEN',
           tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="social"
+        options={{
+          title: 'COMMUNITY',
+          tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
