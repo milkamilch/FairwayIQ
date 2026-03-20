@@ -176,6 +176,7 @@ export default function DashboardScreen() {
                 { label: 'Neue Runde', sub: 'Score erfassen', icon: 'stats-chart', route: '/(tabs)/rounds' },
                 { label: 'Platz hinzufügen', sub: 'Strategie hinterlegen', icon: 'map-outline', route: '/(tabs)/courses' },
                 { label: 'Training heute', sub: activePlan ? activePlan.plan.days.find(d => d.dayNumber === activePlan.currentDay)?.title ?? '—' : 'Kein aktiver Plan', icon: 'fitness-outline', route: '/(tabs)/training' },
+                { label: 'Schläger Bag', sub: 'Clubs & Distanzen', icon: 'golf-outline', route: '/bag' },
                 { label: 'Fortschritt', sub: 'Skill-Radar & HCP-Verlauf', icon: 'analytics-outline', route: '/progress' },
               ].map((a) => (
                 <TouchableOpacity

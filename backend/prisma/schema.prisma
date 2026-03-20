@@ -29,6 +29,22 @@ enum TrainingDifficulty {
   HARD
 }
 
+enum ClubType {
+  DRIVER
+  FAIRWAY_WOOD
+  HYBRID
+  IRON
+  WEDGE
+  PUTTER
+}
+
+enum GoalType {
+  HCP_TARGET
+  ROUNDS_COUNT
+  SCORE_TARGET
+  CUSTOM
+}
+
 enum HazardType {
   WATER
   BUNKER
@@ -63,6 +79,36 @@ model User {
   handicapEntries   HandicapEntry[]
   streak            UserStreak?
   badges            UserBadge[]
+  clubs             Club[]
+  goals             UserGoal[]
+}
+
+model Club {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  type      ClubType
+  distanceM Int?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model UserGoal {
+  id          String    @id @default(cuid())
+  userId      String
+  type        GoalType
+  title       String
+  targetValue Float?
+  deadline    DateTime?
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserStreak {
