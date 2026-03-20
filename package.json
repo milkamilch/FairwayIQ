@@ -11,5 +11,8 @@
     "dev:backend": "npm run dev --workspace=backend",
     "dev:mobile": "npm run start --workspace=mobile",
     "build:backend": "npm run build --workspace=backend"
+  },
+  "dependencies": {
+    "react-native-health": "^1.19.0"
   }
 }

@@ -5,6 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { api } from '../src/lib/api';
 import { useAuthStore } from '../src/store/authStore';
 import { useTheme } from '../src/lib/theme';
@@ -82,6 +83,7 @@ function Stepper({ value, onDec, onInc, color, size = 'md' }: {
 function YesNoToggle({ value, onTrue, onFalse }: {
   value: boolean | null; onTrue: () => void; onFalse: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <View className="flex-row gap-2">
       {([true, false] as const).map((v) => (
@@ -96,7 +98,7 @@ function YesNoToggle({ value, onTrue, onFalse }: {
           onPress={v ? onTrue : onFalse}
         >
           <Text className="font-bold text-sm" style={{ color: value === v ? (v ? '#00e87a' : '#ef4444') : '#44445a' }}>
-            {v ? 'JA' : 'NEIN'}
+            {v ? t('liveRound.yes') : t('liveRound.no')}
           </Text>
         </TouchableOpacity>
       ))}
@@ -107,6 +109,7 @@ function YesNoToggle({ value, onTrue, onFalse }: {
 // ── Main Screen ───────────────────────────────────────────────────────
 export default function LiveRoundScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const c = useTheme();
   const { user } = useAuthStore();
 
@@ -194,16 +197,20 @@ export default function LiveRoundScreen() {
       });
       router.back();
     } catch {
-      Alert.alert('Fehler', 'Runde konnte nicht gespeichert werden');
+      Alert.alert(t('common.error'), t('liveRound.cannotSave'));
     }
     setSaving(false);
   };
 
   const confirmFinish = () => {
-    Alert.alert('Runde abschließen?', `Brutto: ${grossTotal} (${scoreDiff(grossTotal - parTotal)})`, [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Speichern', onPress: save },
-    ]);
+    Alert.alert(
+      t('liveRound.finishTitle'),
+      t('liveRound.finishMsg', { gross: grossTotal, diff: scoreDiff(grossTotal - parTotal) }),
+      [
+        { text: t('liveRound.abandon'), style: 'cancel' },
+        { text: t('common.save'), onPress: save },
+      ],
+    );
   };
 
   // ── Course Selection ────────────────────────────────────────────────
@@ -214,7 +221,7 @@ export default function LiveRoundScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color={c.inkSecondary} />
           </TouchableOpacity>
-          <Text className="text-ink-primary font-bold text-lg flex-1">Platz wählen</Text>
+          <Text className="text-ink-primary font-bold text-lg flex-1">{t('liveRound.selectCourse')}</Text>
         </View>
         {loadingCourses ? (
           <View className="flex-1 items-center justify-center">
@@ -223,8 +230,8 @@ export default function LiveRoundScreen() {
         ) : courses.length === 0 ? (
           <View className="flex-1 items-center justify-center gap-3 px-8">
             <Ionicons name="map-outline" size={48} color={c.bgBorder} />
-            <Text className="text-ink-secondary font-semibold text-center">Keine Plätze vorhanden</Text>
-            <Text className="text-ink-muted text-sm text-center">Füge zuerst einen Platz im Plätze-Tab hinzu.</Text>
+            <Text className="text-ink-secondary font-semibold text-center">{t('liveRound.noCourses')}</Text>
+            <Text className="text-ink-muted text-sm text-center">{t('liveRound.noCoursesHint')}</Text>
           </View>
         ) : (
           <ScrollView className="flex-1 px-5 pt-4">
@@ -260,9 +267,9 @@ export default function LiveRoundScreen() {
       {/* Header */}
       <View className="px-4 pt-3 pb-2 border-b border-bg-border">
         <View className="flex-row items-center gap-3 mb-2">
-          <TouchableOpacity onPress={() => Alert.alert('Runde abbrechen?', 'Fortschritt wird nicht gespeichert.', [
-            { text: 'Weiter spielen', style: 'cancel' },
-            { text: 'Abbrechen', style: 'destructive', onPress: () => router.back() },
+          <TouchableOpacity onPress={() => Alert.alert(t('liveRound.abandonTitle'), t('liveRound.abandonMsg'), [
+            { text: t('liveRound.keepPlaying'), style: 'cancel' },
+            { text: t('liveRound.abandon'), style: 'destructive', onPress: () => router.back() },
           ])}>
             <Ionicons name="close" size={22} color={c.inkSecondary} />
           </TouchableOpacity>
@@ -275,19 +282,19 @@ export default function LiveRoundScreen() {
             style={{ backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a' }}
             onPress={confirmFinish}
           >
-            <Text className="text-neon-green text-xs font-bold">FERTIG</Text>
+            <Text className="text-neon-green text-xs font-bold">{t('liveRound.done')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Running Stats */}
         <View className="flex-row gap-3">
           {[
-            { label: 'BRUTTO', value: String(grossTotal), sub: scoreDiff(grossTotal - parTotal), subColor: scoreColor(grossTotal - parTotal) },
+            { label: t('liveRound.gross'), value: String(grossTotal), sub: scoreDiff(grossTotal - parTotal), subColor: scoreColor(grossTotal - parTotal) },
             courseHandicap != null
-              ? { label: 'NETTO', value: String(netTotal), sub: `HCP ${courseHandicap}`, subColor: c.inkMuted }
+              ? { label: t('liveRound.net'), value: String(netTotal), sub: `HCP ${courseHandicap}`, subColor: c.inkMuted }
               : null,
-            { label: 'STABLEFORD', value: String(totalStableford), sub: 'Punkte', subColor: c.inkMuted },
-            { label: 'PUTTS', value: String(totalPutts), sub: 'gesamt', subColor: c.inkMuted },
+            { label: t('liveRound.stableford'), value: String(totalStableford), sub: t('liveRound.points'), subColor: c.inkMuted },
+            { label: t('liveRound.putts'), value: String(totalPutts), sub: t('liveRound.total'), subColor: c.inkMuted },
           ].filter(Boolean).map((s) => s && (
             <View key={s.label} className="flex-1 bg-bg-card rounded-lg px-2 py-1.5 items-center">
               <Text style={{ fontSize: 9, color: c.inkMuted, fontWeight: '700', letterSpacing: 0.8 }}>{s.label}</Text>
@@ -442,7 +449,7 @@ export default function LiveRoundScreen() {
           <View className="flex-row items-center justify-between">
             <View>
               <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
-                Loch {cur.holeNumber} · SI {cur.strokeIndex}
+                {t('liveRound.hole')} {cur.holeNumber} · SI {cur.strokeIndex}
               </Text>
               <Text className="text-ink-primary font-bold text-xl">Par {cur.par}</Text>
               <Text className="text-ink-muted text-xs">{cur.distanceMeters} m</Text>
@@ -464,7 +471,7 @@ export default function LiveRoundScreen() {
 
           {/* Strokes */}
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3 text-center">Schläge</Text>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3 text-center">{t('liveRound.strokes')}</Text>
             <Stepper
               value={cur.strokes}
               onDec={() => cur.strokes > 1 && update('strokes', cur.strokes - 1)}
@@ -476,7 +483,7 @@ export default function LiveRoundScreen() {
 
           {/* Putts */}
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3 text-center">Putts</Text>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3 text-center">{t('liveRound.putts')}</Text>
             <Stepper
               value={cur.putts}
               onDec={() => cur.putts > 0 && update('putts', cur.putts - 1)}
@@ -489,7 +496,7 @@ export default function LiveRoundScreen() {
           <View className="gap-3">
             {cur.par !== 3 && (
               <View>
-                <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">Fairway getroffen (FIR)?</Text>
+                <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">{t('liveRound.fairwayQuestion')}</Text>
                 <YesNoToggle
                   value={cur.fairwayHit}
                   onTrue={() => update('fairwayHit', true)}
@@ -498,7 +505,7 @@ export default function LiveRoundScreen() {
               </View>
             )}
             <View>
-              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">Grün in Regulation (GIR)?</Text>
+              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">{t('liveRound.girQuestion')}</Text>
               <YesNoToggle
                 value={cur.greenInRegulation}
                 onTrue={() => update('greenInRegulation', true)}
@@ -509,7 +516,7 @@ export default function LiveRoundScreen() {
 
           {/* Penalties */}
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3 text-center">Strafschläge</Text>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3 text-center">{t('liveRound.penalties')}</Text>
             <Stepper
               value={cur.penalties}
               onDec={() => cur.penalties > 0 && update('penalties', cur.penalties - 1)}
@@ -525,7 +532,7 @@ export default function LiveRoundScreen() {
                 className="flex-1 py-3.5 rounded-xl items-center border border-bg-border"
                 onPress={() => goToHole(activeHole - 1)}
               >
-                <Text className="text-ink-secondary font-semibold text-sm">← Loch {activeHole}</Text>
+                <Text className="text-ink-secondary font-semibold text-sm">{t('liveRound.prevHole', { n: activeHole })}</Text>
               </TouchableOpacity>
             )}
             {activeHole < scores.length - 1 ? (
@@ -535,7 +542,7 @@ export default function LiveRoundScreen() {
                 onPress={() => goToHole(activeHole + 1)}
               >
                 <Text style={{ color: '#07070f', fontWeight: 'bold', fontSize: 14 }}>
-                  Loch {activeHole + 2} →
+                  {t('liveRound.nextHole', { n: activeHole + 2 })}
                 </Text>
               </TouchableOpacity>
             ) : (
@@ -546,7 +553,7 @@ export default function LiveRoundScreen() {
                 disabled={saving}
               >
                 <Text style={{ color: '#07070f', fontWeight: 'bold', fontSize: 14 }}>
-                  {saving ? 'SPEICHERN...' : 'RUNDE ABSCHLIESSEN ✓'}
+                  {saving ? t('liveRound.saving') : t('liveRound.finishRound')}
                 </Text>
               </TouchableOpacity>
             )}

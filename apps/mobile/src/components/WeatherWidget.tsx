@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../lib/theme';
 
-// ── Open-Meteo Typen ───────────────────────────────────────────────────
+// ── Open-Meteo Types ───────────────────────────────────────────────────
 interface OpenMeteoResponse {
   current: {
     temperature_2m: number;
@@ -15,46 +16,41 @@ interface OpenMeteoResponse {
     wind_direction_10m: number;
     weathercode: number;
   };
+  daily: {
+    sunrise: string[];
+    sunset: string[];
+  };
 }
 
-// ── Wetter-Zustands-Mapping ────────────────────────────────────────────
-const WMO_CODES: Record<number, { label: string; icon: string }> = {
-  0:  { label: 'Klarer Himmel',       icon: '☀️' },
-  1:  { label: 'Überwiegend klar',    icon: '🌤️' },
-  2:  { label: 'Teilweise bewölkt',   icon: '⛅' },
-  3:  { label: 'Bedeckt',             icon: '☁️' },
-  45: { label: 'Nebel',               icon: '🌫️' },
-  48: { label: 'Raureif-Nebel',       icon: '🌫️' },
-  51: { label: 'Leichter Nieselregen', icon: '🌦️' },
-  53: { label: 'Nieselregen',         icon: '🌦️' },
-  55: { label: 'Starker Nieselregen', icon: '🌧️' },
-  61: { label: 'Leichter Regen',      icon: '🌧️' },
-  63: { label: 'Regen',               icon: '🌧️' },
-  65: { label: 'Starker Regen',       icon: '🌧️' },
-  71: { label: 'Leichter Schnee',     icon: '🌨️' },
-  73: { label: 'Schnee',              icon: '❄️' },
-  75: { label: 'Starker Schnee',      icon: '❄️' },
-  80: { label: 'Regenschauer',        icon: '🌦️' },
-  81: { label: 'Regenschauer',        icon: '🌧️' },
-  82: { label: 'Starke Schauer',      icon: '🌧️' },
-  95: { label: 'Gewitter',            icon: '⛈️' },
-  96: { label: 'Gewitter mit Hagel',  icon: '⛈️' },
-  99: { label: 'Schweres Gewitter',   icon: '⛈️' },
+// ── WMO code icons (labels come from translation) ──────────────────────
+const WMO_ICONS: Record<number, string> = {
+  0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
+  45: '🌫️', 48: '🌫️',
+  51: '🌦️', 53: '🌦️', 55: '🌧️',
+  61: '🌧️', 63: '🌧️', 65: '🌧️',
+  71: '🌨️', 73: '❄️', 75: '❄️',
+  80: '🌦️', 81: '🌧️', 82: '🌧️',
+  95: '⛈️', 96: '⛈️', 99: '⛈️',
 };
 
-function getWmo(code: number) {
-  return WMO_CODES[code] ?? { label: 'Unbekannt', icon: '🌡️' };
-}
-
-// ── Spielempfehlung ────────────────────────────────────────────────────
 type PlayRating = 'perfect' | 'good' | 'fair' | 'tough' | 'nogo';
 
 interface PlayRecommendation {
   rating: PlayRating;
-  label: string;
+  labelKey: string; // key for full label (in expanded view)
   color: string;
   icon: string;
-  tips: string[];
+  tipKeys: string[];
+  tipValues?: Record<string, string | number>[];
+}
+
+function formatTime(isoDatetime: string): string {
+  return isoDatetime.slice(11, 16);
+}
+
+function isNight(sunriseIso: string, sunsetIso: string): boolean {
+  const now = new Date();
+  return now < new Date(sunriseIso) || now > new Date(sunsetIso);
 }
 
 function getPlayRecommendation(
@@ -63,87 +59,96 @@ function getPlayRecommendation(
   precipitation: number,
   weatherCode: number,
   tempC: number,
+  dark: boolean,
 ): PlayRecommendation {
-  const tips: string[] = [];
-
-  // Absolute no-go conditions
+  if (dark) {
+    return {
+      rating: 'nogo',
+      labelKey: 'weather.dark',
+      color: '#6366f1',
+      icon: '🌙',
+      tipKeys: ['weatherPlay.tips.darkLight', 'weatherPlay.tips.darkOnly'],
+    };
+  }
   if (weatherCode === 95 || weatherCode === 96 || weatherCode === 99) {
     return {
       rating: 'nogo',
-      label: 'Nicht spielen',
+      labelKey: 'weatherPlay.labels.nogo',
       color: '#ef4444',
       icon: '⚡',
-      tips: ['Gewitter — bitte den Platz sofort verlassen', 'Blitzgefahr auf dem Golfplatz'],
+      tipKeys: ['weatherPlay.tips.thunderAlert', 'weatherPlay.tips.lightningRisk'],
     };
   }
   if (windKmh > 50 || gustKmh > 65) {
     return {
       rating: 'nogo',
-      label: 'Nicht spielen',
+      labelKey: 'weatherPlay.labels.nogo',
       color: '#ef4444',
       icon: '🌬️',
-      tips: ['Orkanartige Winde machen das Spiel gefährlich', 'Bäume und Äste können ein Risiko darstellen'],
+      tipKeys: ['weatherPlay.tips.orkanicWind', 'weatherPlay.tips.treeRisk'],
     };
   }
   if (precipitation > 5) {
     return {
       rating: 'nogo',
-      label: 'Nicht spielen',
+      labelKey: 'weatherPlay.labels.nogo',
       color: '#ef4444',
       icon: '🌊',
-      tips: ['Starkregen — Spielfeldbedingungen nicht sicher', 'Platz wahrscheinlich gesperrt'],
+      tipKeys: ['weatherPlay.tips.heavyRain', 'weatherPlay.tips.courseClosed'],
     };
   }
-
-  // Tough conditions
   if (windKmh > 35 || precipitation > 2.5 || [65, 73, 75, 82].includes(weatherCode)) {
-    if (windKmh > 35) tips.push('Deutlich mehr Schläger nehmen, niedrige Flugbahn wählen');
-    if (windKmh > 35) tips.push('Gegen den Wind: 20-30% mehr Distanz einkalkulieren');
-    if (precipitation > 2.5) tips.push('Regenhandschuh und wasserdichte Kleidung unbedingt notwendig');
-    if (precipitation > 2.5) tips.push('Ball hält weniger, Greens spielen langsamer');
-    return { rating: 'tough', label: 'Schwierige Bedingungen', color: '#f97316', icon: '🌧️', tips };
+    const keys: string[] = [];
+    const vals: Record<string, string | number>[] = [];
+    if (windKmh > 35) { keys.push('weatherPlay.tips.moreClubs'); vals.push({}); }
+    if (windKmh > 35) { keys.push('weatherPlay.tips.windDistance'); vals.push({}); }
+    if (precipitation > 2.5) { keys.push('weatherPlay.tips.rainGear'); vals.push({}); }
+    if (precipitation > 2.5) { keys.push('weatherPlay.tips.slowGreens'); vals.push({}); }
+    return { rating: 'tough', labelKey: 'weatherPlay.labels.tough', color: '#f97316', icon: '🌧️', tipKeys: keys, tipValues: vals };
   }
-
-  // Fair conditions
   if (windKmh > 20 || precipitation > 0.5 || [3, 45, 48, 55, 61, 63, 71, 80, 81].includes(weatherCode)) {
-    if (windKmh > 20) tips.push(`Wind ${Math.round(windKmh)} km/h — 1-2 Schläger mehr nehmen`);
-    if (windKmh > 20) tips.push('Seitenwind: Ball in die Windrichtung aimsn');
-    if (precipitation > 0.5) tips.push('Regenhandschuh bereithalten');
-    if (tempC < 10) tips.push('Kühle Temperaturen: mehr Aufwärmen, Ball fliegt kürzer');
-    return { rating: 'fair', label: 'Spielbar', color: '#f59e0b', icon: '⛅', tips };
+    const keys: string[] = [];
+    const vals: Record<string, string | number>[] = [];
+    if (windKmh > 20) { keys.push('weatherPlay.tips.windEffect'); vals.push({ value: Math.round(windKmh) }); }
+    if (windKmh > 20) { keys.push('weatherPlay.tips.crosswindAim'); vals.push({}); }
+    if (precipitation > 0.5) { keys.push('weatherPlay.tips.rainGlove'); vals.push({}); }
+    if (tempC < 10) { keys.push('weatherPlay.tips.coldWarm'); vals.push({}); }
+    return { rating: 'fair', labelKey: 'weatherPlay.labels.fair', color: '#f59e0b', icon: '⛅', tipKeys: keys, tipValues: vals };
   }
-
-  // Good conditions
   if (windKmh > 10 || tempC < 8) {
-    if (windKmh > 10) tips.push(`Leichter Wind ${Math.round(windKmh)} km/h — kaum Einfluss`);
-    if (tempC < 8) tips.push('Kühl — Ball fliegt ca. 5% kürzer, gut aufwärmen');
-    return { rating: 'good', label: 'Gute Bedingungen', color: '#00e87a', icon: '🌤️', tips };
+    const keys: string[] = [];
+    const vals: Record<string, string | number>[] = [];
+    if (windKmh > 10) { keys.push('weatherPlay.tips.lightWind'); vals.push({ value: Math.round(windKmh) }); }
+    if (tempC < 8) { keys.push('weatherPlay.tips.coldShort'); vals.push({}); }
+    return { rating: 'good', labelKey: 'weatherPlay.labels.good', color: '#00e87a', icon: '🌤️', tipKeys: keys, tipValues: vals };
   }
-
-  // Perfect
-  tips.push('Ideale Bedingungen für dein bestes Spiel');
-  if (tempC > 18 && tempC < 28) tips.push('Optimale Temperatur für maximale Flexibilität');
-  return { rating: 'perfect', label: 'Perfekte Bedingungen', color: '#00e87a', icon: '☀️', tips };
+  return {
+    rating: 'perfect',
+    labelKey: 'weatherPlay.labels.perfect',
+    color: '#00e87a',
+    icon: '☀️',
+    tipKeys: ['weatherPlay.tips.idealConditions', tempC > 18 && tempC < 28 ? 'weatherPlay.tips.optimalTemp' : ''].filter(Boolean),
+  };
 }
 
-// ── Wind-Richtungs-Pfeil ───────────────────────────────────────────────
 function windDirLabel(deg: number): string {
   const dirs = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
   return dirs[Math.round(deg / 45) % 8];
 }
 
-// ── Haupt-Komponente ───────────────────────────────────────────────────
+// ── Main Component ─────────────────────────────────────────────────────
 export function WeatherWidget() {
+  const { t } = useTranslation();
   const c = useTheme();
   const [weather, setWeather] = useState<OpenMeteoResponse['current'] | null>(null);
+  const [sunrise, setSunrise] = useState<string | null>(null);
+  const [sunset, setSunset] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
 
-  useEffect(() => {
-    loadWeather();
-  }, []);
+  useEffect(() => { loadWeather(); }, []);
 
   const loadWeather = async () => {
     setLoading(true);
@@ -151,32 +156,29 @@ export function WeatherWidget() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setError('Standortzugriff verweigert');
+        setError(t('weather.noPermission'));
         setLoading(false);
         return;
       }
-
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const { latitude, longitude } = loc.coords;
-
-      // Reverse geocoding für Ortsname
       try {
         const [place] = await Location.reverseGeocodeAsync({ latitude, longitude });
         setLocationName(place?.city ?? place?.subregion ?? place?.region ?? null);
       } catch {}
-
-      // Open-Meteo API — kostenlos, kein API-Key
       const url =
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}` +
         `&current=temperature_2m,apparent_temperature,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weathercode` +
+        `&daily=sunrise,sunset` +
         `&wind_speed_unit=kmh&timezone=auto`;
-
       const res = await fetch(url);
-      if (!res.ok) throw new Error('Wetterdaten nicht verfügbar');
+      if (!res.ok) throw new Error();
       const data: OpenMeteoResponse = await res.json();
       setWeather(data.current);
-    } catch (e: any) {
-      setError('Wetter konnte nicht geladen werden');
+      setSunrise(data.daily.sunrise[0] ?? null);
+      setSunset(data.daily.sunset[0] ?? null);
+    } catch {
+      setError(t('weather.cannotLoad'));
     }
     setLoading(false);
   };
@@ -185,7 +187,7 @@ export function WeatherWidget() {
     return (
       <View className="bg-bg-card border border-bg-border rounded-xl p-4 flex-row items-center gap-3">
         <ActivityIndicator size="small" color="#00e87a" />
-        <Text className="text-ink-muted text-sm">Wetter wird geladen…</Text>
+        <Text className="text-ink-muted text-sm">{t('weather.loading')}</Text>
       </View>
     );
   }
@@ -198,20 +200,23 @@ export function WeatherWidget() {
       >
         <Ionicons name="cloud-offline-outline" size={20} color={c.inkMuted} />
         <View className="flex-1">
-          <Text className="text-ink-muted text-sm">{error ?? 'Kein Wetter'}</Text>
-          <Text className="text-neon-green text-xs mt-0.5">Erneut versuchen →</Text>
+          <Text className="text-ink-muted text-sm">{error ?? t('weather.noWeather')}</Text>
+          <Text className="text-neon-green text-xs mt-0.5">{t('weather.retry')}</Text>
         </View>
       </TouchableOpacity>
     );
   }
 
-  const wmo = getWmo(weather.weathercode);
+  const wmoIcon = WMO_ICONS[weather.weathercode] ?? '🌡️';
+  const wmoLabel = t(`weather.conditions.${weather.weathercode}`, { defaultValue: t('weather.unknown') });
+  const dark = sunrise && sunset ? isNight(sunrise, sunset) : false;
   const rec = getPlayRecommendation(
     weather.wind_speed_10m,
     weather.wind_gusts_10m,
     weather.precipitation,
     weather.weathercode,
     weather.temperature_2m,
+    dark,
   );
 
   return (
@@ -222,15 +227,12 @@ export function WeatherWidget() {
       activeOpacity={0.9}
     >
       {/* Main Row */}
-      <View
-        className="p-4"
-        style={{ backgroundColor: c.bgCard }}
-      >
+      <View className="p-4" style={{ backgroundColor: c.bgCard }}>
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2">
             <Ionicons name="partly-sunny-outline" size={14} color={c.inkMuted} />
             <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
-              Wetter{locationName ? ` · ${locationName}` : ''}
+              {t('weather.label')}{locationName ? ` · ${locationName}` : ''}
             </Text>
           </View>
           <Ionicons name={expanded ? 'chevron-up' : 'chevron-down'} size={14} color={c.inkMuted} />
@@ -239,13 +241,13 @@ export function WeatherWidget() {
         <View className="flex-row items-center gap-4">
           {/* Temp + Condition */}
           <View className="flex-row items-center gap-3">
-            <Text style={{ fontSize: 36 }}>{wmo.icon}</Text>
+            <Text style={{ fontSize: 36 }}>{wmoIcon}</Text>
             <View>
               <Text className="text-ink-primary font-bold" style={{ fontSize: 28, lineHeight: 32 }}>
                 {Math.round(weather.temperature_2m)}°
               </Text>
               <Text className="text-ink-muted text-xs">
-                gefühlt {Math.round(weather.apparent_temperature)}°
+                {t('weather.feelsLike')} {Math.round(weather.apparent_temperature)}°
               </Text>
             </View>
           </View>
@@ -257,7 +259,7 @@ export function WeatherWidget() {
               <Text className="text-ink-secondary text-xs">
                 {Math.round(weather.wind_speed_10m)} km/h {windDirLabel(weather.wind_direction_10m)}
                 {weather.wind_gusts_10m > weather.wind_speed_10m + 5
-                  ? ` (Böen ${Math.round(weather.wind_gusts_10m)})`
+                  ? ` (${t('weatherPlay.gusts', { value: Math.round(weather.wind_gusts_10m) })})`
                   : ''}
               </Text>
             </View>
@@ -266,29 +268,36 @@ export function WeatherWidget() {
               <Text className="text-ink-secondary text-xs">
                 {weather.precipitation > 0
                   ? `${weather.precipitation} mm/h`
-                  : 'Kein Niederschlag'}
+                  : t('weather.noPrecipitation')}
               </Text>
             </View>
-            <Text className="text-ink-muted text-xs">{wmo.label}</Text>
+            {sunrise && sunset ? (
+              <View className="flex-row items-center gap-2">
+                <Text style={{ fontSize: 11 }}>🌅</Text>
+                <Text className="text-ink-muted text-xs">
+                  {formatTime(sunrise)} · 🌇 {formatTime(sunset)}
+                  {dark ? `  · 🌙 ${t('weather.dark')}` : ''}
+                </Text>
+              </View>
+            ) : (
+              <Text className="text-ink-muted text-xs">{wmoLabel}</Text>
+            )}
           </View>
 
-          {/* Spielampel */}
+          {/* Play rating badge */}
           <View
             className="px-3 py-2 rounded-xl items-center"
             style={{ backgroundColor: rec.color + '20' }}
           >
             <Text style={{ fontSize: 18 }}>{rec.icon}</Text>
             <Text className="text-xs font-bold mt-0.5" style={{ color: rec.color }} numberOfLines={2}>
-              {rec.rating === 'perfect' ? 'Ideal' :
-               rec.rating === 'good' ? 'Gut' :
-               rec.rating === 'fair' ? 'OK' :
-               rec.rating === 'tough' ? 'Schwer' : 'Stop'}
+              {t(`weather.ratings.${rec.rating}`)}
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Expanded: Recommendation Detail */}
+      {/* Expanded Detail */}
       {expanded && (
         <View
           style={{
@@ -301,18 +310,50 @@ export function WeatherWidget() {
         >
           {/* Rating Header */}
           <View className="flex-row items-center gap-2">
-            <View
-              className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: rec.color }}
-            />
-            <Text className="font-bold text-sm" style={{ color: rec.color }}>{rec.label}</Text>
+            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: rec.color }} />
+            <Text className="font-bold text-sm" style={{ color: rec.color }}>{t(rec.labelKey)}</Text>
           </View>
 
+          {/* Sunrise / Sunset */}
+          {sunrise && sunset && (
+            <View style={{
+              flexDirection: 'row', gap: 16, paddingVertical: 8,
+              borderTopWidth: 1, borderTopColor: c.bgBorder,
+              borderBottomWidth: 1, borderBottomColor: c.bgBorder,
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ fontSize: 16 }}>🌅</Text>
+                <View>
+                  <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('weather.sunrise')}</Text>
+                  <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{formatTime(sunrise)}</Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={{ fontSize: 16 }}>🌇</Text>
+                <View>
+                  <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('weather.sunset')}</Text>
+                  <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{formatTime(sunset)}</Text>
+                </View>
+              </View>
+              {dark && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 16 }}>🌙</Text>
+                  <View>
+                    <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('weather.status')}</Text>
+                    <Text style={{ color: '#6366f1', fontWeight: '700', fontSize: 15 }}>{t('weather.dark')}</Text>
+                  </View>
+                </View>
+              )}
+            </View>
+          )}
+
           {/* Tips */}
-          {rec.tips.map((tip, i) => (
+          {rec.tipKeys.map((key, i) => (
             <View key={i} className="flex-row items-start gap-2.5">
               <Ionicons name="golf-outline" size={13} color={rec.color} style={{ marginTop: 2 }} />
-              <Text className="text-ink-secondary text-sm leading-5 flex-1">{tip}</Text>
+              <Text className="text-ink-secondary text-sm leading-5 flex-1">
+                {t(key, rec.tipValues?.[i] ?? {})}
+              </Text>
             </View>
           ))}
 
@@ -322,7 +363,7 @@ export function WeatherWidget() {
             onPress={(e) => { e.stopPropagation(); loadWeather(); }}
           >
             <Ionicons name="refresh-outline" size={12} color={c.inkMuted} />
-            <Text className="text-ink-muted text-xs">Aktualisieren</Text>
+            <Text className="text-ink-muted text-xs">{t('weather.refresh')}</Text>
           </TouchableOpacity>
         </View>
       )}

@@ -65,15 +65,17 @@ enum ShotShape {
 }
 
 model User {
-  id        String      @id @default(cuid())
-  email     String      @unique
-  password  String
-  name      String
-  handicap  Float?
-  level     GolferLevel @default(BEGINNER)
-  homeClub  String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id                     String      @id @default(cuid())
+  email                  String      @unique
+  password               String
+  name                   String
+  handicap               Float?
+  level                  GolferLevel @default(BEGINNER)
+  homeClub               String?
+  emailVerified          Boolean     @default(false)
+  emailVerificationToken String?     @unique
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
 
   userTrainingPlans UserTrainingPlan[]
   courses           Course[]
@@ -88,6 +90,7 @@ model User {
   goals             UserGoal[]
   sentRequests      Friendship[] @relation("FriendshipRequester")
   receivedRequests  Friendship[] @relation("FriendshipAddressee")
+  wearables         WearableConnection[]
 }
 
 model Friendship {
@@ -309,16 +312,18 @@ model Hole {
 }
 
 model Course {
-  id        String   @id @default(cuid())
-  name      String
-  location  String
-  totalPar  Int      @default(72)
-  rating    Float?
-  slope     Float?
-  createdBy String
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  name          String
+  location      String
+  totalPar      Int      @default(72)
+  rating        Float?
+  slope         Float?
+  createdBy     String?  // null = API-importiert
+  apiId         String?            // GolfCourseAPI ID
+  holesImported Boolean  @default(false)
+  createdAt     DateTime @default(now())
 
-  creator User    @relation(fields: [createdBy], references: [id])
+  creator User?   @relation(fields: [createdBy], references: [id])
   holes   Hole[]
   rounds  Round[]
 }
@@ -336,6 +341,23 @@ model HoleScore {
   roundId            String
 
   round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+}
+
+model WearableConnection {
+  id           String    @id @default(cuid())
+  userId       String
+  provider     String    // 'APPLE_HEALTH' | 'GARMIN'
+  garminUserId String?
+  accessToken  String?
+  refreshToken String?
+  connectedAt  DateTime  @default(now())
+  lastSyncAt   DateTime?
+  syncData     Json?     // latest snapshot: { steps, heartRate, calories, activeMinutes }
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
 }
 
 model Round {

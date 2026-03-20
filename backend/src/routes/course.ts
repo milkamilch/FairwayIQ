@@ -29,15 +29,129 @@ const courseSchema = z.object({
   holes: z.array(holeSchema).length(18),
 });
 
-// GET alle Plätze des Users
+// GET eigene Plätze des Users
 courseRouter.get('/', async (req: AuthRequest, res: Response) => {
   const courses = await prisma.course.findMany({
     where: { createdBy: req.userId! },
     include: { holes: { orderBy: { number: 'asc' } } },
     orderBy: { createdAt: 'desc' },
   });
+  res.json(courses);
+});
+
+// GET /courses/api-search?q= — sucht live in der Golf Course API
+courseRouter.get('/api-search', async (req: AuthRequest, res: Response) => {
+  const q = String(req.query.q ?? '').trim();
+  if (q.length < 2) { res.json([]); return; }
+
+  const apiKey = process.env.GOLF_COURSE_API_KEY;
+  if (!apiKey) { res.status(503).json({ error: 'Golf Course API nicht konfiguriert' }); return; }
+
+  let apiRes: globalThis.Response;
+  try {
+    apiRes = await fetch(
+      `https://api.golfcourseapi.com/v1/search?search_query=${encodeURIComponent(q)}`,
+      { headers: { Authorization: `Key ${apiKey}` } },
+    );
+  } catch {
+    res.status(502).json({ error: 'Golf Course API nicht erreichbar' });
+    return;
+  }
+
+  if (!apiRes.ok) { res.status(502).json({ error: 'Golf Course API nicht erreichbar' }); return; }
+
+  const data: any = await apiRes.json();
+  const courses = (data.courses ?? []).slice(0, 15).map((c: any) => {
+    const allTees = [...(c.tees?.male ?? []), ...(c.tees?.female ?? [])];
+    const tee = allTees.find((t: any) => t.holes?.length >= 9) ?? allTees[0] ?? null;
+    const locationParts = [c.location?.city, c.location?.state, c.location?.country].filter(Boolean);
+    return {
+      apiId: String(c.id),
+      name: c.course_name && c.course_name !== c.club_name
+        ? `${c.club_name} – ${c.course_name}`
+        : c.club_name,
+      location: locationParts.join(', ') || c.location?.address || '',
+      totalPar: tee?.par_total ?? 72,
+      rating: tee?.course_rating ?? null,
+      slope: tee?.slope_rating ?? null,
+      hasHoles: (tee?.holes?.length ?? 0) >= 9,
+      rawTee: tee, // nur für POST /from-api genutzt
+    };
+  });
 
   res.json(courses);
+});
+
+// POST /courses/from-api — ausgewählten API-Platz beim User speichern
+courseRouter.post('/from-api', async (req: AuthRequest, res: Response) => {
+  const { apiId } = req.body;
+  if (!apiId) { res.status(400).json({ error: 'apiId fehlt' }); return; }
+
+  // Schon beim User gespeichert?
+  const existing = await prisma.course.findFirst({
+    where: { apiId: String(apiId), createdBy: req.userId! },
+    include: { holes: { orderBy: { number: 'asc' }, include: { hazards: true, strategy: true } } },
+  });
+  if (existing) { res.json(existing); return; }
+
+  const apiKey = process.env.GOLF_COURSE_API_KEY;
+  if (!apiKey) { res.status(503).json({ error: 'Golf Course API nicht konfiguriert' }); return; }
+
+  let detail: any;
+  try {
+    const apiRes = await fetch(
+      `https://api.golfcourseapi.com/v1/courses/${apiId}`,
+      { headers: { Authorization: `Key ${apiKey}` } },
+    );
+    if (!apiRes.ok) { res.status(502).json({ error: 'Platz konnte nicht von der API geladen werden' }); return; }
+    const raw = await apiRes.json() as any;
+    // API gibt entweder direkt das Objekt oder unter einem 'course'-Key zurück
+    detail = raw.course ?? raw;
+    console.log('[from-api] API response keys:', Object.keys(detail));
+    console.log('[from-api] club_name:', detail.club_name, '| course_name:', detail.course_name);
+  } catch {
+    res.status(502).json({ error: 'Golf Course API nicht erreichbar' }); return;
+  }
+
+  const allTees = [...(detail.tees?.male ?? []), ...(detail.tees?.female ?? [])];
+  const priority = ['white', 'yellow', 'gelb', 'weiß', 'blue'];
+  const tee = allTees.find((t: any) =>
+    priority.some((p) => t.tee_name?.toLowerCase().includes(p)) && t.holes?.length >= 9
+  ) ?? allTees.find((t: any) => t.holes?.length >= 9) ?? null;
+
+  const locationParts = [detail.location?.city, detail.location?.state, detail.location?.country].filter(Boolean);
+  const name = detail.course_name && detail.course_name !== detail.club_name
+    ? `${detail.club_name} – ${detail.course_name}` : detail.club_name;
+
+  try {
+    const course = await prisma.course.create({
+      data: {
+        apiId: String(detail.id),
+        name,
+        location: locationParts.join(', ') || detail.location?.address || '',
+        totalPar: tee?.par_total ?? 72,
+        rating: tee?.course_rating ?? null,
+        slope: tee?.slope_rating ?? null,
+        holesImported: (tee?.holes?.length ?? 0) >= 9,
+        createdBy: req.userId!,
+        ...(tee?.holes?.length >= 9 ? {
+          holes: {
+            create: tee.holes.map((h: any, i: number) => ({
+              number: i + 1,
+              par: h.par,
+              strokeIndex: h.handicap ?? 0,
+              distanceMeters: Math.round((h.yardage ?? 0) * 0.9144),
+            })),
+          },
+        } : {}),
+      },
+      include: { holes: { orderBy: { number: 'asc' }, include: { hazards: true, strategy: true } } },
+    });
+    res.status(201).json(course);
+  } catch (err: any) {
+    console.error('[from-api] DB error:', err.message);
+    res.status(500).json({ error: 'Platz konnte nicht gespeichert werden' });
+  }
 });
 
 // GET einzelner Platz

@@ -11,7 +11,7 @@ interface AuthState {
 
   initialize: () => Promise<void>;
   login: (input: LoginInput) => Promise<void>;
-  register: (input: RegisterInput) => Promise<void>;
+  register: (input: RegisterInput) => Promise<{ pending: boolean; email: string }>;
   logout: () => Promise<void>;
   updateUser: (data: Partial<User>) => void;
 }
@@ -52,9 +52,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (input) => {
     set({ isLoading: true });
     try {
-      const { data } = await api.post<{ token: string; user: User }>('/auth/register', input);
-      await SecureStore.setItemAsync('auth_token', data.token);
-      set({ user: data.user, token: data.token, isLoading: false });
+      const { data } = await api.post<{ pending: boolean; email: string }>('/auth/register', input);
+      set({ isLoading: false });
+      return data;
     } catch (err) {
       set({ isLoading: false });
       throw err;

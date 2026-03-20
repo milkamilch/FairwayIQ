@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert, ScrollView } from 'react-native';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/store/authStore';
 
 export default function RegisterScreen() {
@@ -8,30 +10,59 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [handicap, setHandicap] = useState('');
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const { register, isLoading } = useAuthStore();
+  const { t } = useTranslation();
 
   const handleRegister = async () => {
-    if (!name || !email || !password) { Alert.alert('Fehler', 'Name, E-Mail und Passwort sind Pflichtfelder'); return; }
-    if (password.length < 8) { Alert.alert('Fehler', 'Passwort muss mindestens 8 Zeichen haben'); return; }
+    if (!name || !email || !password) { Alert.alert(t('common.error'), t('auth.register.requiredFields')); return; }
+    if (password.length < 8) { Alert.alert(t('common.error'), t('auth.register.passwordTooShort')); return; }
     try {
-      await register({ name: name.trim(), email: email.trim().toLowerCase(), password, handicap: handicap ? parseFloat(handicap) : undefined });
+      const result = await register({ name: name.trim(), email: email.trim().toLowerCase(), password, handicap: handicap ? parseFloat(handicap) : undefined });
+      setPendingEmail(result.email);
     } catch (err: any) {
       const status = err?.response?.status;
       if (status === 409) {
-        Alert.alert('Fehler', 'Diese E-Mail ist bereits registriert.');
+        Alert.alert(t('common.error'), t('auth.register.emailTaken'));
       } else if (!err?.response) {
-        Alert.alert('Verbindungsfehler', `Backend nicht erreichbar.\nURL: ${process.env.EXPO_PUBLIC_API_URL}\n\nLäuft das Backend? Ist die IP korrekt?`);
+        Alert.alert(t('common.connectionError'), t('common.backendUnreachable', { url: process.env.EXPO_PUBLIC_API_URL }));
       } else {
-        Alert.alert('Fehler', err?.response?.data?.error ?? 'Registrierung fehlgeschlagen.');
+        Alert.alert(t('common.error'), err?.response?.data?.error ?? t('auth.register.failed'));
       }
     }
   };
 
+  if (pendingEmail) {
+    return (
+      <View className="flex-1 bg-bg-base items-center justify-center px-8">
+        <View className="w-20 h-20 rounded-2xl bg-neon-glow border border-neon-green items-center justify-center mb-6">
+          <Ionicons name="mail-outline" size={40} color="#00e87a" />
+        </View>
+        <Text className="text-ink-primary text-2xl font-bold text-center mb-3">
+          {t('auth.register.pendingTitle')}
+        </Text>
+        <Text className="text-ink-secondary text-sm text-center mb-2">
+          {t('auth.register.pendingSubtitle')}
+        </Text>
+        <Text className="text-neon-green font-bold text-base text-center mb-6">{pendingEmail}</Text>
+        <Text className="text-ink-muted text-sm text-center leading-6 mb-10">
+          {t('auth.register.pendingHint')}
+        </Text>
+        <TouchableOpacity
+          className="rounded-xl py-4 px-8 items-center border border-bg-border w-full"
+          onPress={() => router.replace('/(auth)/login')}
+        >
+          <Text className="text-ink-primary font-semibold text-base">{t('auth.register.pendingLogin')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   const fields = [
-    { label: 'NAME', placeholder: 'Max Mustermann', value: name, setter: setName, secure: false, keyboard: 'default' as const },
-    { label: 'E-MAIL', placeholder: 'deine@email.de', value: email, setter: setEmail, secure: false, keyboard: 'email-address' as const },
-    { label: 'PASSWORT', placeholder: '••••••••', value: password, setter: setPassword, secure: true, keyboard: 'default' as const },
-    { label: 'HANDICAP (OPTIONAL)', placeholder: '18.0', value: handicap, setter: setHandicap, secure: false, keyboard: 'decimal-pad' as const },
+    { label: t('auth.register.nameLabel'), placeholder: t('auth.register.namePlaceholder'), value: name, setter: setName, secure: false, keyboard: 'default' as const },
+    { label: t('auth.register.emailLabel'), placeholder: t('auth.register.emailPlaceholder'), value: email, setter: setEmail, secure: false, keyboard: 'email-address' as const },
+    { label: t('auth.register.passwordLabel'), placeholder: '••••••••', value: password, setter: setPassword, secure: true, keyboard: 'default' as const },
+    { label: t('auth.register.handicapLabel'), placeholder: '18.0', value: handicap, setter: setHandicap, secure: false, keyboard: 'decimal-pad' as const },
   ];
 
   return (
@@ -41,8 +72,8 @@ export default function RegisterScreen() {
 
           <View className="mb-10">
             <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">FairwayIQ</Text>
-            <Text className="text-ink-primary text-3xl font-bold">Account erstellen</Text>
-            <Text className="text-ink-secondary text-sm mt-1">Starte deine Performance-Journey</Text>
+            <Text className="text-ink-primary text-3xl font-bold">{t('auth.register.title')}</Text>
+            <Text className="text-ink-secondary text-sm mt-1">{t('auth.register.subtitle')}</Text>
           </View>
 
           <View className="gap-4">
@@ -65,7 +96,7 @@ export default function RegisterScreen() {
             {handicap === '' && (
               <View className="flex-row items-center gap-2 px-3 py-2 rounded-lg bg-bg-elevated border border-bg-border">
                 <Text className="text-neon-green text-xs">ⓘ</Text>
-                <Text className="text-ink-secondary text-xs">Kein Handicap → Eingestufter als Anfänger</Text>
+                <Text className="text-ink-secondary text-xs">{t('auth.register.handicapHint')}</Text>
               </View>
             )}
 
@@ -76,20 +107,20 @@ export default function RegisterScreen() {
               disabled={isLoading}
             >
               <Text className="text-bg-base font-bold text-base tracking-wide">
-                {isLoading ? 'ERSTELLEN...' : 'ACCOUNT ERSTELLEN'}
+                {isLoading ? t('auth.register.registering') : t('auth.register.registerButton')}
               </Text>
             </TouchableOpacity>
           </View>
 
           <View className="flex-row items-center my-8">
             <View className="flex-1 h-px bg-bg-border" />
-            <Text className="text-ink-muted text-xs px-3">BEREITS REGISTRIERT?</Text>
+            <Text className="text-ink-muted text-xs px-3">{t('auth.register.alreadyRegistered')}</Text>
             <View className="flex-1 h-px bg-bg-border" />
           </View>
 
           <Link href="/(auth)/login" asChild>
             <TouchableOpacity className="rounded-xl py-4 items-center border border-bg-border">
-              <Text className="text-ink-primary font-semibold text-base">Anmelden</Text>
+              <Text className="text-ink-primary font-semibold text-base">{t('auth.register.loginLink')}</Text>
             </TouchableOpacity>
           </Link>
         </View>

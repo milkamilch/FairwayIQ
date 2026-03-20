@@ -10,13 +10,24 @@ import { gamificationRouter } from './routes/gamification';
 import { clubsRouter } from './routes/clubs';
 import { goalsRouter } from './routes/goals';
 import { socialRouter } from './routes/social';
+import { wearablesRouter } from './routes/wearables';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : ['http://localhost:3000', 'http://localhost:8081'];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Native mobile apps haben kein origin (undefined)
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
+  },
+}));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
@@ -32,6 +43,7 @@ app.use('/api/gamification', gamificationRouter);
 app.use('/api/clubs', clubsRouter);
 app.use('/api/goals', goalsRouter);
 app.use('/api/social', socialRouter);
+app.use('/api/wearables', wearablesRouter);
 
 app.listen(PORT, () => {
   console.log(`FairwayIQ Backend running on port ${PORT}`);

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, TextIn
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTrainingStore } from '../../src/store/trainingStore';
 import { useTheme } from '../../src/lib/theme';
 import { TrainingPlan, TrainingDay, UserTrainingPlan } from '@fairwayiq/shared';
@@ -10,15 +11,6 @@ import { AssessmentModal } from '../../src/components/AssessmentModal';
 import { SessionFeedbackModal, FeedbackResult } from '../../src/components/SessionFeedbackModal';
 import { DrillTracker } from '../../src/components/DrillTracker';
 import { api } from '../../src/lib/api';
-
-const categoryLabels: Record<string, string> = {
-  PUTTING: 'Putting',
-  SHORT_GAME: 'Kurzspiel',
-  IRON_PLAY: 'Eisenspiel',
-  DRIVING: 'Driver',
-  COURSE_MANAGEMENT: 'Platzmanagement',
-  MENTAL_GAME: 'Mental',
-};
 
 const categoryColors: Record<string, string> = {
   PUTTING: '#6ee7b7',
@@ -29,10 +21,10 @@ const categoryColors: Record<string, string> = {
   MENTAL_GAME: '#f472b6',
 };
 
-const difficultyMeta: Record<string, { label: string; color: string }> = {
-  EASY:   { label: 'Einfach',       color: '#00e87a' },
-  MEDIUM: { label: 'Mittel',        color: '#f59e0b' },
-  HARD:   { label: 'Anspruchsvoll', color: '#f97316' },
+const difficultyColors: Record<string, string> = {
+  EASY: '#00e87a',
+  MEDIUM: '#f59e0b',
+  HARD: '#f97316',
 };
 
 interface LibraryDrill {
@@ -47,10 +39,11 @@ interface LibraryDrill {
 }
 
 function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [showTracker, setShowTracker] = useState(false);
   const catColor = categoryColors[drill.category] ?? '#8888aa';
-  const diff = difficultyMeta[drill.difficulty];
+  const diffColor = difficultyColors[drill.difficulty] ?? '#8888aa';
   const c = useTheme();
 
   return (
@@ -63,17 +56,17 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
           </View>
           <View className="flex-row gap-2 flex-wrap">
             <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: catColor + '20' }}>
-              <Text className="text-xs font-semibold" style={{ color: catColor }}>{categoryLabels[drill.category]}</Text>
+              <Text className="text-xs font-semibold" style={{ color: catColor }}>{t(`training.category.${drill.category}`)}</Text>
             </View>
-            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: diff.color + '20' }}>
-              <Text className="text-xs font-semibold" style={{ color: diff.color }}>{diff.label}</Text>
+            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: diffColor + '20' }}>
+              <Text className="text-xs font-semibold" style={{ color: diffColor }}>{t(`training.difficulty.${drill.difficulty}`)}</Text>
             </View>
             <View className="px-2 py-0.5 rounded-full bg-bg-elevated">
-              <Text className="text-ink-muted text-xs">{drill.duration} Min</Text>
+              <Text className="text-ink-muted text-xs">{drill.duration} {t('training.library.min')}</Text>
             </View>
             {drill.canDoAtHome && (
               <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: '#00e87a20' }}>
-                <Text className="text-xs font-semibold" style={{ color: '#00e87a' }}>🏠 Zuhause</Text>
+                <Text className="text-xs font-semibold" style={{ color: '#00e87a' }}>{t('training.library.atHome')}</Text>
               </View>
             )}
           </View>
@@ -86,7 +79,7 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
 
           {drill.tips.length > 0 && (
             <View className="mt-4 gap-2">
-              <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest">Tipps</Text>
+              <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest">{t('training.library.tips')}</Text>
               {drill.tips.map((tip, i) => (
                 <View key={i} className="flex-row items-start gap-2">
                   <Text style={{ color: catColor }} className="text-xs mt-0.5">▸</Text>
@@ -106,7 +99,7 @@ function LibraryDrillCard({ drill }: { drill: LibraryDrill }) {
           >
             <Ionicons name="stats-chart-outline" size={14} color={showTracker ? '#00e87a' : c.inkMuted} />
             <Text className="text-xs font-semibold" style={{ color: showTracker ? '#00e87a' : c.inkSecondary }}>
-              {showTracker ? 'Treffer ausblenden' : 'Treffer erfassen & Fortschritt'}
+              {showTracker ? t('training.library.hideHits') : t('training.library.trackHits')}
             </Text>
           </TouchableOpacity>
 
@@ -121,6 +114,8 @@ const ALL_CATEGORIES = ['PUTTING', 'SHORT_GAME', 'IRON_PLAY', 'DRIVING', 'COURSE
 const ALL_DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'];
 
 function LibraryTab() {
+  const { t } = useTranslation();
+  const c = useTheme();
   const [drills, setDrills] = useState<LibraryDrill[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -168,7 +163,7 @@ function LibraryTab() {
         <Ionicons name="search-outline" size={16} color="#44445a" />
         <TextInput
           className="flex-1 py-3 text-ink-primary text-sm"
-          placeholder="Übung suchen..."
+          placeholder={t('training.library.searchPlaceholder')}
           placeholderTextColor="#44445a"
           value={search}
           onChangeText={handleSearchChange}
@@ -199,7 +194,7 @@ function LibraryTab() {
               onPress={() => setActiveCategory(active ? null : cat)}
             >
               <Text className="text-xs font-semibold" style={{ color: active ? '#07070f' : color }}>
-                {categoryLabels[cat]}
+                {t(`training.category.${cat}`)}
               </Text>
             </TouchableOpacity>
           );
@@ -214,7 +209,7 @@ function LibraryTab() {
           onPress={() => setHomeOnly((v) => !v)}
         >
           <Text className="text-xs font-semibold" style={{ color: homeOnly ? '#07070f' : '#00e87a' }}>
-            🏠 Zuhause
+            {t('training.library.atHome')}
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -223,20 +218,20 @@ function LibraryTab() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, height: 34, marginBottom: 12 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 8, alignItems: 'center' }}>
         {ALL_DIFFICULTIES.map((diff) => {
           const active = activeDifficulty === diff;
-          const meta = difficultyMeta[diff];
+          const color = difficultyColors[diff];
           return (
             <TouchableOpacity
               key={diff}
               className="px-3 py-1.5 rounded-full"
               style={{
-                backgroundColor: active ? meta.color + '30' : '#14141f',
+                backgroundColor: active ? color + '30' : c.bgElevated,
                 borderWidth: 1,
-                borderColor: active ? meta.color : '#252535',
+                borderColor: active ? color : c.bgBorder,
               }}
               onPress={() => setActiveDifficulty(active ? null : diff)}
             >
-              <Text className="text-xs font-semibold" style={{ color: active ? meta.color : '#44445a' }}>
-                {meta.label}
+              <Text className="text-xs font-semibold" style={{ color: active ? color : '#44445a' }}>
+                {t(`training.difficulty.${diff}`)}
               </Text>
             </TouchableOpacity>
           );
@@ -250,23 +245,21 @@ function LibraryTab() {
         ) : drills.length === 0 ? (
           <View className="items-center py-16 gap-3">
             <Ionicons name="search-outline" size={48} color="#252535" />
-            <Text className="text-ink-secondary font-semibold">Keine Übungen gefunden</Text>
-            <Text className="text-ink-muted text-sm text-center">Versuche andere Suchbegriffe oder Filter</Text>
+            <Text className="text-ink-secondary font-semibold">{t('training.library.noResults')}</Text>
+            <Text className="text-ink-muted text-sm text-center">{t('training.library.noResultsSub')}</Text>
           </View>
         ) : activeCategory || search ? (
-          // Flat list when filtered
           <>
-            <Text className="text-ink-muted text-xs mb-3">{drills.length} Übung{drills.length !== 1 ? 'en' : ''}</Text>
+            <Text className="text-ink-muted text-xs mb-3">{drills.length}</Text>
             {drills.map((d) => <LibraryDrillCard key={d.id} drill={d} />)}
           </>
         ) : (
-          // Grouped by category
           Object.entries(grouped).map(([cat, catDrills]) => (
             <View key={cat} className="mb-2">
               <View className="flex-row items-center gap-2 mb-3">
                 <View className="w-2 h-2 rounded-full" style={{ backgroundColor: categoryColors[cat] }} />
                 <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
-                  {categoryLabels[cat]}
+                  {t(`training.category.${cat}`)}
                 </Text>
                 <Text className="text-ink-muted text-xs">({catDrills.length})</Text>
               </View>
@@ -280,33 +273,30 @@ function LibraryTab() {
   );
 }
 
-const levelMeta: Record<string, { label: string; color: string }> = {
-  BEGINNER:     { label: 'ANFÄNGER',      color: '#00e87a' },
-  INTERMEDIATE: { label: 'FORTGESCHRITTEN', color: '#f59e0b' },
-  ADVANCED:     { label: 'GEÜBT',         color: '#f97316' },
-  PRO:          { label: 'PRO',           color: '#a855f7' },
-};
-
 function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: boolean; onStart: () => void }) {
-  const meta = levelMeta[plan.targetLevel];
+  const { t } = useTranslation();
+  const levelColors: Record<string, string> = {
+    BEGINNER: '#00e87a', INTERMEDIATE: '#f59e0b', ADVANCED: '#f97316', PRO: '#a855f7',
+  };
+  const color = levelColors[plan.targetLevel] ?? '#00e87a';
   return (
     <View className="bg-bg-card border border-bg-border rounded-xl overflow-hidden mb-3">
       <View className="p-4">
         <View className="flex-row items-start justify-between mb-2">
           <Text className="text-ink-primary font-bold text-base flex-1 mr-3">{plan.name}</Text>
-          <View className="px-2 py-0.5 rounded" style={{ backgroundColor: meta.color + '20', borderWidth: 1, borderColor: meta.color + '60' }}>
-            <Text className="text-xs font-bold" style={{ color: meta.color }}>{meta.label}</Text>
+          <View className="px-2 py-0.5 rounded" style={{ backgroundColor: color + '20', borderWidth: 1, borderColor: color + '60' }}>
+            <Text className="text-xs font-bold" style={{ color }}>{t(`training.level.${plan.targetLevel}`)}</Text>
           </View>
         </View>
         <Text className="text-ink-secondary text-sm leading-5">{plan.description}</Text>
         <View className="flex-row gap-4 mt-3">
           <View className="flex-row items-center gap-1.5">
             <Ionicons name="calendar-outline" size={12} color="#8888aa" />
-            <Text className="text-ink-secondary text-xs">{plan.durationWeeks} Wochen</Text>
+            <Text className="text-ink-secondary text-xs">{plan.durationWeeks} {t('training.weeks')}</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
             <Ionicons name="layers-outline" size={12} color="#8888aa" />
-            <Text className="text-ink-secondary text-xs">{plan.days.length} Trainingstage</Text>
+            <Text className="text-ink-secondary text-xs">{plan.days.length} {t('training.trainingDays')}</Text>
           </View>
         </View>
       </View>
@@ -314,11 +304,11 @@ function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: b
       {isActive ? (
         <View className="px-4 py-3 border-t border-bg-border flex-row items-center gap-2" style={{ backgroundColor: '#00e87a10' }}>
           <View className="w-1.5 h-1.5 rounded-full bg-neon-green" />
-          <Text className="text-neon-green text-xs font-bold tracking-wider">AKTIVER PLAN</Text>
+          <Text className="text-neon-green text-xs font-bold tracking-wider">{t('training.activePlanLabel')}</Text>
         </View>
       ) : (
         <TouchableOpacity className="px-4 py-3 border-t border-bg-border" onPress={onStart}>
-          <Text className="text-neon-green text-sm font-semibold">Plan starten →</Text>
+          <Text className="text-neon-green text-sm font-semibold">{t('training.planStart')}</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -326,6 +316,7 @@ function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: b
 }
 
 function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan: TrainingPlan & { days: (TrainingDay & { drills: any[] })[] } } }) {
+  const { t } = useTranslation();
   const { completeDay } = useTrainingStore();
   const c = useTheme();
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -343,7 +334,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
       <View className="bg-bg-card border border-bg-border rounded-xl p-4">
         <View className="flex-row items-center justify-between mb-3">
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Aktiver Plan</Text>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('training.activePlan')}</Text>
             <Text className="text-ink-primary font-bold text-base mt-0.5">{activePlan.plan.name}</Text>
           </View>
           <Text className="text-neon-green text-2xl font-bold">{Math.round(progress * 100)}%</Text>
@@ -352,7 +343,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
           <View className="bg-neon-green h-1 rounded-full" style={{ width: `${progress * 100}%` }} />
         </View>
         <Text className="text-ink-muted text-xs mt-1">
-          {activePlan.completedDays.length} / {activePlan.plan.days.length} Tage
+          {activePlan.completedDays.length} / {activePlan.plan.days.length} {t('training.days')}
         </Text>
       </View>
 
@@ -361,12 +352,12 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
         <View className="bg-bg-card border border-neon-green rounded-xl overflow-hidden" style={{ borderWidth: 1 }}>
           <View className="px-4 py-3 border-b border-bg-border flex-row items-center justify-between">
             <View>
-              <Text className="text-neon-green text-xs font-bold uppercase tracking-widest">Tag {currentDay.dayNumber}</Text>
+              <Text className="text-neon-green text-xs font-bold uppercase tracking-widest">{t('feedback.day')} {currentDay.dayNumber}</Text>
               <Text className="text-ink-primary font-bold text-base">{currentDay.title}</Text>
             </View>
             <View className="items-end">
-              <Text className="text-ink-secondary text-xs">{categoryLabels[currentDay.focus]}</Text>
-              <Text className="text-ink-secondary text-xs">{currentDay.totalMinutes} Min</Text>
+              <Text className="text-ink-secondary text-xs">{t(`training.category.${currentDay.focus}`)}</Text>
+              <Text className="text-ink-secondary text-xs">{currentDay.totalMinutes} {t('training.library.min')}</Text>
             </View>
           </View>
 
@@ -385,7 +376,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
                   </View>
                   <View className="flex-1">
                     <Text className="text-ink-primary text-sm font-medium">{dd.drill?.name ?? '—'}</Text>
-                    <Text className="text-ink-muted text-xs">{dd.drill?.duration} Min</Text>
+                    <Text className="text-ink-muted text-xs">{dd.drill?.duration} {t('training.library.min')}</Text>
                   </View>
                 </View>
                 <Ionicons name={expanded === ddKey ? 'chevron-up' : 'chevron-down'} size={14} color={c.inkMuted} />
@@ -420,7 +411,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
             style={{ backgroundColor: '#00e87a' }}
             onPress={() => setShowFeedback(true)}
           >
-            <Text className="text-bg-base font-bold tracking-wide">TRAINING ABGESCHLOSSEN</Text>
+            <Text className="text-bg-base font-bold tracking-wide">{t('training.trainingDone')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -436,7 +427,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
       )}
 
       {/* Plan Übersicht */}
-      <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Übersicht</Text>
+      <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('training.overview')}</Text>
       {activePlan.plan.days.map((day: TrainingDay) => {
         const done = activePlan.completedDays.includes(day.dayNumber);
         const isCurrent = day.dayNumber === activePlan.currentDay;
@@ -462,7 +453,7 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
             </View>
             <View className="flex-1">
               <Text className="text-sm font-medium" style={{ color: done || isCurrent ? c.inkPrimary : c.inkMuted }}>{day.title}</Text>
-              <Text className="text-xs" style={{ color: c.inkMuted }}>{categoryLabels[day.focus]} · {day.totalMinutes} Min</Text>
+              <Text className="text-xs" style={{ color: c.inkMuted }}>{t(`training.category.${day.focus}`)} · {day.totalMinutes} {t('training.library.min')}</Text>
             </View>
             {isCurrent && <View className="w-1.5 h-1.5 rounded-full bg-neon-green" />}
           </View>
@@ -473,6 +464,8 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
 }
 
 export default function TrainingScreen() {
+  const { t } = useTranslation();
+  const c = useTheme();
   const { plans, activePlan, fetchPlans, fetchActivePlan, startPlan } = useTrainingStore();
   const [tab, setTab] = useState<'active' | 'plans' | 'library'>('active');
   const [refreshing, setRefreshing] = useState(false);
@@ -491,10 +484,20 @@ export default function TrainingScreen() {
   const onRefresh = async () => { setRefreshing(true); await loadData(); setRefreshing(false); };
 
   const handleStart = (planId: string) => {
-    Alert.alert('Plan starten', activePlan ? 'Aktueller Plan wird beendet. Fortfahren?' : 'Diesen Plan starten?', [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Starten', onPress: () => startPlan(planId) },
-    ]);
+    Alert.alert(
+      t('training.confirmStart'),
+      activePlan ? t('training.confirmReplace') : t('training.confirmStartMsg'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        { text: t('training.startPlan'), onPress: () => startPlan(planId) },
+      ],
+    );
+  };
+
+  const tabLabels: Record<string, string> = {
+    active: t('training.tabActive'),
+    plans: t('training.tabPlans'),
+    library: t('training.tabLibrary'),
   };
 
   return (
@@ -502,12 +505,12 @@ export default function TrainingScreen() {
       <View className="px-5 pt-4 pb-4">
         <View className="flex-row items-start justify-between">
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Training</Text>
-            <Text className="text-ink-primary text-2xl font-bold mt-0.5">Trainingsplan</Text>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('training.sectionLabel')}</Text>
+            <Text className="text-ink-primary text-2xl font-bold mt-0.5">{t('training.title')}</Text>
           </View>
           <TouchableOpacity
             className="flex-row items-center gap-2 px-3 py-2 rounded-xl"
-            style={{ backgroundColor: streak > 0 ? '#f9730315' : '#14141f', borderWidth: 1, borderColor: streak > 0 ? '#f9730340' : '#252535' }}
+            style={{ backgroundColor: streak > 0 ? '#f9730315' : c.bgElevated, borderWidth: 1, borderColor: streak > 0 ? '#f9730340' : c.bgBorder }}
             onPress={() => router.push('/challenges' as any)}
           >
             <Text style={{ fontSize: 16 }}>{streak > 0 ? '🔥' : '⛳'}</Text>
@@ -518,18 +521,18 @@ export default function TrainingScreen() {
           </TouchableOpacity>
         </View>
         <View className="flex-row mt-4 bg-bg-elevated rounded-xl p-1">
-          {(['active', 'plans', 'library'] as const).map((t) => (
+          {(['active', 'plans', 'library'] as const).map((t_key) => (
             <TouchableOpacity
-              key={t}
+              key={t_key}
               className="flex-1 py-2.5 rounded-lg items-center"
-              style={{ backgroundColor: tab === t ? '#1c1c2e' : 'transparent' }}
-              onPress={() => setTab(t)}
+              style={{ backgroundColor: tab === t_key ? c.bgElevated : 'transparent' }}
+              onPress={() => setTab(t_key)}
             >
               <Text
                 className="text-xs font-bold tracking-wider"
-                style={{ color: tab === t ? '#00e87a' : '#44445a' }}
+                style={{ color: tab === t_key ? '#00e87a' : '#44445a' }}
               >
-                {t === 'active' ? 'MEIN PLAN' : t === 'plans' ? 'PLÄNE' : 'BIBLIOTHEK'}
+                {tabLabels[t_key]}
               </Text>
             </TouchableOpacity>
           ))}
@@ -556,27 +559,27 @@ export default function TrainingScreen() {
                     <View className="w-9 h-9 rounded-xl items-center justify-center" style={{ backgroundColor: '#07070f30' }}>
                       <Ionicons name="analytics-outline" size={20} color="#07070f" />
                     </View>
-                    <Text className="text-bg-base font-bold text-base">Persönlichen Plan erstellen</Text>
+                    <Text className="text-bg-base font-bold text-base">{t('training.createPlanCard')}</Text>
                   </View>
                   <Text className="text-bg-base text-sm leading-5" style={{ opacity: 0.75 }}>
-                    Beantworte gezielte Fragen zu deinem Spiel — wir erstellen einen Plan, der genau auf deine Schwächen zugeschnitten ist.
+                    {t('training.createPlanDesc')}
                   </Text>
                   <View className="flex-row items-center gap-1.5 mt-3">
                     <Ionicons name="time-outline" size={13} color="#07070f" style={{ opacity: 0.6 }} />
-                    <Text className="text-bg-base text-xs" style={{ opacity: 0.6 }}>ca. 3 Minuten</Text>
+                    <Text className="text-bg-base text-xs" style={{ opacity: 0.6 }}>{t('training.createPlanTime')}</Text>
                   </View>
                 </View>
               </TouchableOpacity>
               <View className="flex-row items-center gap-3">
                 <View className="flex-1 h-px bg-bg-border" />
-                <Text className="text-ink-muted text-xs uppercase tracking-widest">oder</Text>
+                <Text className="text-ink-muted text-xs uppercase tracking-widest">{t('common.or')}</Text>
                 <View className="flex-1 h-px bg-bg-border" />
               </View>
               <TouchableOpacity
                 className="py-3 rounded-xl border border-bg-border items-center"
                 onPress={() => setTab('plans')}
               >
-                <Text className="text-ink-secondary text-sm font-semibold">Vordefinierten Plan wählen →</Text>
+                <Text className="text-ink-secondary text-sm font-semibold">{t('training.choosePreset')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -596,13 +599,13 @@ export default function TrainingScreen() {
                 <Ionicons name="analytics-outline" size={18} color="#00e87a" />
               </View>
               <View className="flex-1">
-                <Text className="text-ink-primary font-bold text-sm">Personalisierten Plan erstellen</Text>
-                <Text className="text-ink-muted text-xs mt-0.5">Assessment starten und Plan auf dich zuschneiden</Text>
+                <Text className="text-ink-primary font-bold text-sm">{t('training.createPersonalPlan')}</Text>
+                <Text className="text-ink-muted text-xs mt-0.5">{t('training.createPersonalPlanSub')}</Text>
               </View>
               <Ionicons name="chevron-forward" size={14} color="#00e87a" />
             </View>
           </TouchableOpacity>
-          <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-3">Vorlage-Pläne</Text>
+          <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-3">{t('training.presetPlans')}</Text>
           {plans.map((plan) => (
             <PlanCard key={plan.id} plan={plan} isActive={activePlan?.plan.id === plan.id} onStart={() => handleStart(plan.id)} />
           ))}

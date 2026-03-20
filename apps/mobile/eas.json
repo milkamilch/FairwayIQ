@@ -1,0 +1,32 @@
+{
+  "cli": {
+    "version": ">= 14.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "simulator": false
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "ios": {
+        "credentialsSource": "remote"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "DEINE_APPLE_ID@example.com",
+        "ascAppId": "DEINE_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "DEIN_TEAM_ID"
+      }
+    }
+  }
+}
