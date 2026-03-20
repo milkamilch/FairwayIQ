@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/store/authStore';
+import { useTheme } from '../../src/lib/theme';
 import { api } from '../../src/lib/api';
 
 interface Stats {
@@ -11,6 +12,26 @@ interface Stats {
   bestScore: number | null;
   avgScore: number | null;
 }
+
+type GoalType = 'HCP_TARGET' | 'ROUNDS_COUNT' | 'SCORE_TARGET' | 'CUSTOM';
+
+interface UserGoal {
+  id: string;
+  type: GoalType;
+  title: string;
+  targetValue: number | null;
+  deadline: string | null;
+  isCompleted: boolean;
+  completedAt: string | null;
+  createdAt: string;
+}
+
+const GOAL_TYPE_META: Record<GoalType, { label: string; icon: string; placeholder: string; unit: string }> = {
+  HCP_TARGET:    { label: 'Handicap-Ziel', icon: '🏆', placeholder: 'z.B. HCP 15.0 erreichen', unit: 'HCP' },
+  ROUNDS_COUNT:  { label: 'Runden spielen', icon: '⛳', placeholder: 'z.B. 30 Runden spielen', unit: 'Runden' },
+  SCORE_TARGET:  { label: 'Score-Ziel',    icon: '🎯', placeholder: 'z.B. Unter 90 spielen', unit: 'Schläge' },
+  CUSTOM:        { label: 'Eigenes Ziel',  icon: '✨', placeholder: 'z.B. Handicap-Prüfung ablegen', unit: '' },
+};
 
 const levelMeta: Record<string, { label: string; color: string; range: string; icon: string }> = {
   BEGINNER:     { label: 'ANFÄNGER',       color: '#00e87a', range: 'HCP > 24',   icon: '🌱' },
@@ -32,8 +53,126 @@ function scoreDiff(n: number) {
 const inputStyle = "bg-bg-elevated border border-bg-border text-ink-primary rounded-xl px-4 py-3 text-sm";
 const labelStyle = "text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2";
 
+// ── Add Goal Modal ─────────────────────────────────────────────────
+function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const c = useTheme();
+  const [type, setType] = useState<GoalType>('HCP_TARGET');
+  const [title, setTitle] = useState('');
+  const [targetValue, setTargetValue] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const meta = GOAL_TYPE_META[type];
+
+  const save = async () => {
+    if (!title.trim()) { Alert.alert('Titel fehlt', 'Bitte einen Titel eingeben.'); return; }
+    setSaving(true);
+    try {
+      await api.post('/goals', {
+        type,
+        title: title.trim(),
+        targetValue: targetValue ? parseFloat(targetValue.replace(',', '.')) : null,
+      });
+      onSaved();
+      onClose();
+    } catch { Alert.alert('Fehler', 'Ziel konnte nicht gespeichert werden.'); }
+    setSaving(false);
+  };
+
+  return (
+    <Modal animationType="slide" presentationStyle="pageSheet" visible onRequestClose={onClose}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+          paddingHorizontal: 20, paddingVertical: 16,
+          borderBottomWidth: 1, borderBottomColor: c.bgBorder,
+        }}>
+          <TouchableOpacity onPress={onClose}>
+            <Text style={{ color: c.inkSecondary, fontSize: 14 }}>Abbrechen</Text>
+          </TouchableOpacity>
+          <Text style={{ color: c.inkPrimary, fontWeight: 'bold' }}>Neues Ziel</Text>
+          <TouchableOpacity onPress={save} disabled={saving}>
+            {saving
+              ? <ActivityIndicator size="small" color="#00e87a" />
+              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>Speichern</Text>
+            }
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 20 }}>
+          {/* Type Picker */}
+          <View>
+            <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
+              Zieltyp
+            </Text>
+            <View style={{ gap: 8 }}>
+              {(Object.entries(GOAL_TYPE_META) as [GoalType, typeof GOAL_TYPE_META[GoalType]][]).map(([t, m]) => (
+                <TouchableOpacity
+                  key={t}
+                  onPress={() => { setType(t); setTitle(''); setTargetValue(''); }}
+                  style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12,
+                    padding: 14, borderRadius: 14,
+                    backgroundColor: type === t ? '#00e87a10' : c.bgCard,
+                    borderWidth: 1.5,
+                    borderColor: type === t ? '#00e87a' : c.bgBorder,
+                  }}
+                >
+                  <Text style={{ fontSize: 20 }}>{m.icon}</Text>
+                  <Text style={{ color: type === t ? '#00e87a' : c.inkPrimary, fontWeight: '600', fontSize: 14 }}>
+                    {m.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Title */}
+          <View>
+            <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
+              Beschreibung
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: c.bgElevated, borderWidth: 1, borderColor: c.bgBorder,
+                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
+                color: c.inkPrimary, fontSize: 15,
+              }}
+              placeholder={meta.placeholder}
+              placeholderTextColor={c.inkMuted}
+              value={title}
+              onChangeText={setTitle}
+            />
+          </View>
+
+          {/* Target Value */}
+          {type !== 'CUSTOM' && (
+            <View>
+              <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
+                Zielwert{meta.unit ? ` (${meta.unit})` : ''}
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: c.bgElevated, borderWidth: 1, borderColor: c.bgBorder,
+                  borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
+                  color: c.inkPrimary, fontSize: 15,
+                }}
+                placeholder={type === 'HCP_TARGET' ? '15.0' : type === 'ROUNDS_COUNT' ? '30' : '90'}
+                placeholderTextColor={c.inkMuted}
+                keyboardType="decimal-pad"
+                value={targetValue}
+                onChangeText={setTargetValue}
+              />
+            </View>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
 export default function ProfileScreen() {
   const { user, logout, updateUser } = useAuthStore();
+  const c = useTheme();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user?.name ?? '');
@@ -41,9 +180,16 @@ export default function ProfileScreen() {
   const [homeClub, setHomeClub] = useState(user?.homeClub ?? '');
   const [saving, setSaving] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [goals, setGoals] = useState<UserGoal[]>([]);
+  const [showAddGoal, setShowAddGoal] = useState(false);
+
+  const loadGoals = async () => {
+    try { const { data } = await api.get<UserGoal[]>('/goals'); setGoals(data); } catch {}
+  };
 
   useEffect(() => {
     api.get<Stats>('/rounds/stats/overview').then(({ data }) => setStats(data)).catch(() => {});
+    loadGoals();
   }, []);
 
   const meta = levelMeta[user?.level ?? 'BEGINNER'];
@@ -74,6 +220,42 @@ export default function ProfileScreen() {
       { text: 'Abbrechen', style: 'cancel' },
       { text: 'Abmelden', style: 'destructive', onPress: logout },
     ]);
+  };
+
+  const toggleGoal = async (goal: UserGoal) => {
+    try {
+      await api.put(`/goals/${goal.id}`, { isCompleted: !goal.isCompleted });
+      loadGoals();
+    } catch {}
+  };
+
+  const deleteGoal = (goal: UserGoal) => {
+    Alert.alert('Ziel löschen', `„${goal.title}" löschen?`, [
+      { text: 'Abbrechen', style: 'cancel' },
+      { text: 'Löschen', style: 'destructive', onPress: async () => {
+        try { await api.delete(`/goals/${goal.id}`); loadGoals(); } catch {}
+      }},
+    ]);
+  };
+
+  // Progress for typed goals
+  const goalProgress = (goal: UserGoal): { current: number | null; pct: number } => {
+    if (goal.targetValue == null) return { current: null, pct: 0 };
+    if (goal.type === 'HCP_TARGET' && user?.handicap != null) {
+      const start = user.handicap; // approximate; we don't store start
+      const current = user.handicap;
+      const pct = Math.max(0, Math.min(100, ((start - current) / (start - goal.targetValue)) * 100));
+      return { current: user.handicap, pct: isFinite(pct) ? pct : 0 };
+    }
+    if (goal.type === 'ROUNDS_COUNT' && stats?.rounds != null) {
+      return { current: stats.rounds, pct: Math.min(100, (stats.rounds / goal.targetValue) * 100) };
+    }
+    if (goal.type === 'SCORE_TARGET' && stats?.bestScore != null) {
+      // goal: score under targetValue; lower is better
+      const target = goal.targetValue; // e.g. 90 means "play under 90" → net score vs par
+      return { current: stats.bestScore, pct: 0 }; // just show current best
+    }
+    return { current: null, pct: 0 };
   };
 
   return (
@@ -272,8 +454,96 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* ── Meine Ziele ──────────────────────────────────────────── */}
+        <View className="mb-4">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Meine Ziele</Text>
+            <TouchableOpacity onPress={() => setShowAddGoal(true)}>
+              <Text className="text-neon-green text-xs font-semibold">+ Ziel hinzufügen</Text>
+            </TouchableOpacity>
+          </View>
+
+          {goals.length === 0 ? (
+            <TouchableOpacity
+              className="bg-bg-card border border-bg-border rounded-xl p-5 items-center gap-2"
+              onPress={() => setShowAddGoal(true)}
+            >
+              <Text style={{ fontSize: 24 }}>🎯</Text>
+              <Text className="text-ink-secondary text-sm">Noch keine Ziele gesetzt</Text>
+              <Text className="text-neon-green text-sm font-semibold">Erstes Ziel festlegen →</Text>
+            </TouchableOpacity>
+          ) : (
+            <View className="gap-2">
+              {goals.map((goal) => {
+                const meta = GOAL_TYPE_META[goal.type];
+                const { current, pct } = goalProgress(goal);
+                return (
+                  <View
+                    key={goal.id}
+                    className="bg-bg-card border border-bg-border rounded-xl overflow-hidden"
+                    style={{ opacity: goal.isCompleted ? 0.6 : 1 }}
+                  >
+                    <View className="px-4 py-3 flex-row items-start gap-3">
+                      <TouchableOpacity onPress={() => toggleGoal(goal)} className="mt-0.5">
+                        <View
+                          className="w-5 h-5 rounded-full border-2 items-center justify-center"
+                          style={{ borderColor: goal.isCompleted ? '#00e87a' : c.bgBorder, backgroundColor: goal.isCompleted ? '#00e87a' : 'transparent' }}
+                        >
+                          {goal.isCompleted && <Ionicons name="checkmark" size={11} color="#07070f" />}
+                        </View>
+                      </TouchableOpacity>
+                      <View className="flex-1">
+                        <View className="flex-row items-center gap-1.5 mb-0.5">
+                          <Text style={{ fontSize: 12 }}>{meta.icon}</Text>
+                          <Text className="text-ink-muted text-xs">{meta.label}</Text>
+                        </View>
+                        <Text className="text-ink-primary text-sm font-semibold" style={{ textDecorationLine: goal.isCompleted ? 'line-through' : 'none' }}>
+                          {goal.title}
+                        </Text>
+                        {goal.targetValue != null && current != null && !goal.isCompleted && (
+                          <Text className="text-ink-muted text-xs mt-1">
+                            Aktuell: {goal.type === 'HCP_TARGET' ? `HCP ${current}` : `${current} ${meta.unit}`}
+                            {' · '}Ziel: {goal.targetValue} {meta.unit}
+                          </Text>
+                        )}
+                        {goal.deadline && (
+                          <Text className="text-ink-muted text-xs mt-0.5">
+                            Frist: {new Date(goal.deadline).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </Text>
+                        )}
+                        {goal.targetValue != null && pct > 0 && !goal.isCompleted && (
+                          <View className="mt-2 bg-bg-elevated rounded-full h-1.5 overflow-hidden">
+                            <View className="h-1.5 rounded-full bg-neon-green" style={{ width: `${pct}%` }} />
+                          </View>
+                        )}
+                      </View>
+                      <TouchableOpacity onPress={() => deleteGoal(goal)} className="p-1">
+                        <Ionicons name="close-outline" size={16} color={c.inkMuted} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
         {/* ── Links ────────────────────────────────────────────────── */}
         <View className="gap-2 mb-8">
+          <TouchableOpacity
+            className="bg-bg-card border border-bg-border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
+            onPress={() => router.push('/bag' as any)}
+          >
+            <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
+              <Text style={{ fontSize: 16 }}>🏌️</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-ink-primary font-medium text-sm">Schläger Bag</Text>
+              <Text className="text-ink-muted text-xs">Clubs & Distanzen verwalten</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color="#44445a" />
+          </TouchableOpacity>
+
           <TouchableOpacity
             className="bg-bg-card border border-bg-border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
             onPress={() => router.push('/progress')}
@@ -300,6 +570,10 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {showAddGoal && (
+        <AddGoalModal onClose={() => setShowAddGoal(false)} onSaved={loadGoals} />
+      )}
     </SafeAreaView>
   );
 }

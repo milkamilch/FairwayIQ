@@ -1,0 +1,335 @@
+import { useCallback, useEffect, useState } from 'react';
+import {
+  View, Text, ScrollView, TouchableOpacity, Alert, TextInput, Modal, ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { api } from '../src/lib/api';
+import { useTheme } from '../src/lib/theme';
+
+// ── Types ─────────────────────────────────────────────────────────────
+type ClubType = 'DRIVER' | 'FAIRWAY_WOOD' | 'HYBRID' | 'IRON' | 'WEDGE' | 'PUTTER';
+
+interface Club {
+  id: string;
+  name: string;
+  type: ClubType;
+  distanceM: number | null;
+}
+
+// ── Club type metadata ────────────────────────────────────────────────
+const TYPE_META: Record<ClubType, { label: string; icon: string; suggestions: string[] }> = {
+  DRIVER:       { label: 'Driver',      icon: '🏌️', suggestions: ['Driver'] },
+  FAIRWAY_WOOD: { label: 'Fairwayholz', icon: '🌳', suggestions: ['3er Holz', '5er Holz', '7er Holz'] },
+  HYBRID:       { label: 'Hybrid',      icon: '⚡', suggestions: ['2er Hybrid', '3er Hybrid', '4er Hybrid', '5er Hybrid'] },
+  IRON:         { label: 'Eisen',       icon: '🔩', suggestions: ['3er Eisen', '4er Eisen', '5er Eisen', '6er Eisen', '7er Eisen', '8er Eisen', '9er Eisen'] },
+  WEDGE:        { label: 'Wedge',       icon: '🎯', suggestions: ['PW', 'GW (50°)', 'SW (54°)', 'LW (58°)', 'LW (60°)'] },
+  PUTTER:       { label: 'Putter',      icon: '🏁', suggestions: ['Putter'] },
+};
+
+const TYPE_ORDER: ClubType[] = ['DRIVER', 'FAIRWAY_WOOD', 'HYBRID', 'IRON', 'WEDGE', 'PUTTER'];
+
+// ── Add/Edit Modal ────────────────────────────────────────────────────
+function ClubModal({
+  club, onClose, onSaved,
+}: {
+  club?: Club;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const c = useTheme();
+  const [type, setType] = useState<ClubType>(club?.type ?? 'IRON');
+  const [name, setName] = useState(club?.name ?? '');
+  const [distance, setDistance] = useState(club?.distanceM?.toString() ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const meta = TYPE_META[type];
+  const isEdit = !!club;
+
+  const save = async () => {
+    if (!name.trim()) { Alert.alert('Name fehlt', 'Bitte einen Namen eingeben.'); return; }
+    setSaving(true);
+    try {
+      const payload = {
+        name: name.trim(),
+        type,
+        distanceM: distance ? parseInt(distance, 10) : null,
+      };
+      if (isEdit) {
+        await api.put(`/clubs/${club.id}`, payload);
+      } else {
+        await api.post('/clubs', payload);
+      }
+      onSaved();
+      onClose();
+    } catch {
+      Alert.alert('Fehler', 'Schläger konnte nicht gespeichert werden.');
+    }
+    setSaving(false);
+  };
+
+  return (
+    <Modal animationType="slide" presentationStyle="pageSheet" visible onRequestClose={onClose}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+        {/* Header */}
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+          paddingHorizontal: 20, paddingVertical: 16,
+          borderBottomWidth: 1, borderBottomColor: c.bgBorder,
+        }}>
+          <TouchableOpacity onPress={onClose}>
+            <Text style={{ color: c.inkSecondary, fontSize: 14 }}>Abbrechen</Text>
+          </TouchableOpacity>
+          <Text style={{ color: c.inkPrimary, fontWeight: 'bold' }}>
+            {isEdit ? 'Schläger bearbeiten' : 'Schläger hinzufügen'}
+          </Text>
+          <TouchableOpacity onPress={save} disabled={saving}>
+            {saving
+              ? <ActivityIndicator size="small" color="#00e87a" />
+              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>Speichern</Text>
+            }
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 20 }}>
+          {/* Type Picker */}
+          <View>
+            <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
+              Typ
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {TYPE_ORDER.map((t) => {
+                const m = TYPE_META[t];
+                const active = t === type;
+                return (
+                  <TouchableOpacity
+                    key={t}
+                    onPress={() => { setType(t); setName(''); }}
+                    style={{
+                      paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
+                      backgroundColor: active ? '#00e87a20' : c.bgCard,
+                      borderWidth: 1,
+                      borderColor: active ? '#00e87a' : c.bgBorder,
+                    }}
+                  >
+                    <Text style={{ color: active ? '#00e87a' : c.inkSecondary, fontWeight: '600', fontSize: 13 }}>
+                      {m.icon} {m.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Name */}
+          <View>
+            <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
+              Name
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: c.bgElevated, borderWidth: 1, borderColor: c.bgBorder,
+                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
+                color: c.inkPrimary, fontSize: 15,
+              }}
+              placeholder="z.B. 7er Eisen"
+              placeholderTextColor={c.inkMuted}
+              value={name}
+              onChangeText={setName}
+            />
+            {/* Suggestions */}
+            {meta.suggestions.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 8 }}
+                contentContainerStyle={{ gap: 6 }}>
+                {meta.suggestions.map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    onPress={() => setName(s)}
+                    style={{
+                      paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
+                      backgroundColor: name === s ? '#00e87a20' : c.bgCard,
+                      borderWidth: 1,
+                      borderColor: name === s ? '#00e87a' : c.bgBorder,
+                    }}
+                  >
+                    <Text style={{ color: name === s ? '#00e87a' : c.inkMuted, fontSize: 12 }}>{s}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+
+          {/* Distance */}
+          <View>
+            <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
+              Durchschnittliche Distanz (Meter)
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: c.bgElevated, borderWidth: 1, borderColor: c.bgBorder,
+                borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
+                color: c.inkPrimary, fontSize: 15,
+              }}
+              placeholder="z.B. 150"
+              placeholderTextColor={c.inkMuted}
+              keyboardType="number-pad"
+              value={distance}
+              onChangeText={setDistance}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </Modal>
+  );
+}
+
+// ── Main Screen ───────────────────────────────────────────────────────
+export default function BagScreen() {
+  const router = useRouter();
+  const c = useTheme();
+  const [clubs, setClubs] = useState<Club[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAdd, setShowAdd] = useState(false);
+  const [editClub, setEditClub] = useState<Club | null>(null);
+
+  const loadClubs = useCallback(async () => {
+    try {
+      const { data } = await api.get<Club[]>('/clubs');
+      setClubs(data);
+    } catch {}
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { loadClubs(); }, []);
+
+  const deleteClub = (club: Club) => {
+    Alert.alert('Schläger entfernen', `„${club.name}" aus dem Bag entfernen?`, [
+      { text: 'Abbrechen', style: 'cancel' },
+      {
+        text: 'Entfernen', style: 'destructive', onPress: async () => {
+          try { await api.delete(`/clubs/${club.id}`); loadClubs(); }
+          catch { Alert.alert('Fehler', 'Konnte nicht gelöscht werden.'); }
+        },
+      },
+    ]);
+  };
+
+  const grouped = TYPE_ORDER
+    .map((type) => ({ type, clubs: clubs.filter((c) => c.type === type) }))
+    .filter((g) => g.clubs.length > 0);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+      {/* Header */}
+      <View style={{
+        flexDirection: 'row', alignItems: 'center', gap: 12,
+        paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12,
+      }}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color={c.inkSecondary} />
+        </TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+            Equipment
+          </Text>
+          <Text style={{ color: c.inkPrimary, fontSize: 22, fontWeight: 'bold' }}>Schläger Bag</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => setShowAdd(true)}
+          style={{
+            flexDirection: 'row', alignItems: 'center', gap: 6,
+            paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
+            backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a',
+          }}
+        >
+          <Ionicons name="add" size={16} color="#00e87a" />
+          <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: 'bold' }}>HINZUFÜGEN</Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color="#00e87a" />
+        </View>
+      ) : clubs.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
+          <Text style={{ fontSize: 40 }}>🏌️</Text>
+          <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>Bag ist leer</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>
+            Füge deine Schläger hinzu, um Distanzen und dein Equipment zu tracken.
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowAdd(true)}
+            style={{
+              marginTop: 8, paddingHorizontal: 24, paddingVertical: 12,
+              borderRadius: 12, backgroundColor: '#00e87a20',
+              borderWidth: 1, borderColor: '#00e87a',
+            }}
+          >
+            <Text style={{ color: '#00e87a', fontWeight: 'bold' }}>Ersten Schläger hinzufügen →</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
+          {grouped.map(({ type, clubs: typeClubs }) => {
+            const meta = TYPE_META[type];
+            return (
+              <View key={type} style={{ marginTop: 20 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <Text style={{ fontSize: 14 }}>{meta.icon}</Text>
+                  <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                    {meta.label}
+                  </Text>
+                </View>
+                <View style={{ backgroundColor: c.bgCard, borderRadius: 16, borderWidth: 1, borderColor: c.bgBorder, overflow: 'hidden' }}>
+                  {typeClubs.map((club, idx) => (
+                    <View
+                      key={club.id}
+                      style={{
+                        flexDirection: 'row', alignItems: 'center',
+                        paddingHorizontal: 16, paddingVertical: 14,
+                        borderTopWidth: idx > 0 ? 1 : 0,
+                        borderTopColor: c.bgBorder,
+                      }}
+                    >
+                      <Text style={{ color: c.inkPrimary, fontWeight: '600', fontSize: 15, flex: 1 }}>
+                        {club.name}
+                      </Text>
+                      {club.distanceM != null && (
+                        <View style={{
+                          paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
+                          backgroundColor: '#00e87a15', marginRight: 12,
+                        }}>
+                          <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 13 }}>
+                            {club.distanceM} m
+                          </Text>
+                        </View>
+                      )}
+                      <TouchableOpacity
+                        onPress={() => setEditClub(club)}
+                        style={{ padding: 6, marginRight: 4 }}
+                      >
+                        <Ionicons name="pencil-outline" size={16} color={c.inkMuted} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => deleteClub(club)} style={{ padding: 6 }}>
+                        <Ionicons name="trash-outline" size={16} color="#ef4444" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            );
+          })}
+        </ScrollView>
+      )}
+
+      {showAdd && (
+        <ClubModal onClose={() => setShowAdd(false)} onSaved={loadClubs} />
+      )}
+      {editClub && (
+        <ClubModal club={editClub} onClose={() => setEditClub(null)} onSaved={loadClubs} />
+      )}
+    </SafeAreaView>
+  );
+}
