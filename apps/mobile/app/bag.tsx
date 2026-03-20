@@ -5,6 +5,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { api } from '../src/lib/api';
 import { useTheme } from '../src/lib/theme';
 
@@ -19,13 +20,13 @@ interface Club {
 }
 
 // ── Club type metadata ────────────────────────────────────────────────
-const TYPE_META: Record<ClubType, { label: string; icon: string; suggestions: string[] }> = {
-  DRIVER:       { label: 'Driver',      icon: '🏌️', suggestions: ['Driver'] },
-  FAIRWAY_WOOD: { label: 'Fairwayholz', icon: '🌳', suggestions: ['3er Holz', '5er Holz', '7er Holz'] },
-  HYBRID:       { label: 'Hybrid',      icon: '⚡', suggestions: ['2er Hybrid', '3er Hybrid', '4er Hybrid', '5er Hybrid'] },
-  IRON:         { label: 'Eisen',       icon: '🔩', suggestions: ['3er Eisen', '4er Eisen', '5er Eisen', '6er Eisen', '7er Eisen', '8er Eisen', '9er Eisen'] },
-  WEDGE:        { label: 'Wedge',       icon: '🎯', suggestions: ['PW', 'GW (50°)', 'SW (54°)', 'LW (58°)', 'LW (60°)'] },
-  PUTTER:       { label: 'Putter',      icon: '🏁', suggestions: ['Putter'] },
+const TYPE_META: Record<ClubType, { icon: string; suggestions: string[] }> = {
+  DRIVER:       { icon: '🏌️', suggestions: ['Driver'] },
+  FAIRWAY_WOOD: { icon: '🌳', suggestions: ['3er Holz', '5er Holz', '7er Holz'] },
+  HYBRID:       { icon: '⚡', suggestions: ['2er Hybrid', '3er Hybrid', '4er Hybrid', '5er Hybrid'] },
+  IRON:         { icon: '🔩', suggestions: ['3er Eisen', '4er Eisen', '5er Eisen', '6er Eisen', '7er Eisen', '8er Eisen', '9er Eisen'] },
+  WEDGE:        { icon: '🎯', suggestions: ['PW', 'GW (50°)', 'SW (54°)', 'LW (58°)', 'LW (60°)'] },
+  PUTTER:       { icon: '🏁', suggestions: ['Putter'] },
 };
 
 const TYPE_ORDER: ClubType[] = ['DRIVER', 'FAIRWAY_WOOD', 'HYBRID', 'IRON', 'WEDGE', 'PUTTER'];
@@ -38,6 +39,7 @@ function ClubModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const c = useTheme();
   const [type, setType] = useState<ClubType>(club?.type ?? 'IRON');
   const [name, setName] = useState(club?.name ?? '');
@@ -48,7 +50,7 @@ function ClubModal({
   const isEdit = !!club;
 
   const save = async () => {
-    if (!name.trim()) { Alert.alert('Name fehlt', 'Bitte einen Namen eingeben.'); return; }
+    if (!name.trim()) { Alert.alert(t('bag.nameMissing'), t('bag.nameMissingMsg')); return; }
     setSaving(true);
     try {
       const payload = {
@@ -64,7 +66,7 @@ function ClubModal({
       onSaved();
       onClose();
     } catch {
-      Alert.alert('Fehler', 'Schläger konnte nicht gespeichert werden.');
+      Alert.alert(t('common.error'), t('bag.cannotSave'));
     }
     setSaving(false);
   };
@@ -79,15 +81,15 @@ function ClubModal({
           borderBottomWidth: 1, borderBottomColor: c.bgBorder,
         }}>
           <TouchableOpacity onPress={onClose}>
-            <Text style={{ color: c.inkSecondary, fontSize: 14 }}>Abbrechen</Text>
+            <Text style={{ color: c.inkSecondary, fontSize: 14 }}>{t('common.cancel')}</Text>
           </TouchableOpacity>
           <Text style={{ color: c.inkPrimary, fontWeight: 'bold' }}>
-            {isEdit ? 'Schläger bearbeiten' : 'Schläger hinzufügen'}
+            {isEdit ? t('bag.modal.editTitle') : t('bag.modal.addTitle')}
           </Text>
           <TouchableOpacity onPress={save} disabled={saving}>
             {saving
               ? <ActivityIndicator size="small" color="#00e87a" />
-              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>Speichern</Text>
+              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>{t('common.save')}</Text>
             }
           </TouchableOpacity>
         </View>
@@ -96,16 +98,16 @@ function ClubModal({
           {/* Type Picker */}
           <View>
             <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
-              Typ
+              {t('bag.modal.type')}
             </Text>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {TYPE_ORDER.map((t) => {
-                const m = TYPE_META[t];
-                const active = t === type;
+              {TYPE_ORDER.map((clubType) => {
+                const m = TYPE_META[clubType];
+                const active = clubType === type;
                 return (
                   <TouchableOpacity
-                    key={t}
-                    onPress={() => { setType(t); setName(''); }}
+                    key={clubType}
+                    onPress={() => { setType(clubType); setName(''); }}
                     style={{
                       paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
                       backgroundColor: active ? '#00e87a20' : c.bgCard,
@@ -114,7 +116,7 @@ function ClubModal({
                     }}
                   >
                     <Text style={{ color: active ? '#00e87a' : c.inkSecondary, fontWeight: '600', fontSize: 13 }}>
-                      {m.icon} {m.label}
+                      {m.icon} {t(`bag.types.${clubType}`)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -125,7 +127,7 @@ function ClubModal({
           {/* Name */}
           <View>
             <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
-              Name
+              {t('bag.modal.name')}
             </Text>
             <TextInput
               style={{
@@ -133,7 +135,7 @@ function ClubModal({
                 borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
                 color: c.inkPrimary, fontSize: 15,
               }}
-              placeholder="z.B. 7er Eisen"
+              placeholder={t('bag.modal.namePlaceholder')}
               placeholderTextColor={c.inkMuted}
               value={name}
               onChangeText={setName}
@@ -163,7 +165,7 @@ function ClubModal({
           {/* Distance */}
           <View>
             <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
-              Durchschnittliche Distanz (Meter)
+              {t('bag.modal.distance')}
             </Text>
             <TextInput
               style={{
@@ -171,7 +173,7 @@ function ClubModal({
                 borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
                 color: c.inkPrimary, fontSize: 15,
               }}
-              placeholder="z.B. 150"
+              placeholder={t('bag.modal.distancePlaceholder')}
               placeholderTextColor={c.inkMuted}
               keyboardType="number-pad"
               value={distance}
@@ -186,6 +188,7 @@ function ClubModal({
 
 // ── Main Screen ───────────────────────────────────────────────────────
 export default function BagScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const c = useTheme();
   const [clubs, setClubs] = useState<Club[]>([]);
@@ -204,12 +207,12 @@ export default function BagScreen() {
   useEffect(() => { loadClubs(); }, []);
 
   const deleteClub = (club: Club) => {
-    Alert.alert('Schläger entfernen', `„${club.name}" aus dem Bag entfernen?`, [
-      { text: 'Abbrechen', style: 'cancel' },
+    Alert.alert(t('bag.deleteTitle'), t('bag.deleteMsg', { name: club.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Entfernen', style: 'destructive', onPress: async () => {
+        text: t('common.remove'), style: 'destructive', onPress: async () => {
           try { await api.delete(`/clubs/${club.id}`); loadClubs(); }
-          catch { Alert.alert('Fehler', 'Konnte nicht gelöscht werden.'); }
+          catch { Alert.alert(t('common.error'), t('bag.cannotDelete')); }
         },
       },
     ]);
@@ -231,9 +234,9 @@ export default function BagScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-            Equipment
+            {t('bag.sectionLabel')}
           </Text>
-          <Text style={{ color: c.inkPrimary, fontSize: 22, fontWeight: 'bold' }}>Schläger Bag</Text>
+          <Text style={{ color: c.inkPrimary, fontSize: 22, fontWeight: 'bold' }}>{t('bag.title')}</Text>
         </View>
         <TouchableOpacity
           onPress={() => setShowAdd(true)}
@@ -244,7 +247,7 @@ export default function BagScreen() {
           }}
         >
           <Ionicons name="add" size={16} color="#00e87a" />
-          <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: 'bold' }}>HINZUFÜGEN</Text>
+          <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: 'bold' }}>{t('bag.addButton')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -255,10 +258,8 @@ export default function BagScreen() {
       ) : clubs.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
           <Text style={{ fontSize: 40 }}>🏌️</Text>
-          <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>Bag ist leer</Text>
-          <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>
-            Füge deine Schläger hinzu, um Distanzen und dein Equipment zu tracken.
-          </Text>
+          <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>{t('bag.empty')}</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('bag.emptyHint')}</Text>
           <TouchableOpacity
             onPress={() => setShowAdd(true)}
             style={{
@@ -267,7 +268,7 @@ export default function BagScreen() {
               borderWidth: 1, borderColor: '#00e87a',
             }}
           >
-            <Text style={{ color: '#00e87a', fontWeight: 'bold' }}>Ersten Schläger hinzufügen →</Text>
+            <Text style={{ color: '#00e87a', fontWeight: 'bold' }}>{t('bag.addFirst')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -279,7 +280,7 @@ export default function BagScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                   <Text style={{ fontSize: 14 }}>{meta.icon}</Text>
                   <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-                    {meta.label}
+                    {t(`bag.types.${type}`)}
                   </Text>
                 </View>
                 <View style={{ backgroundColor: c.bgCard, borderRadius: 16, borderWidth: 1, borderColor: c.bgBorder, overflow: 'hidden' }}>

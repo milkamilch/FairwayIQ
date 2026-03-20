@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityInd
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/store/authStore';
 import { useTheme } from '../../src/lib/theme';
 import { api } from '../../src/lib/api';
@@ -26,23 +27,19 @@ interface UserGoal {
   createdAt: string;
 }
 
-const GOAL_TYPE_META: Record<GoalType, { label: string; icon: string; placeholder: string; unit: string }> = {
-  HCP_TARGET:    { label: 'Handicap-Ziel', icon: '🏆', placeholder: 'z.B. HCP 15.0 erreichen', unit: 'HCP' },
-  ROUNDS_COUNT:  { label: 'Runden spielen', icon: '⛳', placeholder: 'z.B. 30 Runden spielen', unit: 'Runden' },
-  SCORE_TARGET:  { label: 'Score-Ziel',    icon: '🎯', placeholder: 'z.B. Unter 90 spielen', unit: 'Schläge' },
-  CUSTOM:        { label: 'Eigenes Ziel',  icon: '✨', placeholder: 'z.B. Handicap-Prüfung ablegen', unit: '' },
+const GOAL_TYPE_META: Record<GoalType, { icon: string }> = {
+  HCP_TARGET:   { icon: '🏆' },
+  ROUNDS_COUNT: { icon: '⛳' },
+  SCORE_TARGET: { icon: '🎯' },
+  CUSTOM:       { icon: '✨' },
 };
 
-const levelMeta: Record<string, { label: string; color: string; range: string; icon: string }> = {
-  BEGINNER:     { label: 'ANFÄNGER',       color: '#00e87a', range: 'HCP > 24',   icon: '🌱' },
-  INTERMEDIATE: { label: 'FORTGESCHRITTEN', color: '#f59e0b', range: 'HCP 13–24', icon: '⚡' },
-  ADVANCED:     { label: 'GEÜBT',          color: '#f97316', range: 'HCP 5–12',   icon: '🔥' },
-  PRO:          { label: 'PRO',            color: '#a855f7', range: 'HCP < 5',    icon: '💎' },
+const levelMeta: Record<string, { color: string; icon: string }> = {
+  BEGINNER:     { color: '#00e87a', icon: '🌱' },
+  INTERMEDIATE: { color: '#f59e0b', icon: '⚡' },
+  ADVANCED:     { color: '#f97316', icon: '🔥' },
+  PRO:          { color: '#a855f7', icon: '💎' },
 };
-
-function formatMemberSince(iso: string) {
-  return new Date(iso).toLocaleDateString('de-DE', { month: 'long', year: 'numeric' });
-}
 
 function scoreDiff(n: number) {
   if (n < 0) return String(n);
@@ -50,21 +47,19 @@ function scoreDiff(n: number) {
   return `+${n}`;
 }
 
-const inputStyle = "bg-bg-elevated border border-bg-border text-ink-primary rounded-xl px-4 py-3 text-sm";
 const labelStyle = "text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2";
 
 // ── Add Goal Modal ─────────────────────────────────────────────────
 function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+  const { t } = useTranslation();
   const c = useTheme();
   const [type, setType] = useState<GoalType>('HCP_TARGET');
   const [title, setTitle] = useState('');
   const [targetValue, setTargetValue] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const meta = GOAL_TYPE_META[type];
-
   const save = async () => {
-    if (!title.trim()) { Alert.alert('Titel fehlt', 'Bitte einen Titel eingeben.'); return; }
+    if (!title.trim()) { Alert.alert(t('profile.goals.titleMissing'), t('profile.goals.titleMissingMsg')); return; }
     setSaving(true);
     try {
       await api.post('/goals', {
@@ -74,7 +69,7 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
       });
       onSaved();
       onClose();
-    } catch { Alert.alert('Fehler', 'Ziel konnte nicht gespeichert werden.'); }
+    } catch { Alert.alert(t('common.error'), t('profile.goals.cannotSave')); }
     setSaving(false);
   };
 
@@ -87,13 +82,13 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
           borderBottomWidth: 1, borderBottomColor: c.bgBorder,
         }}>
           <TouchableOpacity onPress={onClose}>
-            <Text style={{ color: c.inkSecondary, fontSize: 14 }}>Abbrechen</Text>
+            <Text style={{ color: c.inkSecondary, fontSize: 14 }}>{t('common.cancel')}</Text>
           </TouchableOpacity>
-          <Text style={{ color: c.inkPrimary, fontWeight: 'bold' }}>Neues Ziel</Text>
+          <Text style={{ color: c.inkPrimary, fontWeight: 'bold' }}>{t('profile.goals.newGoal')}</Text>
           <TouchableOpacity onPress={save} disabled={saving}>
             {saving
               ? <ActivityIndicator size="small" color="#00e87a" />
-              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>Speichern</Text>
+              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>{t('common.save')}</Text>
             }
           </TouchableOpacity>
         </View>
@@ -102,24 +97,24 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
           {/* Type Picker */}
           <View>
             <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
-              Zieltyp
+              {t('profile.goals.goalType')}
             </Text>
             <View style={{ gap: 8 }}>
-              {(Object.entries(GOAL_TYPE_META) as [GoalType, typeof GOAL_TYPE_META[GoalType]][]).map(([t, m]) => (
+              {(Object.entries(GOAL_TYPE_META) as [GoalType, typeof GOAL_TYPE_META[GoalType]][]).map(([goalType, m]) => (
                 <TouchableOpacity
-                  key={t}
-                  onPress={() => { setType(t); setTitle(''); setTargetValue(''); }}
+                  key={goalType}
+                  onPress={() => { setType(goalType); setTitle(''); setTargetValue(''); }}
                   style={{
                     flexDirection: 'row', alignItems: 'center', gap: 12,
                     padding: 14, borderRadius: 14,
-                    backgroundColor: type === t ? '#00e87a10' : c.bgCard,
+                    backgroundColor: type === goalType ? '#00e87a10' : c.bgCard,
                     borderWidth: 1.5,
-                    borderColor: type === t ? '#00e87a' : c.bgBorder,
+                    borderColor: type === goalType ? '#00e87a' : c.bgBorder,
                   }}
                 >
                   <Text style={{ fontSize: 20 }}>{m.icon}</Text>
-                  <Text style={{ color: type === t ? '#00e87a' : c.inkPrimary, fontWeight: '600', fontSize: 14 }}>
-                    {m.label}
+                  <Text style={{ color: type === goalType ? '#00e87a' : c.inkPrimary, fontWeight: '600', fontSize: 14 }}>
+                    {t(`profile.goals.types.${goalType}`)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -129,7 +124,7 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
           {/* Title */}
           <View>
             <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
-              Beschreibung
+              {t('profile.goals.description')}
             </Text>
             <TextInput
               style={{
@@ -137,7 +132,7 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
                 borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
                 color: c.inkPrimary, fontSize: 15,
               }}
-              placeholder={meta.placeholder}
+              placeholder={t(`profile.goals.placeholders.${type}`)}
               placeholderTextColor={c.inkMuted}
               value={title}
               onChangeText={setTitle}
@@ -148,7 +143,7 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
           {type !== 'CUSTOM' && (
             <View>
               <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
-                Zielwert{meta.unit ? ` (${meta.unit})` : ''}
+                {t('profile.goals.targetValue')}{t(`profile.goals.units.${type}`) ? ` (${t(`profile.goals.units.${type}`)})` : ''}
               </Text>
               <TextInput
                 style={{
@@ -172,6 +167,7 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
 
 export default function ProfileScreen() {
   const { user, logout, updateUser } = useAuthStore();
+  const { t, i18n } = useTranslation();
   const c = useTheme();
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -204,7 +200,7 @@ export default function ProfileScreen() {
       });
       updateUser(data);
       setEditing(false);
-    } catch { Alert.alert('Fehler', 'Profil konnte nicht gespeichert werden'); }
+    } catch { Alert.alert(t('common.error'), t('profile.cannotSave')); }
     setSaving(false);
   };
 
@@ -216,9 +212,9 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Abmelden', 'Möchtest du dich wirklich abmelden?', [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Abmelden', style: 'destructive', onPress: logout },
+    Alert.alert(t('profile.logoutTitle'), t('profile.logoutMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('profile.logout'), style: 'destructive', onPress: logout },
     ]);
   };
 
@@ -230,9 +226,9 @@ export default function ProfileScreen() {
   };
 
   const deleteGoal = (goal: UserGoal) => {
-    Alert.alert('Ziel löschen', `„${goal.title}" löschen?`, [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Löschen', style: 'destructive', onPress: async () => {
+    Alert.alert(t('profile.goals.deleteTitle'), t('profile.goals.deleteMsg', { title: goal.title }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: async () => {
         try { await api.delete(`/goals/${goal.id}`); loadGoals(); } catch {}
       }},
     ]);
@@ -242,7 +238,7 @@ export default function ProfileScreen() {
   const goalProgress = (goal: UserGoal): { current: number | null; pct: number } => {
     if (goal.targetValue == null) return { current: null, pct: 0 };
     if (goal.type === 'HCP_TARGET' && user?.handicap != null) {
-      const start = user.handicap; // approximate; we don't store start
+      const start = user.handicap;
       const current = user.handicap;
       const pct = Math.max(0, Math.min(100, ((start - current) / (start - goal.targetValue)) * 100));
       return { current: user.handicap, pct: isFinite(pct) ? pct : 0 };
@@ -251,9 +247,7 @@ export default function ProfileScreen() {
       return { current: stats.rounds, pct: Math.min(100, (stats.rounds / goal.targetValue) * 100) };
     }
     if (goal.type === 'SCORE_TARGET' && stats?.bestScore != null) {
-      // goal: score under targetValue; lower is better
-      const target = goal.targetValue; // e.g. 90 means "play under 90" → net score vs par
-      return { current: stats.bestScore, pct: 0 }; // just show current best
+      return { current: stats.bestScore, pct: 0 };
     }
     return { current: null, pct: 0 };
   };
@@ -263,8 +257,8 @@ export default function ProfileScreen() {
       {/* Header */}
       <View className="px-5 pt-4 pb-3 flex-row items-center justify-between">
         <View>
-          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Account</Text>
-          <Text className="text-ink-primary text-2xl font-bold mt-0.5">Profil</Text>
+          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('profile.sectionLabel')}</Text>
+          <Text className="text-ink-primary text-2xl font-bold mt-0.5">{t('profile.title')}</Text>
         </View>
         {!editing ? (
           <TouchableOpacity
@@ -273,12 +267,12 @@ export default function ProfileScreen() {
             onPress={() => setEditing(true)}
           >
             <Ionicons name="pencil-outline" size={14} color="#8888aa" />
-            <Text className="text-ink-secondary text-xs font-semibold">Bearbeiten</Text>
+            <Text className="text-ink-secondary text-xs font-semibold">{t('profile.editButton')}</Text>
           </TouchableOpacity>
         ) : (
           <View className="flex-row gap-2">
             <TouchableOpacity className="px-3 py-2 rounded-xl border border-bg-border" onPress={cancelEdit}>
-              <Text className="text-ink-secondary text-xs font-semibold">Abbrechen</Text>
+              <Text className="text-ink-secondary text-xs font-semibold">{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className="px-3 py-2 rounded-xl"
@@ -288,7 +282,7 @@ export default function ProfileScreen() {
             >
               {saving
                 ? <ActivityIndicator size="small" color="#07070f" />
-                : <Text className="text-bg-base text-xs font-bold">Speichern</Text>
+                : <Text className="text-bg-base text-xs font-bold">{t('common.save')}</Text>
               }
             </TouchableOpacity>
           </View>
@@ -300,7 +294,7 @@ export default function ProfileScreen() {
         {/* ── Player Card ─────────────────────────────────────────── */}
         <View
           className="rounded-2xl p-5 mb-4 overflow-hidden"
-          style={{ backgroundColor: '#14141f', borderWidth: 1, borderColor: meta.color + '30' }}
+          style={{ backgroundColor: c.bgCard, borderWidth: 1, borderColor: meta.color + '30' }}
         >
           {/* Level glow accent */}
           <View
@@ -311,7 +305,7 @@ export default function ProfileScreen() {
           <View className="flex-row items-center gap-4 mb-4">
             <View
               className="w-16 h-16 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: meta.color + '15', borderWidth: 1.5, borderColor: meta.color + '40' }}
+              style={{ backgroundColor: meta.color + '20', borderWidth: 1.5, borderColor: meta.color + '40' }}
             >
               <Text style={{ fontSize: 28 }}>{meta.icon}</Text>
             </View>
@@ -337,13 +331,19 @@ export default function ProfileScreen() {
               style={{ backgroundColor: meta.color + '20', borderWidth: 1, borderColor: meta.color + '50' }}
             >
               <View className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: meta.color }} />
-              <Text className="text-xs font-bold tracking-wider" style={{ color: meta.color }}>{meta.label}</Text>
-              <Text className="text-xs" style={{ color: meta.color + 'aa' }}>· {meta.range}</Text>
+              <Text className="text-xs font-bold tracking-wider" style={{ color: meta.color }}>
+                {t(`profile.level.${user?.level ?? 'BEGINNER'}`)}
+              </Text>
+              <Text className="text-xs" style={{ color: meta.color + 'aa' }}>
+                · {t(`profile.levelRange.${user?.level ?? 'BEGINNER'}`)}
+              </Text>
             </View>
             {user?.createdAt && (
               <View className="flex-row items-center gap-1.5">
                 <Ionicons name="calendar-outline" size={11} color="#44445a" />
-                <Text className="text-ink-muted text-xs">seit {formatMemberSince(user.createdAt)}</Text>
+                <Text className="text-ink-muted text-xs">
+                  {t('profile.since')} {new Date(user.createdAt).toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })}
+                </Text>
               </View>
             )}
           </View>
@@ -367,60 +367,60 @@ export default function ProfileScreen() {
               </>
             ) : (
               <>
-                <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">Handicap</Text>
+                <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">{t('profile.handicapLabel')}</Text>
                 <Text className="text-ink-primary font-bold text-3xl">
                   {user?.handicap !== null && user?.handicap !== undefined
                     ? user.handicap % 1 === 0 ? String(user.handicap) : user.handicap.toFixed(1)
                     : '—'}
                 </Text>
                 <TouchableOpacity onPress={() => router.push('/progress')}>
-                  <Text className="text-neon-green text-xs mt-1">Verlauf →</Text>
+                  <Text className="text-neon-green text-xs mt-1">{t('profile.handicapHistory')}</Text>
                 </TouchableOpacity>
               </>
             )}
           </View>
 
-          {/* Bester Score */}
+          {/* Best Score */}
           <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
-            <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">Bester Score</Text>
+            <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">{t('profile.bestScore')}</Text>
             <Text className="text-ink-primary font-bold text-3xl">
               {stats?.bestScore !== null && stats?.bestScore !== undefined ? scoreDiff(stats.bestScore) : '—'}
             </Text>
             <Text className="text-ink-muted text-xs mt-1">
-              {stats?.rounds ? `${stats.rounds} Runden` : 'Noch keine'}
+              {stats?.rounds ? `${stats.rounds} ${t('dashboard.stats.rounds')}` : t('profile.noRounds')}
             </Text>
           </View>
 
-          {/* Ø Score */}
+          {/* Avg Score */}
           <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
-            <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">Ø Score</Text>
+            <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">{t('profile.avgScore')}</Text>
             <Text className="text-ink-primary font-bold text-3xl">
               {stats?.avgScore !== null && stats?.avgScore !== undefined ? scoreDiff(Math.round(stats.avgScore)) : '—'}
             </Text>
-            <Text className="text-ink-muted text-xs mt-1">letzte 20</Text>
+            <Text className="text-ink-muted text-xs mt-1">{t('profile.lastN')}</Text>
           </View>
         </View>
 
         {/* ── Details ──────────────────────────────────────────────── */}
         <View className="bg-bg-card border border-bg-border rounded-xl overflow-hidden mb-4">
-          {/* Heimatclub */}
+          {/* Home Club */}
           <View className="px-4 py-3.5 flex-row items-center gap-3 border-b border-bg-border">
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
               <Ionicons name="flag-outline" size={16} color="#8888aa" />
             </View>
             <View className="flex-1">
-              <Text className="text-ink-muted text-xs mb-0.5">Heimatclub</Text>
+              <Text className="text-ink-muted text-xs mb-0.5">{t('profile.homeClub')}</Text>
               {editing ? (
                 <TextInput
                   className="text-ink-primary text-sm"
-                  placeholder="z.B. GC München Eichenried"
+                  placeholder={t('profile.homeClubPlaceholder')}
                   placeholderTextColor="#44445a"
                   value={homeClub}
                   onChangeText={setHomeClub}
                 />
               ) : (
                 <Text className="text-ink-primary text-sm">
-                  {user?.homeClub || <Text className="text-ink-muted">Noch nicht eingetragen</Text>}
+                  {user?.homeClub || <Text className="text-ink-muted">{t('profile.homeClubEmpty')}</Text>}
                 </Text>
               )}
             </View>
@@ -435,31 +435,33 @@ export default function ProfileScreen() {
               <Ionicons name="mail-outline" size={16} color="#8888aa" />
             </View>
             <View className="flex-1">
-              <Text className="text-ink-muted text-xs mb-0.5">E-Mail</Text>
+              <Text className="text-ink-muted text-xs mb-0.5">{t('profile.email')}</Text>
               <Text className="text-ink-primary text-sm">{user?.email}</Text>
             </View>
           </View>
 
-          {/* Mitglied seit */}
+          {/* Member Since */}
           <View className="px-4 py-3.5 flex-row items-center gap-3">
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
               <Ionicons name="time-outline" size={16} color="#8888aa" />
             </View>
             <View className="flex-1">
-              <Text className="text-ink-muted text-xs mb-0.5">Mitglied seit</Text>
+              <Text className="text-ink-muted text-xs mb-0.5">{t('profile.memberSince')}</Text>
               <Text className="text-ink-primary text-sm">
-                {user?.createdAt ? formatMemberSince(user.createdAt) : '—'}
+                {user?.createdAt
+                  ? new Date(user.createdAt).toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })
+                  : '—'}
               </Text>
             </View>
           </View>
         </View>
 
-        {/* ── Meine Ziele ──────────────────────────────────────────── */}
+        {/* ── Goals ────────────────────────────────────────────────── */}
         <View className="mb-4">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Meine Ziele</Text>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('profile.goals.title')}</Text>
             <TouchableOpacity onPress={() => setShowAddGoal(true)}>
-              <Text className="text-neon-green text-xs font-semibold">+ Ziel hinzufügen</Text>
+              <Text className="text-neon-green text-xs font-semibold">{t('profile.goals.add')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -469,13 +471,13 @@ export default function ProfileScreen() {
               onPress={() => setShowAddGoal(true)}
             >
               <Text style={{ fontSize: 24 }}>🎯</Text>
-              <Text className="text-ink-secondary text-sm">Noch keine Ziele gesetzt</Text>
-              <Text className="text-neon-green text-sm font-semibold">Erstes Ziel festlegen →</Text>
+              <Text className="text-ink-secondary text-sm">{t('profile.goals.noGoals')}</Text>
+              <Text className="text-neon-green text-sm font-semibold">{t('profile.goals.setFirst')}</Text>
             </TouchableOpacity>
           ) : (
             <View className="gap-2">
               {goals.map((goal) => {
-                const meta = GOAL_TYPE_META[goal.type];
+                const goalMeta = GOAL_TYPE_META[goal.type];
                 const { current, pct } = goalProgress(goal);
                 return (
                   <View
@@ -494,21 +496,21 @@ export default function ProfileScreen() {
                       </TouchableOpacity>
                       <View className="flex-1">
                         <View className="flex-row items-center gap-1.5 mb-0.5">
-                          <Text style={{ fontSize: 12 }}>{meta.icon}</Text>
-                          <Text className="text-ink-muted text-xs">{meta.label}</Text>
+                          <Text style={{ fontSize: 12 }}>{goalMeta.icon}</Text>
+                          <Text className="text-ink-muted text-xs">{t(`profile.goals.types.${goal.type}`)}</Text>
                         </View>
                         <Text className="text-ink-primary text-sm font-semibold" style={{ textDecorationLine: goal.isCompleted ? 'line-through' : 'none' }}>
                           {goal.title}
                         </Text>
                         {goal.targetValue != null && current != null && !goal.isCompleted && (
                           <Text className="text-ink-muted text-xs mt-1">
-                            Aktuell: {goal.type === 'HCP_TARGET' ? `HCP ${current}` : `${current} ${meta.unit}`}
-                            {' · '}Ziel: {goal.targetValue} {meta.unit}
+                            {t('profile.goals.current')}: {goal.type === 'HCP_TARGET' ? `HCP ${current}` : `${current} ${t(`profile.goals.units.${goal.type}`)}`}
+                            {' · '}{t('profile.goals.targetValue')}: {goal.targetValue} {t(`profile.goals.units.${goal.type}`)}
                           </Text>
                         )}
                         {goal.deadline && (
                           <Text className="text-ink-muted text-xs mt-0.5">
-                            Frist: {new Date(goal.deadline).toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {t('profile.goals.deadline')}: {new Date(goal.deadline).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', year: 'numeric' })}
                           </Text>
                         )}
                         {goal.targetValue != null && pct > 0 && !goal.isCompleted && (
@@ -538,8 +540,22 @@ export default function ProfileScreen() {
               <Text style={{ fontSize: 16 }}>🏌️</Text>
             </View>
             <View className="flex-1">
-              <Text className="text-ink-primary font-medium text-sm">Schläger Bag</Text>
-              <Text className="text-ink-muted text-xs">Clubs & Distanzen verwalten</Text>
+              <Text className="text-ink-primary font-medium text-sm">{t('profile.links.bag')}</Text>
+              <Text className="text-ink-muted text-xs">{t('profile.links.bagSub')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color="#44445a" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-bg-card border border-bg-border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
+            onPress={() => router.push('/wearables' as any)}
+          >
+            <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
+              <Text style={{ fontSize: 16 }}>⌚</Text>
+            </View>
+            <View className="flex-1">
+              <Text className="text-ink-primary font-medium text-sm">{t('profile.links.wearables')}</Text>
+              <Text className="text-ink-muted text-xs">{t('profile.links.wearablesSub')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={14} color="#44445a" />
           </TouchableOpacity>
@@ -552,8 +568,8 @@ export default function ProfileScreen() {
               <Ionicons name="analytics-outline" size={16} color="#00e87a" />
             </View>
             <View className="flex-1">
-              <Text className="text-ink-primary font-medium text-sm">Fortschritt & Skill-Radar</Text>
-              <Text className="text-ink-muted text-xs">HCP-Verlauf, Skill-Analyse</Text>
+              <Text className="text-ink-primary font-medium text-sm">{t('profile.links.progress')}</Text>
+              <Text className="text-ink-muted text-xs">{t('profile.links.progressSub')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={14} color="#44445a" />
           </TouchableOpacity>
@@ -566,7 +582,7 @@ export default function ProfileScreen() {
             <View className="w-8 h-8 rounded-lg items-center justify-center" style={{ backgroundColor: '#ef444415' }}>
               <Ionicons name="log-out-outline" size={16} color="#ef4444" />
             </View>
-            <Text className="text-red-400 font-medium flex-1 text-sm">Abmelden</Text>
+            <Text className="text-red-400 font-medium flex-1 text-sm">{t('profile.logout')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

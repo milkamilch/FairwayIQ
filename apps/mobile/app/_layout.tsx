@@ -1,4 +1,5 @@
 import '../global.css';
+import '../src/i18n';
 import { useEffect } from 'react';
 import { useColorScheme, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';

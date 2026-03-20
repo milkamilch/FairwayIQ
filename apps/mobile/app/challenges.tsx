@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { api } from '../src/lib/api';
 import { useTheme } from '../src/lib/theme';
 import { BadgeDefinition } from '../src/store/trainingStore';
@@ -24,30 +25,25 @@ interface GamificationStatus {
   };
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  sessions: 'Einheiten',
-  streak: 'Streak',
-  performance: 'Leistung',
-  variety: 'Vielfalt',
-};
-
 const CATEGORY_ORDER = ['sessions', 'streak', 'performance', 'variety'];
 
 // ── Streak Days Display ─────────────────────────────────────────────────
 function StreakDots({ count }: { count: number }) {
+  const { t } = useTranslation();
   const c = useTheme();
-  const days = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+  // German abbreviation keys (Mo=Monday, Di=Tuesday, ...) matching i18n keys
+  const dayKeys = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'] as const;
   const today = new Date().getDay();
   const todayIdx = today === 0 ? 6 : today - 1;
 
   return (
     <View className="flex-row gap-1.5 mt-3">
-      {days.map((day, i) => {
+      {dayKeys.map((key, i) => {
         const daysAgo = (todayIdx - i + 7) % 7;
         const active = daysAgo < count;
         const isToday = i === todayIdx;
         return (
-          <View key={day} className="flex-1 items-center gap-1">
+          <View key={key} className="flex-1 items-center gap-1">
             <View
               className="w-full rounded-md"
               style={{
@@ -60,7 +56,7 @@ function StreakDots({ count }: { count: number }) {
               className="text-xs"
               style={{ color: isToday ? '#f97316' : c.inkMuted, fontWeight: isToday ? '700' : '400' }}
             >
-              {day}
+              {t(`challenges.days.${key}`)}
             </Text>
           </View>
         );
@@ -105,6 +101,7 @@ function BadgeCard({ badge }: { badge: BadgeDefinition & { earned: boolean; earn
 }
 
 export default function ChallengesScreen() {
+  const { t } = useTranslation();
   const c = useTheme();
   const [status, setStatus] = useState<GamificationStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -133,8 +130,8 @@ export default function ChallengesScreen() {
           <Ionicons name="chevron-back" size={22} color={c.inkPrimary} />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Gamification</Text>
-          <Text className="text-ink-primary text-xl font-bold mt-0.5">Challenges</Text>
+          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('challenges.sectionLabel')}</Text>
+          <Text className="text-ink-primary text-xl font-bold mt-0.5">{t('challenges.title')}</Text>
         </View>
         <View className="px-2.5 py-1 rounded-full" style={{ backgroundColor: c.neonGreen20, borderWidth: 1, borderColor: c.neonGreen20 }}>
           <Text className="text-neon-green text-xs font-bold">{earnedCount}/{totalBadges}</Text>
@@ -145,7 +142,7 @@ export default function ChallengesScreen() {
         <ActivityIndicator color="#00e87a" className="mt-20" />
       ) : !status ? (
         <View className="flex-1 items-center justify-center">
-          <Text className="text-ink-muted">Keine Daten verfügbar</Text>
+          <Text className="text-ink-muted">{t('common.noData')}</Text>
         </View>
       ) : (
         <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
@@ -172,19 +169,19 @@ export default function ChallengesScreen() {
                   />
                 </View>
                 <View>
-                  <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Tagesziel</Text>
+                  <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('challenges.dailyGoal')}</Text>
                   <Text className="text-ink-primary font-bold mt-0.5">
                     {status.dailyGoal.completed
-                      ? 'Heute trainiert! ✓'
+                      ? t('challenges.trainedToday')
                       : status.dailyGoal.hasActivePlan
-                        ? `Tag ${status.dailyGoal.currentDay} ausstehend`
-                        : 'Kein aktiver Plan'}
+                        ? t('challenges.dayPending', { day: status.dailyGoal.currentDay })
+                        : t('challenges.noActivePlan')}
                   </Text>
                 </View>
               </View>
               {!status.dailyGoal.completed && status.dailyGoal.hasActivePlan && (
                 <TouchableOpacity onPress={() => router.back()}>
-                  <Text className="text-neon-green text-sm font-semibold">Training →</Text>
+                  <Text className="text-neon-green text-sm font-semibold">{t('challenges.goTraining')}</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -200,7 +197,7 @@ export default function ChallengesScreen() {
                   />
                 </View>
                 <Text className="text-ink-muted text-xs mt-1">
-                  {(status.dailyGoal.currentDay ?? 1) - 1} von {status.dailyGoal.totalDays} Tagen
+                  {t('challenges.daysOf', { current: (status.dailyGoal.currentDay ?? 1) - 1, total: status.dailyGoal.totalDays })}
                 </Text>
               </View>
             )}
@@ -216,9 +213,9 @@ export default function ChallengesScreen() {
             }}
           >
             <View className="flex-row items-center justify-between mb-1">
-              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Streak</Text>
+              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('challenges.streakLabel')}</Text>
               <Text className="text-xs" style={{ color: '#f59e0b' }}>
-                Längster: {status.streak.longestStreak} Tage
+                {t('challenges.longestStreak', { days: status.streak.longestStreak })}
               </Text>
             </View>
             <View className="flex-row items-end gap-2">
@@ -233,7 +230,10 @@ export default function ChallengesScreen() {
                 {status.streak.currentStreak}
               </Text>
               <Text className="text-ink-secondary text-base mb-2">
-                {status.streak.currentStreak === 1 ? 'Tag' : 'Tage'} in Folge
+                {t('challenges.daysInRow', {
+                  count: status.streak.currentStreak,
+                  plural: status.streak.currentStreak === 1 ? '' : 's',
+                })}
               </Text>
               {status.streak.currentStreak > 0 && (
                 <Text style={{ fontSize: 28, marginBottom: 4 }}>🔥</Text>
@@ -246,15 +246,15 @@ export default function ChallengesScreen() {
           <View className="flex-row gap-3 mb-6">
             <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
               <Text className="text-neon-green font-bold text-2xl">{status.totalSessions}</Text>
-              <Text className="text-ink-muted text-xs mt-1">Einheiten</Text>
+              <Text className="text-ink-muted text-xs mt-1">{t('challenges.sessions')}</Text>
             </View>
             <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
               <Text className="font-bold text-2xl" style={{ color: '#f59e0b' }}>{earnedCount}</Text>
-              <Text className="text-ink-muted text-xs mt-1">Badges verdient</Text>
+              <Text className="text-ink-muted text-xs mt-1">{t('challenges.badgesEarned')}</Text>
             </View>
             <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
               <Text className="font-bold text-2xl" style={{ color: '#a78bfa' }}>{status.streak.longestStreak}</Text>
-              <Text className="text-ink-muted text-xs mt-1">Bester Streak</Text>
+              <Text className="text-ink-muted text-xs mt-1">{t('challenges.bestStreak')}</Text>
             </View>
           </View>
 
@@ -266,7 +266,7 @@ export default function ChallengesScreen() {
               <View key={cat} className="mb-6">
                 <View className="flex-row items-center justify-between mb-3">
                   <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
-                    {CATEGORY_LABELS[cat]}
+                    {t(`challenges.categories.${cat}`)}
                   </Text>
                   <Text className="text-ink-muted text-xs">
                     {badges.filter((b) => b.earned).length}/{badges.length}

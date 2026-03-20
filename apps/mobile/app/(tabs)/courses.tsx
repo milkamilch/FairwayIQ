@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal, TextInput } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../src/lib/api';
+import { useTheme } from '../../src/lib/theme';
 import { Course } from '@fairwayiq/shared';
 import { CreateCourseModal } from '../../src/components/CreateCourseModal';
 
 const hazardIcons: Record<string, string> = { WATER: '💧', BUNKER: '⛱️', OB: '🚫', ROUGH: '🌿', TREES: '🌳' };
 
 function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
+  const { t } = useTranslation();
   const hasStrategy = !!hole.strategy;
   return (
     <TouchableOpacity
@@ -37,7 +40,7 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
             {hole.strategy.recommendedClub} · {hole.strategy.aimPoint}
           </Text>
         ) : (
-          <Text className="text-ink-muted text-xs">Strategie hinzufügen →</Text>
+          <Text className="text-ink-muted text-xs">{t('courses.addStrategy')}</Text>
         )}
       </View>
       <Ionicons name="chevron-forward" size={12} color="#252535" />
@@ -53,15 +56,16 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
   const [aimPoint, setAimPoint] = useState(hole.strategy?.aimPoint ?? '');
   const [avoidance, setAvoidance] = useState(hole.strategy?.avoidance ?? '');
   const [notes, setNotes] = useState(hole.strategy?.notes ?? '');
+  const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    if (!club || !aimPoint) { Alert.alert('Fehler', 'Schläger und Zielpunkt sind Pflichtfelder'); return; }
+    if (!club || !aimPoint) { Alert.alert(t('common.error'), t('courses.strategyModal.requiredFields')); return; }
     setSaving(true);
     try {
       await api.put(`/courses/${courseId}/holes/${hole.number}/strategy`, { recommendedClub: club, shotShape, aimPoint, avoidance, notes });
       onSaved(); onClose();
-    } catch { Alert.alert('Fehler', 'Strategie konnte nicht gespeichert werden'); }
+    } catch { Alert.alert(t('common.error'), t('courses.strategyModal.cannotSave')); }
     setSaving(false);
   };
 
@@ -73,26 +77,26 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
       <SafeAreaView className="flex-1 bg-bg-base">
         <View className="flex-row items-center justify-between px-5 py-4 border-b border-bg-border">
           <TouchableOpacity onPress={onClose}>
-            <Text className="text-ink-secondary text-sm">Abbrechen</Text>
+            <Text className="text-ink-secondary text-sm">{t('common.cancel')}</Text>
           </TouchableOpacity>
           <View>
-            <Text className="text-ink-primary font-bold text-center">Loch {hole.number} Strategie</Text>
+            <Text className="text-ink-primary font-bold text-center">{t('courses.strategyModal.title', { number: hole.number })}</Text>
             <Text className="text-ink-muted text-xs text-center">Par {hole.par} · {hole.distanceMeters}m</Text>
           </View>
           <TouchableOpacity onPress={save} disabled={saving}>
-            <Text className="text-neon-green font-bold text-sm">{saving ? '...' : 'Speichern'}</Text>
+            <Text className="text-neon-green font-bold text-sm">{saving ? t('common.saving') : t('common.save')}</Text>
           </TouchableOpacity>
         </View>
 
         <ScrollView className="flex-1 px-5 pt-5">
           <View className="gap-5">
             <View>
-              <Text className={labelStyle}>Empfohlener Schläger</Text>
-              <TextInput className={inputStyle} placeholder="z.B. 7er Eisen" placeholderTextColor="#44445a" value={club} onChangeText={setClub} />
+              <Text className={labelStyle}>{t('courses.strategyModal.club')}</Text>
+              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor="#44445a" value={club} onChangeText={setClub} />
             </View>
 
             <View>
-              <Text className={labelStyle}>Trajektorie</Text>
+              <Text className={labelStyle}>{t('courses.strategyModal.trajectory')}</Text>
               <View className="flex-row gap-2">
                 {(['STRAIGHT', 'FADE', 'DRAW'] as const).map((s) => (
                   <TouchableOpacity
@@ -106,7 +110,7 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
                     onPress={() => setShotShape(s)}
                   >
                     <Text className="text-xs font-bold" style={{ color: shotShape === s ? '#07070f' : '#8888aa' }}>
-                      {{ STRAIGHT: 'GERADE', FADE: 'FADE', DRAW: 'DRAW' }[s]}
+                      {t(`courses.strategyModal.shotShape.${s}`)}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -114,20 +118,20 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
             </View>
 
             <View>
-              <Text className={labelStyle}>Zielpunkt</Text>
-              <TextInput className={inputStyle} placeholder="z.B. Linke Seite des Fairways" placeholderTextColor="#44445a" value={aimPoint} onChangeText={setAimPoint} />
+              <Text className={labelStyle}>{t('courses.strategyModal.aimPoint')}</Text>
+              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.aimPlaceholder')} placeholderTextColor="#44445a" value={aimPoint} onChangeText={setAimPoint} />
             </View>
 
             <View>
-              <Text className={labelStyle}>Gefahren vermeiden</Text>
-              <TextInput className={inputStyle} placeholder="z.B. Bunker rechts meiden" placeholderTextColor="#44445a" value={avoidance} onChangeText={setAvoidance} multiline />
+              <Text className={labelStyle}>{t('courses.strategyModal.avoidance')}</Text>
+              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.avoidPlaceholder')} placeholderTextColor="#44445a" value={avoidance} onChangeText={setAvoidance} multiline />
             </View>
 
             <View>
-              <Text className={labelStyle}>Notizen</Text>
+              <Text className={labelStyle}>{t('courses.strategyModal.notes')}</Text>
               <TextInput
                 className={`${inputStyle} min-h-20`}
-                placeholder="Weitere Hinweise..."
+                placeholder={t('courses.strategyModal.notesPlaceholder')}
                 placeholderTextColor="#44445a"
                 value={notes}
                 onChangeText={setNotes}
@@ -143,12 +147,30 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
   );
 }
 
+interface ApiSearchResult {
+  apiId: string;
+  name: string;
+  location: string;
+  totalPar: number;
+  rating: number | null;
+  slope: number | null;
+  hasHoles: boolean;
+}
+
 export default function CoursesScreen() {
+  const { t } = useTranslation();
+  const c = useTheme();
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [selectedHole, setSelectedHole] = useState<any | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<ApiSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [saving, setSaving] = useState<string | null>(null); // apiId des gerade gespeicherten Platzes
+  const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchCourses = async () => {
     try { const { data } = await api.get<Course[]>('/courses'); setCourses(data); } catch {}
@@ -162,6 +184,34 @@ export default function CoursesScreen() {
   useEffect(() => { fetchCourses(); }, []);
 
   const onRefresh = async () => { setRefreshing(true); await fetchCourses(); setRefreshing(false); };
+
+  const onSearchChange = (text: string) => {
+    setSearchQuery(text);
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+    if (text.length < 2) { setSearchResults([]); return; }
+    searchTimeout.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const { data } = await api.get<ApiSearchResult[]>(`/courses/api-search?q=${encodeURIComponent(text)}`);
+        setSearchResults(data);
+      } catch {}
+      setSearching(false);
+    }, 500);
+  };
+
+  const saveFromApi = async (result: ApiSearchResult) => {
+    setSaving(result.apiId);
+    try {
+      const { data } = await api.post<Course>('/courses/from-api', { apiId: result.apiId });
+      await fetchCourses();
+      setSearchQuery('');
+      setSearchResults([]);
+      setSelectedCourse(data);
+    } catch {
+      Alert.alert(t('common.error'), t('courses.cannotSave'));
+    }
+    setSaving(null);
+  };
 
   if (selectedCourse) {
     const strategyCoverage = selectedCourse.holes?.filter((h: any) => h.strategy).length ?? 0;
@@ -178,7 +228,7 @@ export default function CoursesScreen() {
             </View>
             <View className="items-end">
               <Text className="text-neon-green text-xs font-bold">{strategyCoverage}/18</Text>
-              <Text className="text-ink-muted text-xs">Strategien</Text>
+              <Text className="text-ink-muted text-xs">{t('courses.strategies')}</Text>
             </View>
           </View>
         </View>
@@ -186,9 +236,9 @@ export default function CoursesScreen() {
         <ScrollView>
           <View className="bg-bg-card border border-bg-border rounded-xl mx-4 mt-4 overflow-hidden">
             <View className="flex-row px-4 py-2 bg-bg-elevated border-b border-bg-border">
-              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">NR</Text>
-              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest ml-11 flex-1">Info</Text>
-              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">Strategie</Text>
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('courses.table.nr')}</Text>
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest ml-11 flex-1">{t('courses.table.info')}</Text>
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('courses.table.strategy')}</Text>
             </View>
             {selectedCourse.holes?.map((hole: any) => (
               <HoleRow key={hole.id} hole={hole} onPress={() => setSelectedHole(hole)} />
@@ -211,19 +261,109 @@ export default function CoursesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-base">
-      <View className="px-5 pt-4 pb-4 flex-row items-end justify-between">
-        <View>
-          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Plätze</Text>
-          <Text className="text-ink-primary text-2xl font-bold mt-0.5">Platzkenntnisse</Text>
+      <View className="px-5 pt-4 pb-3">
+        <View className="flex-row items-end justify-between mb-4">
+          <View>
+            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('courses.sectionLabel')}</Text>
+            <Text className="text-ink-primary text-2xl font-bold mt-0.5">{t('courses.title')}</Text>
+          </View>
+          <TouchableOpacity
+            className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl border border-neon-green"
+            style={{ backgroundColor: '#00e87a15' }}
+            onPress={() => setShowCreate(true)}
+          >
+            <Ionicons name="add" size={16} color="#00e87a" />
+            <Text className="text-neon-green text-xs font-bold">{t('courses.manualAdd')}</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl border border-neon-green"
-          style={{ backgroundColor: '#00e87a15' }}
-          onPress={() => setShowCreate(true)}
-        >
-          <Ionicons name="add" size={16} color="#00e87a" />
-          <Text className="text-neon-green text-xs font-bold">PLATZ HINZUFÜGEN</Text>
-        </TouchableOpacity>
+
+        {/* Suchleiste */}
+        <View style={{
+          flexDirection: 'row', alignItems: 'center', gap: 10,
+          backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.bgBorder,
+          borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
+        }}>
+          <Ionicons name="search-outline" size={17} color={c.inkMuted} />
+          <TextInput
+            style={{ flex: 1, color: c.inkPrimary, fontSize: 15 }}
+            placeholder={t('courses.searchPlaceholder')}
+            placeholderTextColor={c.inkMuted}
+            value={searchQuery}
+            onChangeText={onSearchChange}
+            autoCorrect={false}
+          />
+          {searching && <ActivityIndicator size="small" color="#00e87a" />}
+          {searchQuery.length > 0 && !searching && (
+            <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
+              <Ionicons name="close-circle" size={17} color={c.inkMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Suchergebnisse */}
+        {searchResults.length > 0 && (
+          <View style={{
+            marginTop: 6, backgroundColor: c.bgCard,
+            borderWidth: 1, borderColor: c.bgBorder, borderRadius: 14,
+            overflow: 'hidden',
+          }}>
+            <Text style={{ color: c.inkMuted, fontSize: 10, fontWeight: '700', letterSpacing: 0.6,
+              textTransform: 'uppercase', padding: 12, paddingBottom: 6 }}>
+              {t('courses.apiResults', { count: searchResults.length })}
+            </Text>
+            <ScrollView scrollEnabled keyboardShouldPersistTaps="handled" style={{ maxHeight: 340 }}>
+            {searchResults.map((r, i) => (
+              <TouchableOpacity
+                key={r.apiId}
+                onPress={() => saveFromApi(r)}
+                disabled={saving === r.apiId}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 12,
+                  paddingHorizontal: 14, paddingVertical: 12,
+                  borderTopWidth: i === 0 ? 0 : 1, borderTopColor: c.bgBorder,
+                  opacity: saving === r.apiId ? 0.5 : 1,
+                }}
+              >
+                <View style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  backgroundColor: '#00e87a15', borderWidth: 1, borderColor: '#00e87a30',
+                  alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {saving === r.apiId
+                    ? <ActivityIndicator size="small" color="#00e87a" />
+                    : <Text style={{ fontSize: 18 }}>⛳</Text>
+                  }
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.inkPrimary, fontWeight: '600', fontSize: 14 }} numberOfLines={1}>
+                    {r.name}
+                  </Text>
+                  <Text style={{ color: c.inkSecondary, fontSize: 12 }} numberOfLines={1}>
+                    {r.location}
+                    {r.rating ? ` · CR ${r.rating}` : ''}
+                    {r.slope ? `/${r.slope}` : ''}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end', gap: 2 }}>
+                  <Text style={{ color: c.inkSecondary, fontSize: 12 }}>Par {r.totalPar}</Text>
+                  {r.hasHoles && (
+                    <View style={{ backgroundColor: '#00e87a20', borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 }}>
+                      <Text style={{ color: '#00e87a', fontSize: 9, fontWeight: '700' }}>{t('courses.holes18')}</Text>
+                    </View>
+                  )}
+                </View>
+                <Ionicons name="add-circle-outline" size={20} color="#00e87a" />
+              </TouchableOpacity>
+            ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {searchQuery.length >= 2 && !searching && searchResults.length === 0 && (
+          <View style={{ padding: 16, alignItems: 'center' }}>
+            <Text style={{ color: c.inkMuted, fontSize: 13 }}>{t('courses.noResults', { query: searchQuery })}</Text>
+          </View>
+        )}
       </View>
 
       <ScrollView
@@ -231,13 +371,13 @@ export default function CoursesScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
       >
-        {courses.length === 0 ? (
+        {courses.length === 0 && searchQuery.length === 0 ? (
           <View className="items-center py-16 gap-3">
             <Ionicons name="map-outline" size={48} color="#252535" />
-            <Text className="text-ink-secondary font-semibold">Noch keine Plätze</Text>
-            <Text className="text-ink-muted text-sm text-center">Füge deinen Heimatplatz hinzu und hinterlege deine Strategie</Text>
+            <Text className="text-ink-secondary font-semibold">{t('courses.noCourses')}</Text>
+            <Text className="text-ink-muted text-sm text-center">{t('courses.noCoursesHint')}</Text>
           </View>
-        ) : (
+        ) : searchQuery.length === 0 ? (
           courses.map((course) => {
             const holes = (course as any).holes ?? [];
             const strategies = holes.filter((h: any) => h.strategy).length;
@@ -262,7 +402,7 @@ export default function CoursesScreen() {
                   {holes.length > 0 && (
                     <View className="mt-3">
                       <View className="flex-row items-center justify-between mb-1">
-                        <Text className="text-ink-muted text-xs">Strategie-Abdeckung</Text>
+                        <Text className="text-ink-muted text-xs">{t('courses.strategyCoverage')}</Text>
                         <Text className="text-xs font-semibold" style={{ color: strategies === 18 ? '#00e87a' : '#8888aa' }}>
                           {strategies}/18
                         </Text>
@@ -277,13 +417,13 @@ export default function CoursesScreen() {
                   )}
                 </View>
                 <View className="px-4 py-2.5 border-t border-bg-border flex-row items-center justify-between">
-                  <Text className="text-neon-green text-xs font-semibold">Strategie bearbeiten</Text>
+                  <Text className="text-neon-green text-xs font-semibold">{t('courses.editStrategy')}</Text>
                   <Ionicons name="chevron-forward" size={12} color="#00e87a" />
                 </View>
               </TouchableOpacity>
             );
           })
-        )}
+        ) : null}
         <View className="h-8" />
       </ScrollView>
 

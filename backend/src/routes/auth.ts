@@ -1,9 +1,11 @@
 import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { sendVerificationEmail } from '../lib/mailer';
 
 export const authRouter = Router();
 
@@ -46,14 +48,41 @@ authRouter.post('/register', async (req: Request, res: Response) => {
     ? 'INTERMEDIATE'
     : 'BEGINNER';
 
+  const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+
   const user = await prisma.user.create({
-    data: { email, password: hashedPassword, name, handicap, level },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, createdAt: true },
+    data: { email, password: hashedPassword, name, handicap, level, emailVerificationToken },
+    select: { id: true, email: true, name: true },
   });
 
-  const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '30d' });
+  try {
+    await sendVerificationEmail(email, name, emailVerificationToken);
+  } catch (err) {
+    console.error('Mail-Versand fehlgeschlagen:', err);
+  }
 
-  res.status(201).json({ token, user });
+  res.status(201).json({ pending: true, email: user.email });
+});
+
+authRouter.get('/verify-email', async (req: Request, res: Response) => {
+  const token = req.query.token as string | undefined;
+  if (!token) {
+    res.status(400).send(verifyPage('error', 'Kein Token angegeben.'));
+    return;
+  }
+
+  const user = await prisma.user.findUnique({ where: { emailVerificationToken: token } });
+  if (!user) {
+    res.status(400).send(verifyPage('error', 'Ungültiger oder bereits verwendeter Link.'));
+    return;
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerified: true, emailVerificationToken: null },
+  });
+
+  res.send(verifyPage('success', `Hallo ${user.name}, deine E-Mail wurde bestätigt. Du kannst die App jetzt öffnen und dich einloggen.`));
 });
 
 authRouter.post('/login', async (req: Request, res: Response) => {
@@ -77,10 +106,15 @@ authRouter.post('/login', async (req: Request, res: Response) => {
     return;
   }
 
+  if (!user.emailVerified) {
+    res.status(403).json({ error: 'EMAIL_NOT_VERIFIED' });
+    return;
+  }
+
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '30d' });
 
-  const { password: _, ...userWithoutPassword } = user;
-  res.json({ token, user: userWithoutPassword });
+  const { password: _, emailVerificationToken: __, ...userWithoutSecrets } = user;
+  res.json({ token, user: userWithoutSecrets });
 });
 
 authRouter.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
@@ -135,3 +169,20 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
 
   res.json(user);
 });
+
+function verifyPage(type: 'success' | 'error', message: string) {
+  const color = type === 'success' ? '#00e87a' : '#ef4444';
+  const icon = type === 'success' ? '✓' : '✗';
+  return `<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FairwayIQ – E-Mail Bestätigung</title>
+<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#07070f;font-family:sans-serif;color:#f0f0ff}
+.card{background:#0e0e1a;border:1px solid #1e1e2e;border-radius:16px;padding:40px 32px;max-width:400px;text-align:center}
+.icon{font-size:48px;color:${color};margin-bottom:16px}
+h1{margin:0 0 12px;font-size:22px;color:${color}}
+p{color:#8888aa;margin:0;line-height:1.6}</style>
+</head>
+<body><div class="card"><div class="icon">${icon}</div><h1>FairwayIQ</h1><p>${message}</p></div></body>
+</html>`;
+}

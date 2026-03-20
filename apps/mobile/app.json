@@ -14,7 +14,17 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fairwayiq.app"
+      "bundleIdentifier": "com.fairwayiq.app",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "FairwayIQ verwendet die Kamera nicht.",
+        "NSHealthShareUsageDescription": "FairwayIQ liest Fitness- und Aktivit\u00e4tsdaten f\u00fcr deine Golfrunden.",
+        "NSHealthUpdateUsageDescription": "FairwayIQ speichert keine Gesundheitsdaten."
+      },
+      "entitlements": {
+        "com.apple.developer.healthkit": true,
+        "com.apple.developer.healthkit.background-delivery": true
+      }
     },
     "android": {
       "adaptiveIcon": {

@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../src/lib/api';
 import { useTheme } from '../../src/lib/theme';
 
@@ -36,11 +37,11 @@ interface FeedEntry {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
-const LEVEL_META: Record<GolferLevel, { icon: string; color: string; short: string }> = {
-  BEGINNER:     { icon: '🌱', color: '#00e87a', short: 'ANF' },
-  INTERMEDIATE: { icon: '⚡', color: '#f59e0b', short: 'FORT' },
-  ADVANCED:     { icon: '🔥', color: '#f97316', short: 'GEÜ' },
-  PRO:          { icon: '💎', color: '#a855f7', short: 'PRO' },
+const LEVEL_META: Record<GolferLevel, { icon: string; color: string }> = {
+  BEGINNER:     { icon: '🌱', color: '#00e87a' },
+  INTERMEDIATE: { icon: '⚡', color: '#f59e0b' },
+  ADVANCED:     { icon: '🔥', color: '#f97316' },
+  PRO:          { icon: '💎', color: '#a855f7' },
 };
 
 function scoreDiff(n: number) {
@@ -56,15 +57,23 @@ function scoreColor(d: number) {
   return '#ef4444';
 }
 
-function timeAgo(iso: string) {
+function timeAgo(iso: string, lang: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3_600_000);
   const d = Math.floor(diff / 86_400_000);
-  if (h < 1) return 'Gerade eben';
-  if (h < 24) return `vor ${h}h`;
-  if (d < 7) return `vor ${d}d`;
-  return new Date(iso).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' });
+  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
+  if (h < 1) return rtf.format(-Math.floor(diff / 60_000), 'minute');
+  if (h < 24) return rtf.format(-h, 'hour');
+  if (d < 7) return rtf.format(-d, 'day');
+  return new Date(iso).toLocaleDateString(lang, { day: 'numeric', month: 'short' });
 }
+
+const TABS = [
+  { key: 'feed',    icon: 'newspaper-outline' },
+  { key: 'ranking', icon: 'podium-outline' },
+  { key: 'friends', icon: 'people-outline' },
+] as const;
+type TabKey = typeof TABS[number]['key'];
 
 // ── Avatar ─────────────────────────────────────────────────────────────
 function Avatar({ name, level, size = 40 }: { name: string; level: GolferLevel; size?: number }) {
@@ -83,16 +92,9 @@ function Avatar({ name, level, size = 40 }: { name: string; level: GolferLevel; 
   );
 }
 
-// ── Tab Bar ───────────────────────────────────────────────────────────
-const TABS = [
-  { key: 'feed',      label: 'Feed',       icon: 'newspaper-outline' },
-  { key: 'ranking',   label: 'Rangliste',  icon: 'podium-outline' },
-  { key: 'friends',   label: 'Freunde',    icon: 'people-outline' },
-] as const;
-type TabKey = typeof TABS[number]['key'];
-
 // ── Feed Tab ──────────────────────────────────────────────────────────
 function FeedTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: () => void }) {
+  const { t, i18n } = useTranslation();
   const c = useTheme();
   const [feed, setFeed] = useState<FeedEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -114,10 +116,8 @@ function FeedTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: ()
   if (feed.length === 0) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 }}>
       <Text style={{ fontSize: 40 }}>⛳</Text>
-      <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>Noch keine Aktivität</Text>
-      <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>
-        Füge Freunde hinzu, um ihre Runden hier zu sehen.
-      </Text>
+      <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>{t('social.feed.empty')}</Text>
+      <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('social.feed.emptyHint')}</Text>
     </View>
   );
 
@@ -128,55 +128,52 @@ function FeedTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: ()
       showsVerticalScrollIndicator={false}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
     >
-      {feed.map((entry) => {
-        const meta = LEVEL_META[entry.user.level];
-        return (
-          <View key={entry.id} style={{
-            backgroundColor: c.bgCard, borderRadius: 16,
-            borderWidth: 1, borderColor: c.bgBorder, overflow: 'hidden',
-          }}>
-            {/* User row */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 }}>
-              <Avatar name={entry.user.name} level={entry.user.level} size={40} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 14 }}>{entry.user.name}</Text>
-                <Text style={{ color: c.inkMuted, fontSize: 12 }}>
-                  {entry.course.name} · {timeAgo(entry.date)}
-                </Text>
-              </View>
-              {/* Score badge */}
-              <View style={{
-                paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
-                backgroundColor: scoreColor(entry.scoreToPar) + '18',
-                borderWidth: 1, borderColor: scoreColor(entry.scoreToPar) + '60',
-              }}>
-                <Text style={{ color: scoreColor(entry.scoreToPar), fontWeight: 'bold', fontSize: 18 }}>
-                  {entry.gross}
-                </Text>
-                <Text style={{ color: scoreColor(entry.scoreToPar), fontSize: 10, fontWeight: '700', textAlign: 'center' }}>
-                  {scoreDiff(entry.scoreToPar)}
-                </Text>
-              </View>
+      {feed.map((entry) => (
+        <View key={entry.id} style={{
+          backgroundColor: c.bgCard, borderRadius: 16,
+          borderWidth: 1, borderColor: c.bgBorder, overflow: 'hidden',
+        }}>
+          {/* User row */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 }}>
+            <Avatar name={entry.user.name} level={entry.user.level} size={40} />
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 14 }}>{entry.user.name}</Text>
+              <Text style={{ color: c.inkMuted, fontSize: 12 }}>
+                {entry.course.name} · {timeAgo(entry.date, i18n.language)}
+              </Text>
             </View>
-            {/* Stats row */}
+            {/* Score badge */}
             <View style={{
-              flexDirection: 'row', borderTopWidth: 1, borderTopColor: c.bgBorder,
-              paddingHorizontal: 14, paddingVertical: 10, gap: 20,
+              paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+              backgroundColor: scoreColor(entry.scoreToPar) + '18',
+              borderWidth: 1, borderColor: scoreColor(entry.scoreToPar) + '60',
             }}>
-              {[
-                { label: 'PUTTS', value: String(entry.putts) },
-                { label: 'GIR', value: `${entry.gir}/18` },
-                { label: 'HCP', value: entry.user.handicap != null ? String(entry.user.handicap) : '—' },
-              ].map((s) => (
-                <View key={s.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Text style={{ color: c.inkMuted, fontSize: 10 }}>{s.label}</Text>
-                  <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: 'bold' }}>{s.value}</Text>
-                </View>
-              ))}
+              <Text style={{ color: scoreColor(entry.scoreToPar), fontWeight: 'bold', fontSize: 18 }}>
+                {entry.gross}
+              </Text>
+              <Text style={{ color: scoreColor(entry.scoreToPar), fontSize: 10, fontWeight: '700', textAlign: 'center' }}>
+                {scoreDiff(entry.scoreToPar)}
+              </Text>
             </View>
           </View>
-        );
-      })}
+          {/* Stats row */}
+          <View style={{
+            flexDirection: 'row', borderTopWidth: 1, borderTopColor: c.bgBorder,
+            paddingHorizontal: 14, paddingVertical: 10, gap: 20,
+          }}>
+            {[
+              { label: 'PUTTS', value: String(entry.putts) },
+              { label: 'GIR', value: `${entry.gir}/18` },
+              { label: 'HCP', value: entry.user.handicap != null ? String(entry.user.handicap) : '—' },
+            ].map((s) => (
+              <View key={s.label} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                <Text style={{ color: c.inkMuted, fontSize: 10 }}>{s.label}</Text>
+                <Text style={{ color: c.inkSecondary, fontSize: 11, fontWeight: 'bold' }}>{s.value}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ))}
       <View style={{ height: 20 }} />
     </ScrollView>
   );
@@ -184,6 +181,7 @@ function FeedTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: ()
 
 // ── Ranking Tab ───────────────────────────────────────────────────────
 function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: () => void }) {
+  const { t } = useTranslation();
   const c = useTheme();
   const [scope, setScope] = useState<'global' | 'friends'>('global');
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -219,7 +217,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
             onPress={() => setScope(s)}
           >
             <Text style={{ color: scope === s ? '#07070f' : c.inkMuted, fontWeight: '700', fontSize: 12 }}>
-              {s === 'global' ? '🌍 Global' : '👥 Freunde'}
+              {t(`social.ranking.${s}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -232,7 +230,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
       ) : entries.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <Text style={{ color: c.inkMuted, fontSize: 14 }}>
-            {scope === 'friends' ? 'Noch keine Freunde mit HCP' : 'Keine Einträge'}
+            {scope === 'friends' ? t('social.ranking.noFriendsHcp') : t('social.ranking.noEntries')}
           </Text>
         </View>
       ) : (
@@ -245,7 +243,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
           {/* Header row */}
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 8 }}>
             <Text style={{ width: 36, color: c.inkMuted, fontSize: 10, fontWeight: '700' }}>#</Text>
-            <Text style={{ flex: 1, color: c.inkMuted, fontSize: 10, fontWeight: '700' }}>SPIELER</Text>
+            <Text style={{ flex: 1, color: c.inkMuted, fontSize: 10, fontWeight: '700' }}>{t('social.ranking.player')}</Text>
             <Text style={{ width: 44, color: c.inkMuted, fontSize: 10, fontWeight: '700', textAlign: 'center' }}>HCP</Text>
             <Text style={{ width: 44, color: c.inkMuted, fontSize: 10, fontWeight: '700', textAlign: 'center' }}>Ø</Text>
             <Text style={{ width: 44, color: c.inkMuted, fontSize: 10, fontWeight: '700', textAlign: 'center' }}>BEST</Text>
@@ -286,12 +284,12 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                     </Text>
                     {entry.isMe && (
                       <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, backgroundColor: '#00e87a25' }}>
-                        <Text style={{ color: '#00e87a', fontSize: 9, fontWeight: '700' }}>DU</Text>
+                        <Text style={{ color: '#00e87a', fontSize: 9, fontWeight: '700' }}>{t('social.ranking.me')}</Text>
                       </View>
                     )}
                   </View>
                   <Text style={{ color: c.inkMuted, fontSize: 11 }}>
-                    {LEVEL_META[entry.level].icon} {entry.rounds} Runden
+                    {LEVEL_META[entry.level].icon} {entry.rounds} {t('social.ranking.rounds')}
                   </Text>
                 </View>
               </View>
@@ -316,6 +314,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
 
 // ── Friends Tab ───────────────────────────────────────────────────────
 function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: () => void }) {
+  const { t } = useTranslation();
   const c = useTheme();
   const [friends, setFriends] = useState<FriendUser[]>([]);
   const [requests, setRequests] = useState<FriendUser[]>([]);
@@ -323,7 +322,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
-  const searchTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const load = useCallback(async () => {
     try {
@@ -353,24 +352,24 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   const sendRequest = async (userId: string) => {
     try {
       await api.post('/social/request', { userId });
-      Alert.alert('Gesendet!', 'Freundschaftsanfrage wurde gesendet.');
+      Alert.alert(t('social.friends.sent'), t('social.friends.sentMsg'));
       setSearchQuery('');
       setSearchResults([]);
       load();
     } catch (e: any) {
-      Alert.alert('Fehler', e?.response?.data?.error ?? 'Anfrage konnte nicht gesendet werden.');
+      Alert.alert(t('common.error'), e?.response?.data?.error ?? t('social.friends.cannotSend'));
     }
   };
 
   const acceptRequest = async (friendshipId: string) => {
     try { await api.put(`/social/request/${friendshipId}/accept`); load(); }
-    catch { Alert.alert('Fehler', 'Konnte nicht akzeptiert werden.'); }
+    catch { Alert.alert(t('common.error'), t('social.friends.cannotAccept')); }
   };
 
   const removeFriend = (friend: FriendUser) => {
-    Alert.alert(`${friend.name} entfernen?`, 'Diese Person aus deiner Freundesliste entfernen?', [
-      { text: 'Abbrechen', style: 'cancel' },
-      { text: 'Entfernen', style: 'destructive', onPress: async () => {
+    Alert.alert(t('social.friends.removeTitle', { name: friend.name }), t('social.friends.removeMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.remove'), style: 'destructive', onPress: async () => {
         try { await api.delete(`/social/friends/${friend.friendshipId}`); load(); }
         catch {}
       }},
@@ -403,7 +402,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
         <Ionicons name="search-outline" size={16} color={c.inkMuted} />
         <TextInput
           style={{ flex: 1, color: c.inkPrimary, fontSize: 15 }}
-          placeholder="Name oder E-Mail suchen…"
+          placeholder={t('social.friends.searchPlaceholder')}
           placeholderTextColor={c.inkMuted}
           value={searchQuery}
           onChangeText={onSearch}
@@ -422,10 +421,10 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
       {showSearch && (
         <View>
           <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
-            Suchergebnisse
+            {t('social.friends.searchResults')}
           </Text>
           {searchResults.length === 0 && !searching ? (
-            <Text style={{ color: c.inkMuted, fontSize: 14 }}>Keine Ergebnisse gefunden.</Text>
+            <Text style={{ color: c.inkMuted, fontSize: 14 }}>{t('social.friends.noResults')}</Text>
           ) : (
             searchResults.map((u) => (
               <View key={u.id} style={{
@@ -438,23 +437,25 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700' }}>{u.name}</Text>
                   <Text style={{ color: c.inkMuted, fontSize: 12 }}>
-                    {u.handicap != null ? `HCP ${u.handicap}` : 'Kein HCP'}{u.homeClub ? ` · ${u.homeClub}` : ''}
+                    {u.handicap != null ? `HCP ${u.handicap}` : t('social.friends.noHcp')}{u.homeClub ? ` · ${u.homeClub}` : ''}
                   </Text>
                 </View>
                 {u.friendshipStatus === 'ACCEPTED' ? (
                   <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: '#00e87a20' }}>
-                    <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: '700' }}>✓ Freund</Text>
+                    <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: '700' }}>{t('social.friends.isFriend')}</Text>
                   </View>
                 ) : u.friendshipStatus === 'PENDING' ? (
                   <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: c.bgElevated }}>
-                    <Text style={{ color: c.inkMuted, fontSize: 12 }}>{u.isSender ? 'Ausstehend' : 'Anfrage'}</Text>
+                    <Text style={{ color: c.inkMuted, fontSize: 12 }}>
+                      {u.isSender ? t('social.friends.pending') : t('social.friends.request')}
+                    </Text>
                   </View>
                 ) : (
                   <TouchableOpacity
-                    onPress={() => sendRequest(u.id)}  // pass email — actually we need email
+                    onPress={() => sendRequest(u.id)}
                     style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a' }}
                   >
-                    <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: '700' }}>+ Hinzufügen</Text>
+                    <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: '700' }}>{t('social.friends.addFriend')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -467,7 +468,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
       {!showSearch && requests.length > 0 && (
         <View>
           <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
-            Anfragen ({requests.length})
+            {t('social.friends.requests', { count: requests.length })}
           </Text>
           {requests.map((req) => (
             <View key={req.friendshipId} style={{
@@ -480,14 +481,14 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
               <View style={{ flex: 1 }}>
                 <Text style={{ color: c.inkPrimary, fontWeight: '700' }}>{req.name}</Text>
                 <Text style={{ color: c.inkMuted, fontSize: 12 }}>
-                  {req.handicap != null ? `HCP ${req.handicap}` : 'Kein HCP'}
+                  {req.handicap != null ? `HCP ${req.handicap}` : t('social.friends.noHcp')}
                 </Text>
               </View>
               <TouchableOpacity
                 onPress={() => acceptRequest(req.friendshipId)}
                 style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#00e87a', marginRight: 6 }}
               >
-                <Text style={{ color: '#07070f', fontSize: 12, fontWeight: '700' }}>Annehmen</Text>
+                <Text style={{ color: '#07070f', fontSize: 12, fontWeight: '700' }}>{t('social.friends.accept')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => removeFriend(req)}
@@ -504,15 +505,13 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
       {!showSearch && (
         <View>
           <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 10 }}>
-            Freunde{friends.length > 0 ? ` (${friends.length})` : ''}
+            {t('social.friends.friendsList')}{friends.length > 0 ? ` (${friends.length})` : ''}
           </Text>
           {friends.length === 0 ? (
             <View style={{ alignItems: 'center', paddingVertical: 32, gap: 8 }}>
               <Text style={{ fontSize: 40 }}>👥</Text>
-              <Text style={{ color: c.inkSecondary, fontWeight: '600' }}>Noch keine Freunde</Text>
-              <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>
-                Suche nach anderen Spielern um sie hinzuzufügen.
-              </Text>
+              <Text style={{ color: c.inkSecondary, fontWeight: '600' }}>{t('social.friends.noFriends')}</Text>
+              <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('social.friends.noFriendsHint')}</Text>
             </View>
           ) : (
             friends.map((friend) => (
@@ -527,7 +526,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{friend.name}</Text>
                   <Text style={{ color: c.inkMuted, fontSize: 12 }}>
                     {LEVEL_META[friend.level].icon}
-                    {friend.handicap != null ? ` HCP ${friend.handicap}` : ' Kein HCP'}
+                    {friend.handicap != null ? ` HCP ${friend.handicap}` : ` ${t('social.friends.noHcp')}`}
                     {friend.homeClub ? ` · ${friend.homeClub}` : ''}
                   </Text>
                 </View>
@@ -547,6 +546,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
 
 // ── Main Screen ───────────────────────────────────────────────────────
 export default function SocialScreen() {
+  const { t } = useTranslation();
   const c = useTheme();
   const [activeTab, setActiveTab] = useState<TabKey>('feed');
   const [refreshing, setRefreshing] = useState(false);
@@ -561,9 +561,9 @@ export default function SocialScreen() {
       {/* Header */}
       <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
         <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
-          Community
+          {t('social.sectionLabel')}
         </Text>
-        <Text style={{ color: c.inkPrimary, fontSize: 24, fontWeight: 'bold' }}>Social</Text>
+        <Text style={{ color: c.inkPrimary, fontSize: 24, fontWeight: 'bold' }}>{t('social.title')}</Text>
       </View>
 
       {/* Internal Tab Bar */}
@@ -587,7 +587,7 @@ export default function SocialScreen() {
             >
               <Ionicons name={tab.icon as any} size={14} color={active ? '#00e87a' : c.inkMuted} />
               <Text style={{ fontSize: 12, fontWeight: '700', color: active ? '#00e87a' : c.inkMuted }}>
-                {tab.label}
+                {t(`social.tabs.${tab.key}`)}
               </Text>
             </TouchableOpacity>
           );
