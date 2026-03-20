@@ -9,6 +9,7 @@ import { progressRouter } from './routes/progress';
 import { gamificationRouter } from './routes/gamification';
 import { clubsRouter } from './routes/clubs';
 import { goalsRouter } from './routes/goals';
+import { socialRouter } from './routes/social';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/progress', progressRouter);
 app.use('/api/gamification', gamificationRouter);
 app.use('/api/clubs', clubsRouter);
 app.use('/api/goals', goalsRouter);
+app.use('/api/social', socialRouter);
 
 app.listen(PORT, () => {
   console.log(`FairwayIQ Backend running on port ${PORT}`);

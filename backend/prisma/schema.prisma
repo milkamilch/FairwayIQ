@@ -29,6 +29,11 @@ enum TrainingDifficulty {
   HARD
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+}
+
 enum ClubType {
   DRIVER
   FAIRWAY_WOOD
@@ -81,6 +86,22 @@ model User {
   badges            UserBadge[]
   clubs             Club[]
   goals             UserGoal[]
+  sentRequests      Friendship[] @relation("FriendshipRequester")
+  receivedRequests  Friendship[] @relation("FriendshipAddressee")
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+
+  requester User @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee User @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId])
 }
 
 model Club {
@@ -155,6 +176,7 @@ model TrainingDrill {
   videoUrl    String?
   tips        String[]
   isLibrary   Boolean            @default(false)
+  canDoAtHome Boolean            @default(false)
 
   trainingDayDrills TrainingDayDrill[]
   results           DrillResult[]
