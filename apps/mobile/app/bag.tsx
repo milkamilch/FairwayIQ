@@ -88,8 +88,8 @@ function ClubModal({
           </Text>
           <TouchableOpacity onPress={save} disabled={saving}>
             {saving
-              ? <ActivityIndicator size="small" color="#00e87a" />
-              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>{t('common.save')}</Text>
+              ? <ActivityIndicator size="small" color="#FF6535" />
+              : <Text style={{ color: '#FF6535', fontWeight: 'bold', fontSize: 14 }}>{t('common.save')}</Text>
             }
           </TouchableOpacity>
         </View>
@@ -110,12 +110,12 @@ function ClubModal({
                     onPress={() => { setType(clubType); setName(''); }}
                     style={{
                       paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20,
-                      backgroundColor: active ? '#00e87a20' : c.bgCard,
+                      backgroundColor: active ? '#FF653520' : c.bgCard,
                       borderWidth: 1,
-                      borderColor: active ? '#00e87a' : c.bgBorder,
+                      borderColor: active ? '#FF6535' : c.bgBorder,
                     }}
                   >
-                    <Text style={{ color: active ? '#00e87a' : c.inkSecondary, fontWeight: '600', fontSize: 13 }}>
+                    <Text style={{ color: active ? '#FF6535' : c.inkSecondary, fontWeight: '600', fontSize: 13 }}>
                       {m.icon} {t(`bag.types.${clubType}`)}
                     </Text>
                   </TouchableOpacity>
@@ -150,12 +150,12 @@ function ClubModal({
                     onPress={() => setName(s)}
                     style={{
                       paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
-                      backgroundColor: name === s ? '#00e87a20' : c.bgCard,
+                      backgroundColor: name === s ? '#FF653520' : c.bgCard,
                       borderWidth: 1,
-                      borderColor: name === s ? '#00e87a' : c.bgBorder,
+                      borderColor: name === s ? '#FF6535' : c.bgBorder,
                     }}
                   >
-                    <Text style={{ color: name === s ? '#00e87a' : c.inkMuted, fontSize: 12 }}>{s}</Text>
+                    <Text style={{ color: name === s ? '#FF6535' : c.inkMuted, fontSize: 12 }}>{s}</Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -243,17 +243,17 @@ export default function BagScreen() {
           style={{
             flexDirection: 'row', alignItems: 'center', gap: 6,
             paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
-            backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a',
+            backgroundColor: '#FF653520', borderWidth: 1, borderColor: '#FF6535',
           }}
         >
-          <Ionicons name="add" size={16} color="#00e87a" />
-          <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: 'bold' }}>{t('bag.addButton')}</Text>
+          <Ionicons name="add" size={16} color="#FF6535" />
+          <Text style={{ color: '#FF6535', fontSize: 12, fontWeight: 'bold' }}>{t('bag.addButton')}</Text>
         </TouchableOpacity>
       </View>
 
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator color="#00e87a" />
+          <ActivityIndicator color="#FF6535" />
         </View>
       ) : clubs.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
@@ -264,11 +264,11 @@ export default function BagScreen() {
             onPress={() => setShowAdd(true)}
             style={{
               marginTop: 8, paddingHorizontal: 24, paddingVertical: 12,
-              borderRadius: 12, backgroundColor: '#00e87a20',
-              borderWidth: 1, borderColor: '#00e87a',
+              borderRadius: 12, backgroundColor: '#FF653520',
+              borderWidth: 1, borderColor: '#FF6535',
             }}
           >
-            <Text style={{ color: '#00e87a', fontWeight: 'bold' }}>{t('bag.addFirst')}</Text>
+            <Text style={{ color: '#FF6535', fontWeight: 'bold' }}>{t('bag.addFirst')}</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -300,9 +300,9 @@ export default function BagScreen() {
                       {club.distanceM != null && (
                         <View style={{
                           paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
-                          backgroundColor: '#00e87a15', marginRight: 12,
+                          backgroundColor: '#FF653520', marginRight: 12,
                         }}>
-                          <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 13 }}>
+                          <Text style={{ color: '#FF6535', fontWeight: 'bold', fontSize: 13 }}>
                             {club.distanceM} m
                           </Text>
                         </View>

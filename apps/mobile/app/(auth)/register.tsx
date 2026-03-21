@@ -35,10 +35,10 @@ export default function RegisterScreen() {
   if (pendingEmail) {
     return (
       <View className="flex-1 bg-bg-base items-center justify-center px-8">
-        <View className="w-20 h-20 rounded-2xl bg-neon-glow border border-neon-green items-center justify-center mb-6">
-          <Ionicons name="mail-outline" size={40} color="#00e87a" />
+        <View className="w-20 h-20 rounded-3xl items-center justify-center mb-6" style={{ backgroundColor: '#FF653520' }}>
+          <Ionicons name="mail-outline" size={40} color="#FF6535" />
         </View>
-        <Text className="text-ink-primary text-2xl font-bold text-center mb-3">
+        <Text className="text-ink-primary text-3xl font-black text-center mb-3">
           {t('auth.register.pendingTitle')}
         </Text>
         <Text className="text-ink-secondary text-sm text-center mb-2">
@@ -49,10 +49,10 @@ export default function RegisterScreen() {
           {t('auth.register.pendingHint')}
         </Text>
         <TouchableOpacity
-          className="rounded-xl py-4 px-8 items-center border border-bg-border w-full"
+          className="rounded-2xl py-4 px-8 items-center bg-bg-card w-full"
           onPress={() => router.replace('/(auth)/login')}
         >
-          <Text className="text-ink-primary font-semibold text-base">{t('auth.register.pendingLogin')}</Text>
+          <Text className="text-ink-primary font-bold text-base">{t('auth.register.pendingLogin')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -71,19 +71,19 @@ export default function RegisterScreen() {
         <View className="flex-1 justify-center px-6 py-12">
 
           <View className="mb-10">
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">FairwayIQ</Text>
-            <Text className="text-ink-primary text-3xl font-bold">{t('auth.register.title')}</Text>
-            <Text className="text-ink-secondary text-sm mt-1">{t('auth.register.subtitle')}</Text>
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-2">FairwayIQ</Text>
+            <Text className="text-ink-primary text-4xl font-black">{t('auth.register.title')}</Text>
+            <Text className="text-ink-secondary text-base mt-2">{t('auth.register.subtitle')}</Text>
           </View>
 
           <View className="gap-4">
             {fields.map((f) => (
               <View key={f.label}>
-                <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">{f.label}</Text>
+                <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-2">{f.label}</Text>
                 <TextInput
-                  className="bg-bg-card border border-bg-border text-ink-primary rounded-xl px-4 py-4 text-base"
+                  className="bg-bg-card text-ink-primary rounded-2xl px-4 py-4 text-base"
                   placeholder={f.placeholder}
-                  placeholderTextColor="#44445a"
+                  placeholderTextColor="#444444"
                   keyboardType={f.keyboard}
                   autoCapitalize="none"
                   secureTextEntry={f.secure}
@@ -94,19 +94,19 @@ export default function RegisterScreen() {
             ))}
 
             {handicap === '' && (
-              <View className="flex-row items-center gap-2 px-3 py-2 rounded-lg bg-bg-elevated border border-bg-border">
+              <View className="flex-row items-center gap-2 px-3 py-2.5 rounded-xl bg-bg-elevated">
                 <Text className="text-neon-green text-xs">ⓘ</Text>
                 <Text className="text-ink-secondary text-xs">{t('auth.register.handicapHint')}</Text>
               </View>
             )}
 
             <TouchableOpacity
-              className="rounded-xl py-4 items-center mt-2"
-              style={{ backgroundColor: '#00e87a', opacity: isLoading ? 0.6 : 1 }}
+              className="rounded-2xl py-4 items-center mt-2"
+              style={{ backgroundColor: '#FF6535', opacity: isLoading ? 0.6 : 1 }}
               onPress={handleRegister}
               disabled={isLoading}
             >
-              <Text className="text-bg-base font-bold text-base tracking-wide">
+              <Text className="text-white font-black text-base tracking-wide">
                 {isLoading ? t('auth.register.registering') : t('auth.register.registerButton')}
               </Text>
             </TouchableOpacity>
@@ -114,13 +114,13 @@ export default function RegisterScreen() {
 
           <View className="flex-row items-center my-8">
             <View className="flex-1 h-px bg-bg-border" />
-            <Text className="text-ink-muted text-xs px-3">{t('auth.register.alreadyRegistered')}</Text>
+            <Text className="text-ink-muted text-xs px-4">{t('auth.register.alreadyRegistered')}</Text>
             <View className="flex-1 h-px bg-bg-border" />
           </View>
 
           <Link href="/(auth)/login" asChild>
-            <TouchableOpacity className="rounded-xl py-4 items-center border border-bg-border">
-              <Text className="text-ink-primary font-semibold text-base">{t('auth.register.loginLink')}</Text>
+            <TouchableOpacity className="rounded-2xl py-4 items-center bg-bg-card">
+              <Text className="text-ink-primary font-bold text-base">{t('auth.register.loginLink')}</Text>
             </TouchableOpacity>
           </Link>
         </View>

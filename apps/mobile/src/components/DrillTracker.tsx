@@ -45,7 +45,7 @@ function Stepper({
         >
           <Ionicons name="remove" size={16} color={value > min ? c.inkSecondary : c.bgBorder} />
         </TouchableOpacity>
-        <Text className="text-3xl font-bold w-12 text-center" style={{ color }}>{value}</Text>
+        <Text className="text-3xl font-black w-12 text-center" style={{ color }}>{value}</Text>
         <TouchableOpacity
           className="w-9 h-9 rounded-full items-center justify-center"
           style={{ backgroundColor: c.bgElevated, borderWidth: 1, borderColor: c.bgBorder }}
@@ -76,7 +76,7 @@ function Sparkline({ data }: { data: number[] }) {
               flex: 1,
               height,
               borderRadius: 2,
-              backgroundColor: isLast ? '#00e87a' : '#00e87a40',
+              backgroundColor: isLast ? '#FF6535' : '#FF653540',
             }}
           />
         );
@@ -104,7 +104,7 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
 
   const rate = attempts > 0 ? hits / attempts : 0;
   const pct = Math.round(rate * 100);
-  const rateColor = rate >= 0.8 ? '#00e87a' : rate >= 0.5 ? '#f59e0b' : '#f97316';
+  const rateColor = rate >= 0.8 ? '#FF6535' : rate >= 0.5 ? '#f59e0b' : '#f97316';
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -142,7 +142,7 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
         className="px-4 py-2.5 flex-row items-center gap-2"
         style={{ backgroundColor: c.bgCard, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}
       >
-        <Ionicons name="stats-chart-outline" size={13} color="#00e87a" />
+        <Ionicons name="stats-chart-outline" size={13} color="#FF6535" />
         <Text className="text-neon-green text-xs font-bold uppercase tracking-widest">Treffer erfassen</Text>
       </View>
 
@@ -169,18 +169,18 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
         <TouchableOpacity
           className="rounded-xl py-3 items-center flex-row justify-center gap-2"
           style={{
-            backgroundColor: saved ? c.neonGreen20 : '#00e87a',
+            backgroundColor: saved ? c.neonGreen20 : '#FF6535',
             borderWidth: saved ? 1 : 0,
-            borderColor: saved ? '#00e87a' : 'transparent',
+            borderColor: saved ? '#FF6535' : 'transparent',
           }}
           onPress={handleSave}
           disabled={saving || saved}
         >
           {saving
-            ? <ActivityIndicator size="small" color={saved ? '#00e87a' : '#07070f'} />
-            : <Ionicons name={saved ? 'checkmark-circle' : 'save-outline'} size={16} color={saved ? '#00e87a' : '#07070f'} />
+            ? <ActivityIndicator size="small" color={saved ? '#FF6535' : '#0A0A0A'} />
+            : <Ionicons name={saved ? 'checkmark-circle' : 'save-outline'} size={16} color={saved ? '#FF6535' : '#0A0A0A'} />
           }
-          <Text className="text-sm font-bold" style={{ color: saved ? '#00e87a' : '#07070f' }}>
+          <Text className="text-sm font-bold" style={{ color: saved ? '#FF6535' : '#0A0A0A' }}>
             {saved ? 'Gespeichert' : 'Ergebnis speichern'}
           </Text>
         </TouchableOpacity>
@@ -218,11 +218,11 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
                     <Ionicons
                       name={stats.trend > 0.02 ? 'trending-up' : stats.trend < -0.02 ? 'trending-down' : 'remove'}
                       size={14}
-                      color={stats.trend > 0.02 ? '#00e87a' : stats.trend < -0.02 ? '#f97316' : c.inkMuted}
+                      color={stats.trend > 0.02 ? '#FF6535' : stats.trend < -0.02 ? '#f97316' : c.inkMuted}
                     />
                     <Text
                       className="font-bold text-sm"
-                      style={{ color: stats.trend > 0.02 ? '#00e87a' : stats.trend < -0.02 ? '#f97316' : c.inkMuted }}
+                      style={{ color: stats.trend > 0.02 ? '#FF6535' : stats.trend < -0.02 ? '#f97316' : c.inkMuted }}
                     >
                       {stats.trend > 0 ? '+' : ''}{Math.round(stats.trend * 100)}%
                     </Text>
@@ -242,10 +242,10 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
                     <View className="flex-1 mx-3 bg-bg-elevated rounded-full h-1.5 overflow-hidden">
                       <View
                         className="h-1.5 rounded-full"
-                        style={{ width: `${r_rate}%`, backgroundColor: r_rate >= 80 ? '#00e87a' : r_rate >= 50 ? '#f59e0b' : '#f97316' }}
+                        style={{ width: `${r_rate}%`, backgroundColor: r_rate >= 80 ? '#FF6535' : r_rate >= 50 ? '#f59e0b' : '#f97316' }}
                       />
                     </View>
-                    <Text className="text-xs font-semibold w-14 text-right" style={{ color: r_rate >= 80 ? '#00e87a' : c.inkSecondary }}>
+                    <Text className="text-xs font-semibold w-14 text-right" style={{ color: r_rate >= 80 ? '#FF6535' : c.inkSecondary }}>
                       {r.hits}/{r.attempts} ({r_rate}%)
                     </Text>
                   </View>

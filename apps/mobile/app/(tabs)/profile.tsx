@@ -27,18 +27,18 @@ interface UserGoal {
   createdAt: string;
 }
 
-const GOAL_TYPE_META: Record<GoalType, { icon: string }> = {
-  HCP_TARGET:   { icon: '🏆' },
-  ROUNDS_COUNT: { icon: '⛳' },
-  SCORE_TARGET: { icon: '🎯' },
-  CUSTOM:       { icon: '✨' },
+const GOAL_TYPE_META: Record<GoalType, { iconName: string }> = {
+  HCP_TARGET:   { iconName: 'trophy-outline' },
+  ROUNDS_COUNT: { iconName: 'golf-outline' },
+  SCORE_TARGET: { iconName: 'flag-outline' },
+  CUSTOM:       { iconName: 'star-outline' },
 };
 
-const levelMeta: Record<string, { color: string; icon: string }> = {
-  BEGINNER:     { color: '#00e87a', icon: '🌱' },
-  INTERMEDIATE: { color: '#f59e0b', icon: '⚡' },
-  ADVANCED:     { color: '#f97316', icon: '🔥' },
-  PRO:          { color: '#a855f7', icon: '💎' },
+const levelMeta: Record<string, { color: string; iconName: string }> = {
+  BEGINNER:     { color: '#FF6535', iconName: 'leaf-outline' },
+  INTERMEDIATE: { color: '#f59e0b', iconName: 'flash-outline' },
+  ADVANCED:     { color: '#f97316', iconName: 'flame-outline' },
+  PRO:          { color: '#a855f7', iconName: 'diamond-outline' },
 };
 
 function scoreDiff(n: number) {
@@ -47,7 +47,7 @@ function scoreDiff(n: number) {
   return `+${n}`;
 }
 
-const labelStyle = "text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2";
+const labelStyle = "text-ink-muted text-xs font-bold uppercase tracking-widest mb-2";
 
 // ── Add Goal Modal ─────────────────────────────────────────────────
 function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
@@ -87,8 +87,8 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
           <Text style={{ color: c.inkPrimary, fontWeight: 'bold' }}>{t('profile.goals.newGoal')}</Text>
           <TouchableOpacity onPress={save} disabled={saving}>
             {saving
-              ? <ActivityIndicator size="small" color="#00e87a" />
-              : <Text style={{ color: '#00e87a', fontWeight: 'bold', fontSize: 14 }}>{t('common.save')}</Text>
+              ? <ActivityIndicator size="small" color="#FF6535" />
+              : <Text style={{ color: '#FF6535', fontWeight: 'bold', fontSize: 14 }}>{t('common.save')}</Text>
             }
           </TouchableOpacity>
         </View>
@@ -107,13 +107,13 @@ function AddGoalModal({ onClose, onSaved }: { onClose: () => void; onSaved: () =
                   style={{
                     flexDirection: 'row', alignItems: 'center', gap: 12,
                     padding: 14, borderRadius: 14,
-                    backgroundColor: type === goalType ? '#00e87a10' : c.bgCard,
+                    backgroundColor: type === goalType ? '#FF653510' : c.bgCard,
                     borderWidth: 1.5,
-                    borderColor: type === goalType ? '#00e87a' : c.bgBorder,
+                    borderColor: type === goalType ? '#FF6535' : c.bgBorder,
                   }}
                 >
-                  <Text style={{ fontSize: 20 }}>{m.icon}</Text>
-                  <Text style={{ color: type === goalType ? '#00e87a' : c.inkPrimary, fontWeight: '600', fontSize: 14 }}>
+                  <Ionicons name={m.iconName as any} size={20} color={type === goalType ? '#FF6535' : c.inkSecondary} />
+                  <Text style={{ color: type === goalType ? '#FF6535' : c.inkPrimary, fontWeight: '600', fontSize: 14 }}>
                     {t(`profile.goals.types.${goalType}`)}
                   </Text>
                 </TouchableOpacity>
@@ -255,33 +255,33 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-base">
       {/* Header */}
-      <View className="px-5 pt-4 pb-3 flex-row items-center justify-between">
+      <View className="px-5 pt-6 pb-3 flex-row items-center justify-between">
         <View>
-          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('profile.sectionLabel')}</Text>
-          <Text className="text-ink-primary text-2xl font-bold mt-0.5">{t('profile.title')}</Text>
+          <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('profile.sectionLabel')}</Text>
+          <Text className="text-ink-primary text-3xl font-black">{t('profile.title')}</Text>
         </View>
         {!editing ? (
           <TouchableOpacity
-            className="flex-row items-center gap-2 px-3 py-2 rounded-xl border border-bg-border"
-            style={{ backgroundColor: '#14141f' }}
+            className="flex-row items-center gap-2 px-3 py-2 rounded-2xl"
+            style={{ backgroundColor: c.bgElevated }}
             onPress={() => setEditing(true)}
           >
-            <Ionicons name="pencil-outline" size={14} color="#8888aa" />
-            <Text className="text-ink-secondary text-xs font-semibold">{t('profile.editButton')}</Text>
+            <Ionicons name="pencil-outline" size={14} color={c.inkSecondary} />
+            <Text style={{ color: c.inkSecondary }} className="text-xs font-semibold">{t('profile.editButton')}</Text>
           </TouchableOpacity>
         ) : (
           <View className="flex-row gap-2">
-            <TouchableOpacity className="px-3 py-2 rounded-xl border border-bg-border" onPress={cancelEdit}>
+            <TouchableOpacity className="px-3 py-2 rounded-2xl bg-bg-card" onPress={cancelEdit}>
               <Text className="text-ink-secondary text-xs font-semibold">{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               className="px-3 py-2 rounded-xl"
-              style={{ backgroundColor: saving ? '#00e87a60' : '#00e87a' }}
+              style={{ backgroundColor: saving ? '#FF653560' : '#FF6535' }}
               onPress={handleSave}
               disabled={saving}
             >
               {saving
-                ? <ActivityIndicator size="small" color="#07070f" />
+                ? <ActivityIndicator size="small" color="#0A0A0A" />
                 : <Text className="text-bg-base text-xs font-bold">{t('common.save')}</Text>
               }
             </TouchableOpacity>
@@ -293,21 +293,21 @@ export default function ProfileScreen() {
 
         {/* ── Player Card ─────────────────────────────────────────── */}
         <View
-          className="rounded-2xl p-5 mb-4 overflow-hidden"
-          style={{ backgroundColor: c.bgCard, borderWidth: 1, borderColor: meta.color + '30' }}
+          className="rounded-3xl p-5 mb-4 overflow-hidden"
+          style={{ backgroundColor: c.bgCard }}
         >
           {/* Level glow accent */}
           <View
-            className="absolute top-0 right-0 w-32 h-32 rounded-full"
-            style={{ backgroundColor: meta.color + '08', transform: [{ translateX: 40 }, { translateY: -40 }] }}
+            className="absolute top-0 right-0 w-40 h-40 rounded-full"
+            style={{ backgroundColor: meta.color + '12', transform: [{ translateX: 50 }, { translateY: -50 }] }}
           />
 
           <View className="flex-row items-center gap-4 mb-4">
             <View
               className="w-16 h-16 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: meta.color + '20', borderWidth: 1.5, borderColor: meta.color + '40' }}
+              style={{ backgroundColor: meta.color + '25' }}
             >
-              <Text style={{ fontSize: 28 }}>{meta.icon}</Text>
+              <Ionicons name={meta.iconName as any} size={28} color={meta.color} />
             </View>
             <View className="flex-1">
               {editing ? (
@@ -340,7 +340,7 @@ export default function ProfileScreen() {
             </View>
             {user?.createdAt && (
               <View className="flex-row items-center gap-1.5">
-                <Ionicons name="calendar-outline" size={11} color="#44445a" />
+                <Ionicons name="calendar-outline" size={11} color="#444444" />
                 <Text className="text-ink-muted text-xs">
                   {t('profile.since')} {new Date(user.createdAt).toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })}
                 </Text>
@@ -352,14 +352,14 @@ export default function ProfileScreen() {
         {/* ── Stats Row ────────────────────────────────────────────── */}
         <View className="flex-row gap-3 mb-4">
           {/* Handicap */}
-          <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
+          <View className="flex-1 bg-bg-card rounded-2xl p-4 items-center">
             {editing ? (
               <>
                 <Text className={`${labelStyle} text-center`}>HCP</Text>
                 <TextInput
                   className="text-ink-primary font-bold text-2xl text-center w-full"
                   placeholder="18.0"
-                  placeholderTextColor="#44445a"
+                  placeholderTextColor="#444444"
                   keyboardType="decimal-pad"
                   value={handicap}
                   onChangeText={setHandicap}
@@ -367,7 +367,7 @@ export default function ProfileScreen() {
               </>
             ) : (
               <>
-                <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">{t('profile.handicapLabel')}</Text>
+                <Text className="text-ink-muted text-xs font-bold uppercase tracking-wide mb-1" numberOfLines={1} adjustsFontSizeToFit>{t('profile.handicapLabel')}</Text>
                 <Text className="text-ink-primary font-bold text-3xl">
                   {user?.handicap !== null && user?.handicap !== undefined
                     ? user.handicap % 1 === 0 ? String(user.handicap) : user.handicap.toFixed(1)
@@ -381,8 +381,8 @@ export default function ProfileScreen() {
           </View>
 
           {/* Best Score */}
-          <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
-            <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">{t('profile.bestScore')}</Text>
+          <View className="flex-1 bg-bg-card rounded-2xl p-4 items-center">
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-wide mb-1" numberOfLines={1} adjustsFontSizeToFit>{t('profile.bestScore')}</Text>
             <Text className="text-ink-primary font-bold text-3xl">
               {stats?.bestScore !== null && stats?.bestScore !== undefined ? scoreDiff(stats.bestScore) : '—'}
             </Text>
@@ -392,8 +392,8 @@ export default function ProfileScreen() {
           </View>
 
           {/* Avg Score */}
-          <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
-            <Text className="text-ink-muted text-xs font-semibold uppercase tracking-widest mb-1">{t('profile.avgScore')}</Text>
+          <View className="flex-1 bg-bg-card rounded-2xl p-4 items-center">
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-wide mb-1" numberOfLines={1} adjustsFontSizeToFit>{t('profile.avgScore')}</Text>
             <Text className="text-ink-primary font-bold text-3xl">
               {stats?.avgScore !== null && stats?.avgScore !== undefined ? scoreDiff(Math.round(stats.avgScore)) : '—'}
             </Text>
@@ -402,11 +402,11 @@ export default function ProfileScreen() {
         </View>
 
         {/* ── Details ──────────────────────────────────────────────── */}
-        <View className="bg-bg-card border border-bg-border rounded-xl overflow-hidden mb-4">
+        <View className="bg-bg-card rounded-2xl overflow-hidden mb-4">
           {/* Home Club */}
           <View className="px-4 py-3.5 flex-row items-center gap-3 border-b border-bg-border">
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
-              <Ionicons name="flag-outline" size={16} color="#8888aa" />
+              <Ionicons name="flag-outline" size={16} color="#8A8A8A" />
             </View>
             <View className="flex-1">
               <Text className="text-ink-muted text-xs mb-0.5">{t('profile.homeClub')}</Text>
@@ -414,7 +414,7 @@ export default function ProfileScreen() {
                 <TextInput
                   className="text-ink-primary text-sm"
                   placeholder={t('profile.homeClubPlaceholder')}
-                  placeholderTextColor="#44445a"
+                  placeholderTextColor="#444444"
                   value={homeClub}
                   onChangeText={setHomeClub}
                 />
@@ -425,14 +425,14 @@ export default function ProfileScreen() {
               )}
             </View>
             {!editing && (
-              <Ionicons name="chevron-forward" size={12} color="#252535" />
+              <Ionicons name="chevron-forward" size={12} color="#2E2E2E" />
             )}
           </View>
 
           {/* E-Mail */}
           <View className="px-4 py-3.5 flex-row items-center gap-3 border-b border-bg-border">
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
-              <Ionicons name="mail-outline" size={16} color="#8888aa" />
+              <Ionicons name="mail-outline" size={16} color="#8A8A8A" />
             </View>
             <View className="flex-1">
               <Text className="text-ink-muted text-xs mb-0.5">{t('profile.email')}</Text>
@@ -443,7 +443,7 @@ export default function ProfileScreen() {
           {/* Member Since */}
           <View className="px-4 py-3.5 flex-row items-center gap-3">
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
-              <Ionicons name="time-outline" size={16} color="#8888aa" />
+              <Ionicons name="time-outline" size={16} color="#8A8A8A" />
             </View>
             <View className="flex-1">
               <Text className="text-ink-muted text-xs mb-0.5">{t('profile.memberSince')}</Text>
@@ -459,7 +459,7 @@ export default function ProfileScreen() {
         {/* ── Goals ────────────────────────────────────────────────── */}
         <View className="mb-4">
           <View className="flex-row items-center justify-between mb-3">
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('profile.goals.title')}</Text>
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('profile.goals.title')}</Text>
             <TouchableOpacity onPress={() => setShowAddGoal(true)}>
               <Text className="text-neon-green text-xs font-semibold">{t('profile.goals.add')}</Text>
             </TouchableOpacity>
@@ -467,10 +467,10 @@ export default function ProfileScreen() {
 
           {goals.length === 0 ? (
             <TouchableOpacity
-              className="bg-bg-card border border-bg-border rounded-xl p-5 items-center gap-2"
+              className="bg-bg-card rounded-2xl p-5 items-center gap-2"
               onPress={() => setShowAddGoal(true)}
             >
-              <Text style={{ fontSize: 24 }}>🎯</Text>
+              <Ionicons name="flag-outline" size={24} color={c.inkMuted} />
               <Text className="text-ink-secondary text-sm">{t('profile.goals.noGoals')}</Text>
               <Text className="text-neon-green text-sm font-semibold">{t('profile.goals.setFirst')}</Text>
             </TouchableOpacity>
@@ -482,21 +482,21 @@ export default function ProfileScreen() {
                 return (
                   <View
                     key={goal.id}
-                    className="bg-bg-card border border-bg-border rounded-xl overflow-hidden"
+                    className="bg-bg-card rounded-2xl overflow-hidden"
                     style={{ opacity: goal.isCompleted ? 0.6 : 1 }}
                   >
                     <View className="px-4 py-3 flex-row items-start gap-3">
                       <TouchableOpacity onPress={() => toggleGoal(goal)} className="mt-0.5">
                         <View
                           className="w-5 h-5 rounded-full border-2 items-center justify-center"
-                          style={{ borderColor: goal.isCompleted ? '#00e87a' : c.bgBorder, backgroundColor: goal.isCompleted ? '#00e87a' : 'transparent' }}
+                          style={{ borderColor: goal.isCompleted ? '#FF6535' : c.bgBorder, backgroundColor: goal.isCompleted ? '#FF6535' : 'transparent' }}
                         >
-                          {goal.isCompleted && <Ionicons name="checkmark" size={11} color="#07070f" />}
+                          {goal.isCompleted && <Ionicons name="checkmark" size={11} color="#0A0A0A" />}
                         </View>
                       </TouchableOpacity>
                       <View className="flex-1">
                         <View className="flex-row items-center gap-1.5 mb-0.5">
-                          <Text style={{ fontSize: 12 }}>{goalMeta.icon}</Text>
+                          <Ionicons name={goalMeta.iconName as any} size={12} color={c.inkMuted} />
                           <Text className="text-ink-muted text-xs">{t(`profile.goals.types.${goal.type}`)}</Text>
                         </View>
                         <Text className="text-ink-primary text-sm font-semibold" style={{ textDecorationLine: goal.isCompleted ? 'line-through' : 'none' }}>
@@ -533,49 +533,49 @@ export default function ProfileScreen() {
         {/* ── Links ────────────────────────────────────────────────── */}
         <View className="gap-2 mb-8">
           <TouchableOpacity
-            className="bg-bg-card border border-bg-border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
+            className="bg-bg-card rounded-2xl px-4 py-3.5 flex-row items-center gap-3"
             onPress={() => router.push('/bag' as any)}
           >
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
-              <Text style={{ fontSize: 16 }}>🏌️</Text>
+              <Ionicons name="golf-outline" size={16} color="#FF6535" />
             </View>
             <View className="flex-1">
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.bag')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.bagSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#44445a" />
+            <Ionicons name="chevron-forward" size={14} color="#444444" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-bg-card border border-bg-border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
+            className="bg-bg-card rounded-2xl px-4 py-3.5 flex-row items-center gap-3"
             onPress={() => router.push('/wearables' as any)}
           >
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
-              <Text style={{ fontSize: 16 }}>⌚</Text>
+              <Ionicons name="watch-outline" size={16} color={c.inkSecondary} />
             </View>
             <View className="flex-1">
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.wearables')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.wearablesSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#44445a" />
+            <Ionicons name="chevron-forward" size={14} color="#444444" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-bg-card border border-bg-border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
+            className="bg-bg-card rounded-2xl px-4 py-3.5 flex-row items-center gap-3"
             onPress={() => router.push('/progress')}
           >
             <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
-              <Ionicons name="analytics-outline" size={16} color="#00e87a" />
+              <Ionicons name="analytics-outline" size={16} color="#FF6535" />
             </View>
             <View className="flex-1">
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.progress')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.progressSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#44445a" />
+            <Ionicons name="chevron-forward" size={14} color="#444444" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-bg-card border rounded-xl px-4 py-3.5 flex-row items-center gap-3"
+            className="bg-bg-card rounded-2xl px-4 py-3.5 flex-row items-center gap-3"
             style={{ borderColor: '#ef444430' }}
             onPress={handleLogout}
           >

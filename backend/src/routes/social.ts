@@ -224,11 +224,10 @@ socialRouter.get('/feed', async (req: AuthRequest, res: Response) => {
     where: { status: 'ACCEPTED', OR: [{ requesterId: req.userId! }, { addresseeId: req.userId! }] },
   });
   const friendIds = friendships.map((f) => f.requesterId === req.userId ? f.addresseeId : f.requesterId);
-
-  if (friendIds.length === 0) { res.json([]); return; }
+  const feedUserIds = [req.userId!, ...friendIds];
 
   const rounds = await prisma.round.findMany({
-    where: { userId: { in: friendIds } },
+    where: { userId: { in: feedUserIds } },
     include: {
       user: { select: { id: true, name: true, level: true, handicap: true } },
       course: { select: { id: true, name: true, location: true } },

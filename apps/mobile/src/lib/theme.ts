@@ -2,45 +2,45 @@ import { useColorScheme } from 'react-native';
 
 // ── Color palettes ─────────────────────────────────────────────────────
 const DARK = {
-  bgBase:     '#07070f',
-  bgSurface:  '#0f0f1a',
-  bgCard:     '#14141f',
-  bgElevated: '#1c1c2e',
-  bgBorder:   '#252535',
+  bgBase:     '#0A0A0A',
+  bgSurface:  '#111111',
+  bgCard:     '#1A1A1A',
+  bgElevated: '#242424',
+  bgBorder:   '#2E2E2E',
 
-  inkPrimary:   '#f0f0ff',
-  inkSecondary: '#8888aa',
-  inkMuted:     '#44445a',
+  inkPrimary:   '#FFFFFF',
+  inkSecondary: '#8A8A8A',
+  inkMuted:     '#444444',
 
   // Accent — same in both modes
-  neonGreen:  '#00e87a',
-  neonGreen12: '#00e87a1f',  // ~12% opacity
-  neonGreen20: '#00e87a33',  // ~20% opacity
-  neonGreen30: '#00e87a4d',  // ~30% opacity
+  neonGreen:   '#FF6535',
+  neonGreen12: '#FF653520',  // ~12% opacity
+  neonGreen20: '#FF653533',  // ~20% opacity
+  neonGreen30: '#FF65354D',  // ~30% opacity
 
   // Input / chip backgrounds
-  chipBg: '#14141f',
+  chipBg: '#1A1A1A',
 } as const;
 
 const LIGHT = {
-  bgBase:     '#f5f5fd',
-  bgSurface:  '#ededf8',
-  bgCard:     '#ffffff',
-  bgElevated: '#f0f0fa',
-  bgBorder:   '#ddddf0',
+  bgBase:     '#F9F9F9',
+  bgSurface:  '#F0F0F0',
+  bgCard:     '#FFFFFF',
+  bgElevated: '#F5F5F5',
+  bgBorder:   '#E8E8E8',
 
-  inkPrimary:   '#07070f',
-  inkSecondary: '#4a4a72',
-  inkMuted:     '#8888aa',
+  inkPrimary:   '#0A0A0A',
+  inkSecondary: '#555555',
+  inkMuted:     '#AAAAAA',
 
   // Accent — same in both modes
-  neonGreen:  '#00e87a',
-  neonGreen12: '#00e87a1f',
-  neonGreen20: '#00e87a33',
-  neonGreen30: '#00e87a4d',
+  neonGreen:   '#FF6535',
+  neonGreen12: '#FF653520',
+  neonGreen20: '#FF653533',
+  neonGreen30: '#FF65354D',
 
   // Input / chip backgrounds
-  chipBg: '#f0f0fa',
+  chipBg: '#F5F5F5',
 } as const;
 
 export interface ThemeColors {

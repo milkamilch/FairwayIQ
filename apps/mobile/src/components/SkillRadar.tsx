@@ -62,7 +62,7 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
               key={lvl}
               points={pts}
               fill="none"
-              stroke="#252535"
+              stroke="#2E2E2E"
               strokeWidth={1}
             />
           );
@@ -76,7 +76,7 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
               key={i}
               x1={cx} y1={cy}
               x2={outer.x} y2={outer.y}
-              stroke="#252535"
+              stroke="#2E2E2E"
               strokeWidth={1}
             />
           );
@@ -86,8 +86,8 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
         {prevVals && (
           <Polygon
             points={toPoints(prevVals)}
-            fill="#8888aa18"
-            stroke="#8888aa"
+            fill="#8A8A8A18"
+            stroke="#8A8A8A"
             strokeWidth={1.5}
             strokeDasharray="4,3"
           />
@@ -96,8 +96,8 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
         {/* Current scores */}
         <Polygon
           points={toPoints(currentVals)}
-          fill="#00e87a20"
-          stroke="#00e87a"
+          fill="#FF653520"
+          stroke="#FF6535"
           strokeWidth={2}
         />
 
@@ -106,7 +106,7 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
           const r = (Math.max(0, Math.min(100, v)) / 100) * maxR;
           const p = polar(cx, cy, r, angleOffset, i, N);
           return (
-            <Circle key={i} cx={p.x} cy={p.y} r={4} fill="#00e87a" />
+            <Circle key={i} cx={p.x} cy={p.y} r={4} fill="#FF6535" />
           );
         })}
 
@@ -125,7 +125,7 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
               textAnchor={anchor}
               alignmentBaseline="middle"
               fontSize={10}
-              fill="#8888aa"
+              fill="#8A8A8A"
               fontWeight="600"
             >
               {cat.label} {score}
@@ -143,7 +143,7 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
               x={p.x + 4}
               y={p.y}
               fontSize={8}
-              fill="#44445a"
+              fill="#444444"
               alignmentBaseline="middle"
             >
               {lvl}
@@ -156,12 +156,12 @@ export function SkillRadar({ scores, size = 280, previous }: Props) {
       {previous && (
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 4 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View style={{ width: 16, height: 2, backgroundColor: '#00e87a' }} />
-            <Text style={{ color: '#8888aa', fontSize: 11 }}>Aktuell</Text>
+            <View style={{ width: 16, height: 2, backgroundColor: '#FF6535' }} />
+            <Text style={{ color: '#8A8A8A', fontSize: 11 }}>Aktuell</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <View style={{ width: 16, height: 2, backgroundColor: '#8888aa', borderStyle: 'dashed', borderBottomWidth: 1, borderColor: '#8888aa' }} />
-            <Text style={{ color: '#8888aa', fontSize: 11 }}>Vorheriges Assessment</Text>
+            <View style={{ width: 16, height: 2, backgroundColor: '#8A8A8A', borderStyle: 'dashed', borderBottomWidth: 1, borderColor: '#8A8A8A' }} />
+            <Text style={{ color: '#8A8A8A', fontSize: 11 }}>Vorheriges Assessment</Text>
           </View>
         </View>
       )}

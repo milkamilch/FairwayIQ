@@ -84,7 +84,7 @@ function BadgeCard({ badge }: { badge: BadgeDefinition & { earned: boolean; earn
         style={{ backgroundColor: badge.earned ? badge.color + '20' : c.bgElevated }}
       >
         {badge.earned ? (
-          <Text style={{ fontSize: 24 }}>{badge.icon}</Text>
+          <Ionicons name={badge.icon as any} size={24} color={badge.color} />
         ) : (
           <Ionicons name="lock-closed" size={20} color={c.bgBorder} />
         )}
@@ -130,8 +130,8 @@ export default function ChallengesScreen() {
           <Ionicons name="chevron-back" size={22} color={c.inkPrimary} />
         </TouchableOpacity>
         <View className="flex-1">
-          <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('challenges.sectionLabel')}</Text>
-          <Text className="text-ink-primary text-xl font-bold mt-0.5">{t('challenges.title')}</Text>
+          <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('challenges.sectionLabel')}</Text>
+          <Text className="text-ink-primary text-2xl font-black mt-0.5">{t('challenges.title')}</Text>
         </View>
         <View className="px-2.5 py-1 rounded-full" style={{ backgroundColor: c.neonGreen20, borderWidth: 1, borderColor: c.neonGreen20 }}>
           <Text className="text-neon-green text-xs font-bold">{earnedCount}/{totalBadges}</Text>
@@ -139,7 +139,7 @@ export default function ChallengesScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color="#00e87a" className="mt-20" />
+        <ActivityIndicator color="#FF6535" className="mt-20" />
       ) : !status ? (
         <View className="flex-1 items-center justify-center">
           <Text className="text-ink-muted">{t('common.noData')}</Text>
@@ -160,16 +160,16 @@ export default function ChallengesScreen() {
               <View className="flex-row items-center gap-3">
                 <View
                   className="w-10 h-10 rounded-xl items-center justify-center"
-                  style={{ backgroundColor: status.dailyGoal.completed ? '#00e87a' : c.bgElevated }}
+                  style={{ backgroundColor: status.dailyGoal.completed ? '#FF6535' : c.bgElevated }}
                 >
                   <Ionicons
                     name={status.dailyGoal.completed ? 'checkmark' : 'golf-outline'}
                     size={20}
-                    color={status.dailyGoal.completed ? '#07070f' : c.inkMuted}
+                    color={status.dailyGoal.completed ? '#0A0A0A' : c.inkMuted}
                   />
                 </View>
                 <View>
-                  <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('challenges.dailyGoal')}</Text>
+                  <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('challenges.dailyGoal')}</Text>
                   <Text className="text-ink-primary font-bold mt-0.5">
                     {status.dailyGoal.completed
                       ? t('challenges.trainedToday')
@@ -192,7 +192,7 @@ export default function ChallengesScreen() {
                     className="h-1.5 rounded-full"
                     style={{
                       width: `${((status.dailyGoal.currentDay ?? 1) - 1) / status.dailyGoal.totalDays * 100}%`,
-                      backgroundColor: '#00e87a',
+                      backgroundColor: '#FF6535',
                     }}
                   />
                 </View>
@@ -213,7 +213,7 @@ export default function ChallengesScreen() {
             }}
           >
             <View className="flex-row items-center justify-between mb-1">
-              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('challenges.streakLabel')}</Text>
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('challenges.streakLabel')}</Text>
               <Text className="text-xs" style={{ color: '#f59e0b' }}>
                 {t('challenges.longestStreak', { days: status.streak.longestStreak })}
               </Text>
@@ -236,7 +236,7 @@ export default function ChallengesScreen() {
                 })}
               </Text>
               {status.streak.currentStreak > 0 && (
-                <Text style={{ fontSize: 28, marginBottom: 4 }}>🔥</Text>
+                <Ionicons name="flame-outline" size={28} color="#f97316" style={{ marginBottom: 4 }} />
               )}
             </View>
             <StreakDots count={Math.min(status.streak.currentStreak, 7)} />
@@ -244,15 +244,15 @@ export default function ChallengesScreen() {
 
           {/* Stats Row */}
           <View className="flex-row gap-3 mb-6">
-            <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
+            <View className="flex-1 bg-bg-card rounded-2xl p-4 items-center">
               <Text className="text-neon-green font-bold text-2xl">{status.totalSessions}</Text>
               <Text className="text-ink-muted text-xs mt-1">{t('challenges.sessions')}</Text>
             </View>
-            <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
+            <View className="flex-1 bg-bg-card rounded-2xl p-4 items-center">
               <Text className="font-bold text-2xl" style={{ color: '#f59e0b' }}>{earnedCount}</Text>
               <Text className="text-ink-muted text-xs mt-1">{t('challenges.badgesEarned')}</Text>
             </View>
-            <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4 items-center">
+            <View className="flex-1 bg-bg-card rounded-2xl p-4 items-center">
               <Text className="font-bold text-2xl" style={{ color: '#a78bfa' }}>{status.streak.longestStreak}</Text>
               <Text className="text-ink-muted text-xs mt-1">{t('challenges.bestStreak')}</Text>
             </View>
@@ -265,7 +265,7 @@ export default function ChallengesScreen() {
             return (
               <View key={cat} className="mb-6">
                 <View className="flex-row items-center justify-between mb-3">
-                  <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
+                  <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">
                     {t(`challenges.categories.${cat}`)}
                   </Text>
                   <Text className="text-ink-muted text-xs">

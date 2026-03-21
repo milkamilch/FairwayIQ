@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { api } from '../lib/api';
+import { useTheme } from '../lib/theme';
 
 // ── Typen ────────────────────────────────────────────────────────────
 interface Answers {
@@ -44,7 +45,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
   return (
     <View className="mb-5">
       <Text className="text-neon-green text-xs font-bold uppercase tracking-widest mb-1">{subtitle}</Text>
-      <Text className="text-ink-primary text-xl font-bold">{title}</Text>
+      <Text className="text-ink-primary text-2xl font-black">{title}</Text>
     </View>
   );
 }
@@ -53,6 +54,7 @@ function ScaleInput({ label, value, onChange, min = 1, max = 5, lowLabel, highLa
   label: string; value: number; onChange: (v: number) => void;
   min?: number; max?: number; lowLabel?: string; highLabel?: string;
 }) {
+  const c = useTheme();
   return (
     <View className="mb-5">
       <Text className="text-ink-secondary text-sm font-medium mb-3">{label}</Text>
@@ -62,13 +64,13 @@ function ScaleInput({ label, value, onChange, min = 1, max = 5, lowLabel, highLa
             key={v}
             className="flex-1 h-11 rounded-xl items-center justify-center"
             style={{
-              backgroundColor: value === v ? '#00e87a' : '#14141f',
+              backgroundColor: value === v ? '#FF6535' : c.bgCard,
               borderWidth: 1,
-              borderColor: value === v ? '#00e87a' : '#252535',
+              borderColor: value === v ? '#FF6535' : c.bgBorder,
             }}
             onPress={() => onChange(v)}
           >
-            <Text className="font-bold text-sm" style={{ color: value === v ? '#07070f' : '#44445a' }}>
+            <Text className="font-bold text-sm" style={{ color: value === v ? '#FFFFFF' : c.inkMuted }}>
               {v}
             </Text>
           </TouchableOpacity>
@@ -89,6 +91,7 @@ function ChoiceInput<T extends string>({ label, value, onChange, options }: {
   onChange: (v: T) => void;
   options: { value: T; label: string }[];
 }) {
+  const c = useTheme();
   return (
     <View className="mb-5">
       <Text className="text-ink-secondary text-sm font-medium mb-3">{label}</Text>
@@ -98,15 +101,15 @@ function ChoiceInput<T extends string>({ label, value, onChange, options }: {
             key={opt.value}
             className="px-4 py-2.5 rounded-xl"
             style={{
-              backgroundColor: value === opt.value ? '#00e87a15' : '#14141f',
+              backgroundColor: value === opt.value ? '#FF653515' : c.bgCard,
               borderWidth: 1,
-              borderColor: value === opt.value ? '#00e87a' : '#252535',
+              borderColor: value === opt.value ? '#FF6535' : c.bgBorder,
             }}
             onPress={() => onChange(opt.value)}
           >
             <Text
               className="text-sm font-medium"
-              style={{ color: value === opt.value ? '#00e87a' : '#8888aa' }}
+              style={{ color: value === opt.value ? '#FF6535' : c.inkSecondary }}
             >
               {opt.label}
             </Text>
@@ -129,17 +132,17 @@ function StepperInput({ label, value, onChange, min, max, unit, step = 1 }: {
           className="w-11 h-11 rounded-full bg-bg-elevated border border-bg-border items-center justify-center"
           onPress={() => onChange(Math.max(min, value - step))}
         >
-          <Ionicons name="remove" size={18} color="#8888aa" />
+          <Ionicons name="remove" size={18} color="#8A8A8A" />
         </TouchableOpacity>
         <View className="flex-1 items-center">
-          <Text className="text-ink-primary text-3xl font-bold">{value}</Text>
+          <Text className="text-ink-primary text-3xl font-black">{value}</Text>
           {unit && <Text className="text-ink-muted text-xs">{unit}</Text>}
         </View>
         <TouchableOpacity
           className="w-11 h-11 rounded-full bg-bg-elevated border border-bg-border items-center justify-center"
           onPress={() => onChange(Math.min(max, value + step))}
         >
-          <Ionicons name="add" size={18} color="#8888aa" />
+          <Ionicons name="add" size={18} color="#8A8A8A" />
         </TouchableOpacity>
       </View>
     </View>
@@ -169,7 +172,7 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
   ];
 
   const getColor = (score: number) => {
-    if (score >= 70) return '#00e87a';
+    if (score >= 70) return '#FF6535';
     if (score >= 45) return '#f59e0b';
     return '#ef4444';
   };
@@ -178,7 +181,7 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
     <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
       <View className="py-5">
         <Text className="text-neon-green text-xs font-bold uppercase tracking-widest mb-1">Auswertung</Text>
-        <Text className="text-ink-primary text-2xl font-bold mb-1">Dein Spielerprofil</Text>
+        <Text className="text-ink-primary text-3xl font-black mb-1">Dein Spielerprofil</Text>
         <Text className="text-ink-secondary text-sm mb-6">Basierend auf deinen Antworten wurde dein Trainingsplan erstellt.</Text>
 
         {/* Score Bars */}
@@ -203,7 +206,7 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
 
         {/* Schwächen & Stärken */}
         <View className="flex-row gap-3 mt-6">
-          <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4">
+          <View className="flex-1 bg-bg-card rounded-2xl p-4">
             <Text className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#ef4444' }}>
               Fokus-Bereiche
             </Text>
@@ -214,8 +217,8 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
               </View>
             ))}
           </View>
-          <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-4">
-            <Text className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#00e87a' }}>
+          <View className="flex-1 bg-bg-card rounded-2xl p-4">
+            <Text className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#FF6535' }}>
               Stärken
             </Text>
             {strengths.map((s: string) => (
@@ -230,7 +233,7 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
         {/* Plan Info */}
         <View className="bg-bg-card border border-neon-green rounded-xl p-4 mt-4">
           <View className="flex-row items-center gap-2 mb-2">
-            <Ionicons name="checkmark-circle" size={18} color="#00e87a" />
+            <Ionicons name="checkmark-circle" size={18} color="#FF6535" />
             <Text className="text-neon-green font-bold text-sm">Plan wurde erstellt</Text>
           </View>
           <Text className="text-ink-primary font-semibold">{result.plan.name}</Text>
@@ -241,7 +244,7 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
 
         <TouchableOpacity
           className="rounded-xl py-4 items-center mt-5 mb-8"
-          style={{ backgroundColor: '#00e87a' }}
+          style={{ backgroundColor: '#FF6535' }}
           onPress={onClose}
         >
           <Text className="text-bg-base font-bold tracking-wide">TRAINING STARTEN</Text>
@@ -298,7 +301,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
         <View className="px-5 py-4 border-b border-bg-border">
           <View className="flex-row items-center justify-between mb-3">
             <TouchableOpacity onPress={handleBack} className="flex-row items-center gap-1">
-              <Ionicons name="arrow-back" size={16} color="#8888aa" />
+              <Ionicons name="arrow-back" size={16} color="#8A8A8A" />
               <Text className="text-ink-secondary text-sm">
                 {stepIndex === 0 ? 'Abbrechen' : 'Zurück'}
               </Text>
@@ -509,13 +512,13 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
           <View className="px-5 pb-5 pt-3 border-t border-bg-border">
             <TouchableOpacity
               className="rounded-xl py-4 items-center"
-              style={{ backgroundColor: '#00e87a', opacity: loading ? 0.7 : 1 }}
+              style={{ backgroundColor: '#FF6535', opacity: loading ? 0.7 : 1 }}
               onPress={handleNext}
               disabled={loading}
             >
               {loading ? (
                 <View className="flex-row items-center gap-2">
-                  <ActivityIndicator size="small" color="#07070f" />
+                  <ActivityIndicator size="small" color="#0A0A0A" />
                   <Text className="text-bg-base font-bold">PLAN WIRD ERSTELLT...</Text>
                 </View>
               ) : (

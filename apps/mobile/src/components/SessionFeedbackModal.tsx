@@ -28,30 +28,30 @@ interface Props {
   onClose: () => void;
 }
 
-// ── Feeling-Skala (emoji + label) ──────────────────────────────────────
+// ── Feeling-Skala (ionicon + label) ────────────────────────────────────
 const FEELINGS = [
-  { value: 1, emoji: '😓', label: 'Schlecht' },
-  { value: 2, emoji: '😕', label: 'Mäßig' },
-  { value: 3, emoji: '😊', label: 'Okay' },
-  { value: 4, emoji: '💪', label: 'Gut' },
-  { value: 5, emoji: '🔥', label: 'Großartig' },
+  { value: 1, iconName: 'sad-outline', label: 'Schlecht' },
+  { value: 2, iconName: 'remove-circle-outline', label: 'Mäßig' },
+  { value: 3, iconName: 'happy-outline', label: 'Okay' },
+  { value: 4, iconName: 'thumbs-up-outline', label: 'Gut' },
+  { value: 5, iconName: 'star-outline', label: 'Großartig' },
 ] as const;
 
 // ── Belastungs-Skala ────────────────────────────────────────────────────
 const DIFFICULTIES = [
   { value: 1, label: 'Zu leicht', sublabel: 'Kaum Anstrengung', color: '#22d3ee' },
   { value: 2, label: 'Leicht', sublabel: 'Etwas Anstrengung', color: '#6ee7b7' },
-  { value: 3, label: 'Perfekt', sublabel: 'Genau richtig', color: '#00e87a' },
+  { value: 3, label: 'Perfekt', sublabel: 'Genau richtig', color: '#FF6535' },
   { value: 4, label: 'Anspruchsvoll', sublabel: 'Spürbar fordernd', color: '#f59e0b' },
   { value: 5, label: 'Zu schwer', sublabel: 'Sehr erschöpfend', color: '#f97316' },
 ] as const;
 
 // ── Mood-Metadaten ──────────────────────────────────────────────────────
-const MOOD_META: Record<WorkoutSummary['mood'], { emoji: string; label: string; color: string }> = {
-  excellent: { emoji: '🔥', label: 'Ausgezeichnete Einheit!', color: '#00e87a' },
-  good:      { emoji: '💪', label: 'Starkes Training!',       color: '#6ee7b7' },
-  okay:      { emoji: '😊', label: 'Solide Einheit',          color: '#f59e0b' },
-  tough:     { emoji: '😓', label: 'Harter Tag — gut gemacht!', color: '#f97316' },
+const MOOD_META: Record<WorkoutSummary['mood'], { iconName: string; label: string; color: string }> = {
+  excellent: { iconName: 'flame-outline',     label: 'Ausgezeichnete Einheit!', color: '#FF6535' },
+  good:      { iconName: 'thumbs-up-outline', label: 'Starkes Training!',       color: '#6ee7b7' },
+  okay:      { iconName: 'happy-outline',     label: 'Solide Einheit',          color: '#f59e0b' },
+  tough:     { iconName: 'sad-outline',       label: 'Harter Tag — gut gemacht!', color: '#f97316' },
 };
 
 // ── Haupt-Komponente ───────────────────────────────────────────────────
@@ -119,9 +119,9 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
         <SafeAreaView className="flex-1 bg-bg-base items-center justify-center px-6">
           <View
             className="w-20 h-20 rounded-full items-center justify-center mb-6"
-            style={{ backgroundColor: isHarder ? '#00e87a20' : '#f59e0b20' }}
+            style={{ backgroundColor: isHarder ? '#FF653520' : '#f59e0b20' }}
           >
-            <Text style={{ fontSize: 40 }}>{isHarder ? '🚀' : '🎯'}</Text>
+            <Ionicons name={isHarder ? 'rocket-outline' : 'flag-outline'} size={40} color={isHarder ? '#FF6535' : '#f59e0b'} />
           </View>
 
           <Text className="text-ink-primary font-bold text-xl text-center mb-3">
@@ -134,7 +134,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
           <View className="w-full gap-3">
             <TouchableOpacity
               className="rounded-xl py-4 items-center"
-              style={{ backgroundColor: isHarder ? '#00e87a' : '#f59e0b' }}
+              style={{ backgroundColor: isHarder ? '#FF6535' : '#f59e0b' }}
               onPress={onClose}
             >
               <Text className="text-bg-base font-bold">
@@ -165,7 +165,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
 
           <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, alignItems: 'center' }} showsVerticalScrollIndicator={false}>
             {/* Header */}
-            <Text style={{ fontSize: 56, marginBottom: 12 }}>🏅</Text>
+            <Ionicons name="medal-outline" size={56} color="#FF6535" style={{ marginBottom: 12 }} />
             <Text className="text-ink-primary font-bold text-2xl text-center mb-2">
               {newBadges.length === 1 ? 'Neuer Badge!' : `${newBadges.length} neue Badges!`}
             </Text>
@@ -185,7 +185,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
                     className="w-16 h-16 rounded-2xl items-center justify-center shrink-0"
                     style={{ backgroundColor: badge.color + '25' }}
                   >
-                    <Text style={{ fontSize: 32 }}>{badge.icon}</Text>
+                    <Ionicons name={(badge.icon as any) || 'trophy-outline'} size={32} color={badge.color} />
                   </View>
                   <View className="flex-1">
                     <Text className="font-bold text-base" style={{ color: badge.color }}>{badge.name}</Text>
@@ -201,7 +201,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
                 className="w-full mt-4 rounded-xl px-4 py-3 flex-row items-center gap-3"
                 style={{ backgroundColor: '#f9730315', borderWidth: 1, borderColor: '#f9730330' }}
               >
-                <Text style={{ fontSize: 24 }}>🔥</Text>
+                <Ionicons name="flame-outline" size={24} color="#f97316" />
                 <View>
                   <Text className="font-bold text-sm" style={{ color: '#f97316' }}>{streak.currentStreak}-Tage-Streak!</Text>
                   <Text className="text-ink-muted text-xs">Weiter so — du bist auf einem guten Weg.</Text>
@@ -215,7 +215,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
           <View className="px-5 pb-4 border-t border-bg-border pt-4">
             <TouchableOpacity
               className="rounded-xl py-4 items-center"
-              style={{ backgroundColor: '#00e87a' }}
+              style={{ backgroundColor: '#FF6535' }}
               onPress={handleBadgesNext}
             >
               <Text className="text-bg-base font-bold tracking-wide">
@@ -252,23 +252,23 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
               className="rounded-2xl p-5 items-center"
               style={{ backgroundColor: mood.color + '12', borderWidth: 1, borderColor: mood.color + '30' }}
             >
-              <Text style={{ fontSize: 48, marginBottom: 8 }}>{mood.emoji}</Text>
+              <Ionicons name={mood.iconName as any} size={48} color={mood.color} style={{ marginBottom: 8 }} />
               <Text className="font-bold text-xl text-center" style={{ color: mood.color }}>{mood.label}</Text>
               <Text className="text-ink-secondary text-sm text-center mt-1">{dayTitle}</Text>
             </View>
 
             {/* Was gut lief */}
-            <View className="bg-bg-card border border-bg-border rounded-xl p-4 gap-3">
+            <View className="bg-bg-card rounded-2xl p-4 gap-3">
               <View className="flex-row items-center gap-2 mb-1">
-                <View className="w-6 h-6 rounded-full items-center justify-center" style={{ backgroundColor: '#00e87a20' }}>
-                  <Ionicons name="checkmark" size={14} color="#00e87a" />
+                <View className="w-6 h-6 rounded-full items-center justify-center" style={{ backgroundColor: '#FF653520' }}>
+                  <Ionicons name="checkmark" size={14} color="#FF6535" />
                 </View>
-                <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Was gut lief</Text>
+                <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest">Was gut lief</Text>
               </View>
               {summary.highlights.map((h, i) => (
                 <View key={i} className="flex-row items-start gap-3">
-                  <View className="w-5 h-5 rounded-full items-center justify-center mt-0.5 shrink-0" style={{ backgroundColor: '#00e87a15' }}>
-                    <Text style={{ color: '#00e87a', fontSize: 10 }}>✓</Text>
+                  <View className="w-5 h-5 rounded-full items-center justify-center mt-0.5 shrink-0" style={{ backgroundColor: '#FF653520' }}>
+                    <Text style={{ color: '#FF6535', fontSize: 10 }}>✓</Text>
                   </View>
                   <Text className="text-ink-primary text-sm leading-5 flex-1">{h}</Text>
                 </View>
@@ -277,12 +277,12 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
 
             {/* Worauf du achten solltest */}
             {summary.focusPoints.length > 0 && (
-              <View className="bg-bg-card border border-bg-border rounded-xl p-4 gap-3">
+              <View className="bg-bg-card rounded-2xl p-4 gap-3">
                 <View className="flex-row items-center gap-2 mb-1">
                   <View className="w-6 h-6 rounded-full items-center justify-center" style={{ backgroundColor: '#f59e0b20' }}>
                     <Ionicons name="eye-outline" size={14} color="#f59e0b" />
                   </View>
-                  <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">Worauf du achten solltest</Text>
+                  <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest">Worauf du achten solltest</Text>
                 </View>
                 {summary.focusPoints.map((fp, i) => (
                   <View key={i} className="flex-row items-start gap-3">
@@ -302,7 +302,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
             >
               <View className="flex-row items-center gap-2 mb-2">
                 <Ionicons name="bulb-outline" size={16} color="#a78bfa" />
-                <Text className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#a78bfa' }}>Tipp für die nächste Einheit</Text>
+                <Text className="text-xs font-bold uppercase tracking-widest" style={{ color: '#a78bfa' }}>Tipp für die nächste Einheit</Text>
               </View>
               <Text className="text-ink-secondary text-sm leading-5">{summary.nextTip}</Text>
             </View>
@@ -314,7 +314,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
           <View className="px-5 pb-4 border-t border-bg-border pt-4">
             <TouchableOpacity
               className="rounded-xl py-4 items-center"
-              style={{ backgroundColor: '#00e87a' }}
+              style={{ backgroundColor: '#FF6535' }}
               onPress={handleSummaryNext}
             >
               <Text className="text-bg-base font-bold tracking-wide">
@@ -347,13 +347,13 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
           {/* Checkmark Banner */}
           <View
             className="rounded-2xl p-5 items-center"
-            style={{ backgroundColor: '#00e87a12', borderWidth: 1, borderColor: '#00e87a30' }}
+            style={{ backgroundColor: '#FF653512', borderRadius: 16 }}
           >
             <View
               className="w-14 h-14 rounded-full items-center justify-center mb-3"
-              style={{ backgroundColor: '#00e87a' }}
+              style={{ backgroundColor: '#FF6535' }}
             >
-              <Ionicons name="checkmark" size={30} color="#07070f" />
+              <Ionicons name="checkmark" size={30} color="#0A0A0A" />
             </View>
             <Text className="text-ink-primary font-bold text-base">{dayTitle}</Text>
             <Text className="text-ink-secondary text-xs mt-1">erfolgreich trainiert</Text>
@@ -361,7 +361,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
 
           {/* Feeling */}
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-4">
+            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-4">
               Wie hast du dich gefühlt?
             </Text>
             <View className="flex-row justify-between gap-2">
@@ -372,14 +372,14 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
                   style={{
                     backgroundColor: feeling === f.value ? c.neonGreen20 : c.bgCard,
                     borderWidth: 1,
-                    borderColor: feeling === f.value ? '#00e87a' : c.bgBorder,
+                    borderColor: feeling === f.value ? '#FF6535' : c.bgBorder,
                   }}
                   onPress={() => setFeeling(f.value)}
                 >
-                  <Text style={{ fontSize: 22 }}>{f.emoji}</Text>
+                  <Ionicons name={f.iconName as any} size={22} color={feeling === f.value ? '#FF6535' : c.inkMuted} />
                   <Text
                     className="text-xs mt-1 font-semibold"
-                    style={{ color: feeling === f.value ? '#00e87a' : c.inkMuted }}
+                    style={{ color: feeling === f.value ? '#FF6535' : c.inkMuted }}
                   >
                     {f.label}
                   </Text>
@@ -390,7 +390,7 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
 
           {/* Difficulty / Belastung */}
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-4">
+            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-4">
               Wie anspruchsvoll war es?
             </Text>
 
@@ -432,14 +432,14 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
 
           {/* Notes */}
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3">
+            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-3">
               Notizen (optional)
             </Text>
             <TextInput
               className="bg-bg-elevated border border-bg-border text-ink-primary rounded-xl px-4 py-3 text-sm"
               style={{ minHeight: 80, textAlignVertical: 'top' }}
               placeholder="Was lief gut? Was war schwierig?"
-              placeholderTextColor="#44445a"
+              placeholderTextColor="#444444"
               value={notes}
               onChangeText={setNotes}
               multiline
@@ -450,13 +450,13 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
 
           {/* Stats preview */}
           <View className="flex-row gap-3">
-            <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-3 items-center">
-              <Text className="text-2xl mb-1">{selectedFeeling.emoji}</Text>
+            <View className="flex-1 bg-bg-card rounded-2xl p-3 items-center">
+              <Ionicons name={selectedFeeling.iconName as any} size={24} color="#FF6535" style={{ marginBottom: 4 }} />
               <Text className="text-ink-muted text-xs">Gefühl</Text>
               <Text className="text-ink-primary text-sm font-semibold">{selectedFeeling.label}</Text>
             </View>
-            <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-3 items-center">
-              <Text className="text-2xl font-bold mb-1" style={{ color: selectedDifficulty.color }}>
+            <View className="flex-1 bg-bg-card rounded-2xl p-3 items-center">
+              <Text className="text-3xl font-black mb-1" style={{ color: selectedDifficulty.color }}>
                 {difficulty}/5
               </Text>
               <Text className="text-ink-muted text-xs">Belastung</Text>
@@ -471,12 +471,12 @@ export function SessionFeedbackModal({ dayTitle, dayNumber, totalMinutes, onSubm
         <View className="px-5 pb-4 border-t border-bg-border pt-4">
           <TouchableOpacity
             className="rounded-xl py-4 items-center"
-            style={{ backgroundColor: loading ? '#00e87a60' : '#00e87a' }}
+            style={{ backgroundColor: loading ? '#FF653560' : '#FF6535' }}
             onPress={handleSubmit}
             disabled={loading}
           >
             {loading
-              ? <ActivityIndicator color="#07070f" />
+              ? <ActivityIndicator color="#0A0A0A" />
               : <Text className="text-bg-base font-bold tracking-wide">SPEICHERN</Text>
             }
           </TouchableOpacity>
