@@ -4,11 +4,14 @@ import {
   ActivityIndicator, Platform,
 } from 'react-native';
 
-// HealthKit ist nur auf iOS verfügbar — lazy require verhindert Fehler auf Android
+// HealthKit ist nur auf iOS verfügbar — try/catch verhindert Fehler falls nicht installiert
 let AppleHealthKit: typeof import('react-native-health').default | null = null;
 if (Platform.OS === 'ios') {
-  const mod = require('react-native-health') as typeof import('react-native-health');
-  AppleHealthKit = mod.default;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const mod = require('react-native-health') as typeof import('react-native-health');
+    AppleHealthKit = mod.default;
+  } catch {}
 }
 
 const HEALTH_PERMISSIONS = Platform.OS === 'ios' && AppleHealthKit
@@ -109,7 +112,7 @@ interface WearableConnection {
 }
 
 interface MetricTileProps {
-  icon: string;
+  iconName: string;
   label: string;
   value: string | number;
   unit: string;
@@ -117,14 +120,14 @@ interface MetricTileProps {
   c: ReturnType<typeof useTheme>;
 }
 
-function MetricTile({ icon, label, value, unit, color, c }: MetricTileProps) {
+function MetricTile({ iconName, label, value, unit, color, c }: MetricTileProps) {
   return (
     <View style={{
       flex: 1, backgroundColor: c.bgElevated, borderRadius: 12,
       padding: 12, alignItems: 'center', gap: 4,
       borderWidth: 1, borderColor: c.bgBorder,
     }}>
-      <Text style={{ fontSize: 18 }}>{icon}</Text>
+      <Ionicons name={iconName as any} size={18} color={color} />
       <Text style={{ color, fontWeight: '700', fontSize: 18 }}>{value}</Text>
       <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{unit}</Text>
       <Text style={{ color: c.inkSecondary, fontSize: 10 }}>{label}</Text>
@@ -149,8 +152,8 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
   const isConnected = !!connection;
 
   const meta = isApple
-    ? { name: 'Apple Health', icon: '🍎', color: '#ff3b30', desc: t('wearables.devices.appleDesc') }
-    : { name: 'Garmin Connect', icon: '⌚', color: '#007cc3', desc: t('wearables.devices.garminDesc') };
+    ? { name: 'Apple Health', iconName: 'heart-outline', color: '#ff3b30', desc: t('wearables.devices.appleDesc') }
+    : { name: 'Garmin Connect', iconName: 'watch-outline', color: '#007cc3', desc: t('wearables.devices.garminDesc') };
 
   const formatDate = (iso: string | null) => {
     if (!iso) return t('wearables.never');
@@ -176,7 +179,7 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
           backgroundColor: meta.color + '15', borderWidth: 1.5, borderColor: meta.color + '40',
           alignItems: 'center', justifyContent: 'center',
         }}>
-          <Text style={{ fontSize: 24 }}>{meta.icon}</Text>
+          <Ionicons name={meta.iconName as any} size={24} color={meta.color} />
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -184,9 +187,9 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
             {isConnected && (
               <View style={{
                 paddingHorizontal: 7, paddingVertical: 2, borderRadius: 100,
-                backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a50',
+                backgroundColor: '#FF653520', borderWidth: 1, borderColor: '#FF653550',
               }}>
-                <Text style={{ color: '#00e87a', fontSize: 10, fontWeight: '700' }}>{t('wearables.connected')}</Text>
+                <Text style={{ color: '#FF6535', fontSize: 10, fontWeight: '700' }}>{t('wearables.connected')}</Text>
               </View>
             )}
             {isApple && Platform.OS !== 'ios' && (
@@ -210,16 +213,16 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
           </Text>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {connection.syncData.steps != null && (
-              <MetricTile icon="👟" label={t('wearables.metrics.steps')} value={connection.syncData.steps.toLocaleString(lang)} unit={t('wearables.metrics.stepsUnit')} color={meta.color} c={c} />
+              <MetricTile iconName="footsteps-outline" label={t('wearables.metrics.steps')} value={connection.syncData.steps.toLocaleString(lang)} unit={t('wearables.metrics.stepsUnit')} color={meta.color} c={c} />
             )}
             {connection.syncData.heartRate != null && (
-              <MetricTile icon="❤️" label={t('wearables.metrics.heartRate')} value={connection.syncData.heartRate} unit={t('wearables.metrics.heartRateUnit')} color="#ef4444" c={c} />
+              <MetricTile iconName="heart-outline" label={t('wearables.metrics.heartRate')} value={connection.syncData.heartRate} unit={t('wearables.metrics.heartRateUnit')} color="#ef4444" c={c} />
             )}
             {connection.syncData.calories != null && (
-              <MetricTile icon="🔥" label={t('wearables.metrics.calories')} value={connection.syncData.calories} unit={t('wearables.metrics.caloriesUnit')} color="#f97316" c={c} />
+              <MetricTile iconName="flame-outline" label={t('wearables.metrics.calories')} value={connection.syncData.calories} unit={t('wearables.metrics.caloriesUnit')} color="#f97316" c={c} />
             )}
             {connection.syncData.activeMinutes != null && (
-              <MetricTile icon="⚡" label={t('wearables.metrics.activeMinutes')} value={connection.syncData.activeMinutes} unit={t('wearables.metrics.activeMinutesUnit')} color="#a855f7" c={c} />
+              <MetricTile iconName="flash-outline" label={t('wearables.metrics.activeMinutes')} value={connection.syncData.activeMinutes} unit={t('wearables.metrics.activeMinutesUnit')} color="#a855f7" c={c} />
             )}
           </View>
         </View>
@@ -370,10 +373,10 @@ export default function WearablesScreen() {
   };
 
   const syncItems = [
-    { icon: '👟', titleKey: 'wearables.syncItems.steps',        descKey: 'wearables.syncItems.stepsDesc' },
-    { icon: '❤️', titleKey: 'wearables.syncItems.heartRate',    descKey: 'wearables.syncItems.heartRateDesc' },
-    { icon: '🔥', titleKey: 'wearables.syncItems.calories',     descKey: 'wearables.syncItems.caloriesDesc' },
-    { icon: '⏱️', titleKey: 'wearables.syncItems.activeMinutes', descKey: 'wearables.syncItems.activeMinutesDesc' },
+    { iconName: 'footsteps-outline', color: '#007cc3', titleKey: 'wearables.syncItems.steps',        descKey: 'wearables.syncItems.stepsDesc' },
+    { iconName: 'heart-outline',     color: '#ef4444', titleKey: 'wearables.syncItems.heartRate',    descKey: 'wearables.syncItems.heartRateDesc' },
+    { iconName: 'flame-outline',     color: '#f97316', titleKey: 'wearables.syncItems.calories',     descKey: 'wearables.syncItems.caloriesDesc' },
+    { iconName: 'timer-outline',     color: '#a855f7', titleKey: 'wearables.syncItems.activeMinutes', descKey: 'wearables.syncItems.activeMinutesDesc' },
   ];
 
   return (
@@ -430,7 +433,7 @@ export default function WearablesScreen() {
           </Text>
           {syncItems.map((item) => (
             <View key={item.titleKey} style={{ flexDirection: 'row', gap: 12, marginBottom: 12, alignItems: 'flex-start' }}>
-              <Text style={{ fontSize: 20, marginTop: 1 }}>{item.icon}</Text>
+              <Ionicons name={item.iconName as any} size={20} color={item.color} style={{ marginTop: 1 }} />
               <View style={{ flex: 1 }}>
                 <Text style={{ color: c.inkPrimary, fontWeight: '600', fontSize: 13 }}>{t(item.titleKey)}</Text>
                 <Text style={{ color: c.inkSecondary, fontSize: 12, marginTop: 1 }}>{t(item.descKey)}</Text>
@@ -444,7 +447,7 @@ export default function WearablesScreen() {
           marginTop: 12, backgroundColor: '#007cc315', borderRadius: 14,
           borderWidth: 1, borderColor: '#007cc330', padding: 14, flexDirection: 'row', gap: 10,
         }}>
-          <Text style={{ fontSize: 18, marginTop: 1 }}>⌚</Text>
+          <Ionicons name="watch-outline" size={18} color="#007cc3" style={{ marginTop: 1 }} />
           <View style={{ flex: 1 }}>
             <Text style={{ color: '#007cc3', fontWeight: '700', fontSize: 13, marginBottom: 4 }}>
               {t('wearables.watchNote')}

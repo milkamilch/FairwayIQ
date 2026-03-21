@@ -37,11 +37,11 @@ interface FeedEntry {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────
-const LEVEL_META: Record<GolferLevel, { icon: string; color: string }> = {
-  BEGINNER:     { icon: '🌱', color: '#00e87a' },
-  INTERMEDIATE: { icon: '⚡', color: '#f59e0b' },
-  ADVANCED:     { icon: '🔥', color: '#f97316' },
-  PRO:          { icon: '💎', color: '#a855f7' },
+const LEVEL_META: Record<GolferLevel, { iconName: string; color: string }> = {
+  BEGINNER:     { iconName: 'leaf-outline',    color: '#FF6535' },
+  INTERMEDIATE: { iconName: 'flash-outline',   color: '#f59e0b' },
+  ADVANCED:     { iconName: 'flame-outline',   color: '#f97316' },
+  PRO:          { iconName: 'diamond-outline', color: '#a855f7' },
 };
 
 function scoreDiff(n: number) {
@@ -51,8 +51,8 @@ function scoreDiff(n: number) {
 }
 
 function scoreColor(d: number) {
-  if (d <= -1) return '#00e87a';
-  if (d === 0)  return '#f0f0ff';
+  if (d <= -1) return '#FF6535';
+  if (d === 0)  return '#FFFFFF';
   if (d === 1)  return '#f59e0b';
   return '#ef4444';
 }
@@ -84,7 +84,7 @@ function Avatar({ name, level, size = 40 }: { name: string; level: GolferLevel; 
     <View style={{
       width: size, height: size, borderRadius: size / 2,
       backgroundColor: meta.color + '20',
-      borderWidth: 1.5, borderColor: meta.color + '60',
+       borderColor: meta.color + '60',
       alignItems: 'center', justifyContent: 'center',
     }}>
       <Text style={{ fontSize: size * 0.36, fontWeight: 'bold', color: meta.color }}>{initials}</Text>
@@ -109,13 +109,13 @@ function FeedTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: ()
 
   if (loading) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color="#00e87a" />
+      <ActivityIndicator color="#FF6535" />
     </View>
   );
 
   if (feed.length === 0) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 }}>
-      <Text style={{ fontSize: 40 }}>⛳</Text>
+      <Ionicons name="golf-outline" size={40} color={c.inkMuted} />
       <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>{t('social.feed.empty')}</Text>
       <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('social.feed.emptyHint')}</Text>
     </View>
@@ -126,12 +126,12 @@ function FeedTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh: ()
       style={{ flex: 1 }}
       contentContainerStyle={{ padding: 16, gap: 12 }}
       showsVerticalScrollIndicator={false}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6535" />}
     >
       {feed.map((entry) => (
         <View key={entry.id} style={{
           backgroundColor: c.bgCard, borderRadius: 16,
-          borderWidth: 1, borderColor: c.bgBorder, overflow: 'hidden',
+          overflow: 'hidden',
         }}>
           {/* User row */}
           <View style={{ flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 }}>
@@ -206,18 +206,23 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   return (
     <View style={{ flex: 1 }}>
       {/* Scope toggle */}
-      <View style={{ flexDirection: 'row', margin: 16, backgroundColor: c.bgCard, borderRadius: 12, padding: 4, borderWidth: 1, borderColor: c.bgBorder }}>
-        {(['global', 'friends'] as const).map((s) => (
+      <View style={{ flexDirection: 'row', margin: 16, backgroundColor: c.bgCard, borderRadius: 12, padding: 4 }}>
+        {([
+          { key: 'global', iconName: 'earth-outline' },
+          { key: 'friends', iconName: 'people-outline' },
+        ] as const).map((s) => (
           <TouchableOpacity
-            key={s}
+            key={s.key}
             style={{
               flex: 1, paddingVertical: 8, borderRadius: 9, alignItems: 'center',
-              backgroundColor: scope === s ? '#00e87a' : 'transparent',
+              flexDirection: 'row', justifyContent: 'center', gap: 5,
+              backgroundColor: scope === s.key ? '#FF6535' : 'transparent',
             }}
-            onPress={() => setScope(s)}
+            onPress={() => setScope(s.key)}
           >
-            <Text style={{ color: scope === s ? '#07070f' : c.inkMuted, fontWeight: '700', fontSize: 12 }}>
-              {t(`social.ranking.${s}`)}
+            <Ionicons name={s.iconName} size={13} color={scope === s.key ? '#FFFFFF' : c.inkMuted} />
+            <Text style={{ color: scope === s.key ? '#FFFFFF' : c.inkMuted, fontWeight: '700', fontSize: 12 }}>
+              {t(`social.ranking.${s.key}`)}
             </Text>
           </TouchableOpacity>
         ))}
@@ -225,7 +230,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
 
       {loading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator color="#00e87a" />
+          <ActivityIndicator color="#FF6535" />
         </View>
       ) : entries.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -238,7 +243,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6535" />}
         >
           {/* Header row */}
           <View style={{ flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 8 }}>
@@ -256,17 +261,19 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                 flexDirection: 'row', alignItems: 'center',
                 paddingHorizontal: 12, paddingVertical: 12,
                 marginBottom: 6, borderRadius: 14,
-                backgroundColor: entry.isMe ? '#00e87a10' : c.bgCard,
-                borderWidth: 1.5,
-                borderColor: entry.isMe ? '#00e87a50' : c.bgBorder,
+                backgroundColor: entry.isMe ? '#FF653510' : c.bgCard,
+                
+                
               }}
             >
               {/* Rank */}
               <View style={{ width: 36, alignItems: 'center' }}>
                 {entry.rank <= 3 ? (
-                  <Text style={{ fontSize: 18 }}>
-                    {entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : '🥉'}
-                  </Text>
+                  <Ionicons
+                    name="medal-outline"
+                    size={18}
+                    color={entry.rank === 1 ? '#ffd700' : entry.rank === 2 ? '#c0c0c0' : '#cd7f32'}
+                  />
                 ) : (
                   <Text style={{ color: rankColor(entry.rank), fontWeight: 'bold', fontSize: 14 }}>
                     {entry.rank}
@@ -283,19 +290,20 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                       {entry.name}
                     </Text>
                     {entry.isMe && (
-                      <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, backgroundColor: '#00e87a25' }}>
-                        <Text style={{ color: '#00e87a', fontSize: 9, fontWeight: '700' }}>{t('social.ranking.me')}</Text>
+                      <View style={{ paddingHorizontal: 6, paddingVertical: 1, borderRadius: 8, backgroundColor: '#FF653525' }}>
+                        <Text style={{ color: '#FF6535', fontSize: 9, fontWeight: '700' }}>{t('social.ranking.me')}</Text>
                       </View>
                     )}
                   </View>
-                  <Text style={{ color: c.inkMuted, fontSize: 11 }}>
-                    {LEVEL_META[entry.level].icon} {entry.rounds} {t('social.ranking.rounds')}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                    <Ionicons name={LEVEL_META[entry.level].iconName as any} size={11} color={LEVEL_META[entry.level].color} />
+                    <Text style={{ color: c.inkMuted, fontSize: 11 }}>{entry.rounds} {t('social.ranking.rounds')}</Text>
+                  </View>
                 </View>
               </View>
 
               {/* Stats */}
-              <Text style={{ width: 44, color: '#00e87a', fontWeight: 'bold', fontSize: 14, textAlign: 'center' }}>
+              <Text style={{ width: 44, color: '#FF6535', fontWeight: 'bold', fontSize: 14, textAlign: 'center' }}>
                 {entry.handicap != null ? entry.handicap : '—'}
               </Text>
               <Text style={{ width: 44, color: entry.avgScore != null ? scoreColor(Math.round(entry.avgScore)) : c.inkMuted, fontWeight: '600', fontSize: 13, textAlign: 'center' }}>
@@ -378,7 +386,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
 
   if (loading) return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color="#00e87a" />
+      <ActivityIndicator color="#FF6535" />
     </View>
   );
 
@@ -390,13 +398,13 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
       contentContainerStyle={{ padding: 16, gap: 16 }}
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6535" />}
     >
       {/* Search */}
       <View style={{
         flexDirection: 'row', alignItems: 'center', gap: 10,
         backgroundColor: c.bgElevated, borderRadius: 14,
-        borderWidth: 1, borderColor: c.bgBorder,
+        
         paddingHorizontal: 14, paddingVertical: 12,
       }}>
         <Ionicons name="search-outline" size={16} color={c.inkMuted} />
@@ -409,7 +417,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
           autoCapitalize="none"
           keyboardType="email-address"
         />
-        {searching && <ActivityIndicator size="small" color="#00e87a" />}
+        {searching && <ActivityIndicator size="small" color="#FF6535" />}
         {searchQuery.length > 0 && !searching && (
           <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
             <Ionicons name="close-circle" size={16} color={c.inkMuted} />
@@ -430,7 +438,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
               <View key={u.id} style={{
                 flexDirection: 'row', alignItems: 'center', gap: 12,
                 backgroundColor: c.bgCard, borderRadius: 14,
-                borderWidth: 1, borderColor: c.bgBorder,
+                
                 padding: 12, marginBottom: 8,
               }}>
                 <Avatar name={u.name} level={u.level} size={40} />
@@ -441,8 +449,8 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                   </Text>
                 </View>
                 {u.friendshipStatus === 'ACCEPTED' ? (
-                  <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: '#00e87a20' }}>
-                    <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: '700' }}>{t('social.friends.isFriend')}</Text>
+                  <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: '#FF653520' }}>
+                    <Text style={{ color: '#FF6535', fontSize: 12, fontWeight: '700' }}>{t('social.friends.isFriend')}</Text>
                   </View>
                 ) : u.friendshipStatus === 'PENDING' ? (
                   <View style={{ paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: c.bgElevated }}>
@@ -453,9 +461,9 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                 ) : (
                   <TouchableOpacity
                     onPress={() => sendRequest(u.id)}
-                    style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#00e87a20', borderWidth: 1, borderColor: '#00e87a' }}
+                    style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#FF653520', borderWidth: 1, borderColor: '#FF6535' }}
                   >
-                    <Text style={{ color: '#00e87a', fontSize: 12, fontWeight: '700' }}>{t('social.friends.addFriend')}</Text>
+                    <Text style={{ color: '#FF6535', fontSize: 12, fontWeight: '700' }}>{t('social.friends.addFriend')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -474,7 +482,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
             <View key={req.friendshipId} style={{
               flexDirection: 'row', alignItems: 'center', gap: 12,
               backgroundColor: c.bgCard, borderRadius: 14,
-              borderWidth: 1.5, borderColor: '#00e87a40',
+              
               padding: 12, marginBottom: 8,
             }}>
               <Avatar name={req.name} level={req.level} size={40} />
@@ -486,9 +494,9 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
               </View>
               <TouchableOpacity
                 onPress={() => acceptRequest(req.friendshipId)}
-                style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#00e87a', marginRight: 6 }}
+                style={{ paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10, backgroundColor: '#FF6535', marginRight: 6 }}
               >
-                <Text style={{ color: '#07070f', fontSize: 12, fontWeight: '700' }}>{t('social.friends.accept')}</Text>
+                <Text style={{ color: '#0A0A0A', fontSize: 12, fontWeight: '700' }}>{t('social.friends.accept')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => removeFriend(req)}
@@ -509,7 +517,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
           </Text>
           {friends.length === 0 ? (
             <View style={{ alignItems: 'center', paddingVertical: 32, gap: 8 }}>
-              <Text style={{ fontSize: 40 }}>👥</Text>
+              <Ionicons name="people-outline" size={40} color={c.inkMuted} />
               <Text style={{ color: c.inkSecondary, fontWeight: '600' }}>{t('social.friends.noFriends')}</Text>
               <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('social.friends.noFriendsHint')}</Text>
             </View>
@@ -518,17 +526,19 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
               <View key={friend.id} style={{
                 flexDirection: 'row', alignItems: 'center', gap: 12,
                 backgroundColor: c.bgCard, borderRadius: 14,
-                borderWidth: 1, borderColor: c.bgBorder,
+                
                 padding: 12, marginBottom: 8,
               }}>
                 <Avatar name={friend.name} level={friend.level} size={42} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{friend.name}</Text>
-                  <Text style={{ color: c.inkMuted, fontSize: 12 }}>
-                    {LEVEL_META[friend.level].icon}
-                    {friend.handicap != null ? ` HCP ${friend.handicap}` : ` ${t('social.friends.noHcp')}`}
-                    {friend.homeClub ? ` · ${friend.homeClub}` : ''}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                    <Ionicons name={LEVEL_META[friend.level].iconName as any} size={12} color={LEVEL_META[friend.level].color} />
+                    <Text style={{ color: c.inkMuted, fontSize: 12 }}>
+                      {friend.handicap != null ? `HCP ${friend.handicap}` : t('social.friends.noHcp')}
+                      {friend.homeClub ? ` · ${friend.homeClub}` : ''}
+                    </Text>
+                  </View>
                 </View>
                 <TouchableOpacity onPress={() => removeFriend(friend)} style={{ padding: 8 }}>
                   <Ionicons name="person-remove-outline" size={18} color={c.inkMuted} />
@@ -559,17 +569,17 @@ export default function SocialScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
       {/* Header */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 }}>
-        <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 4 }}>
+        <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>
           {t('social.sectionLabel')}
         </Text>
-        <Text style={{ color: c.inkPrimary, fontSize: 24, fontWeight: 'bold' }}>{t('social.title')}</Text>
+        <Text style={{ color: c.inkPrimary, fontSize: 30, fontWeight: '900' }}>{t('social.title')}</Text>
       </View>
 
       {/* Internal Tab Bar */}
       <View style={{
-        flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, gap: 8,
-        borderBottomWidth: 1, borderBottomColor: c.bgBorder,
+        flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 12, gap: 8,
+        backgroundColor: c.bgElevated, marginHorizontal: 16, marginVertical: 12, borderRadius: 16,
       }}>
         {TABS.map((tab) => {
           const active = tab.key === activeTab;
@@ -579,14 +589,12 @@ export default function SocialScreen() {
               onPress={() => setActiveTab(tab.key)}
               style={{
                 flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-                gap: 5, paddingVertical: 8, borderRadius: 10,
-                backgroundColor: active ? '#00e87a20' : 'transparent',
-                borderWidth: 1,
-                borderColor: active ? '#00e87a' : 'transparent',
+                gap: 5, paddingVertical: 8, borderRadius: 12,
+                backgroundColor: active ? '#FF653520' : 'transparent',
               }}
             >
-              <Ionicons name={tab.icon as any} size={14} color={active ? '#00e87a' : c.inkMuted} />
-              <Text style={{ fontSize: 12, fontWeight: '700', color: active ? '#00e87a' : c.inkMuted }}>
+              <Ionicons name={tab.icon as any} size={14} color={active ? '#FF6535' : c.inkMuted} />
+              <Text style={{ fontSize: 12, fontWeight: '900', color: active ? '#FF6535' : c.inkMuted }}>
                 {t(`social.tabs.${tab.key}`)}
               </Text>
             </TouchableOpacity>

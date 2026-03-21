@@ -54,7 +54,7 @@ function SearchStep({
 
   return (
     <View className="flex-1">
-      <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3">
+      <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-3">
         Platz suchen
       </Text>
 
@@ -63,7 +63,7 @@ function SearchStep({
         <TextInput
           className="flex-1 bg-bg-elevated border border-bg-border text-ink-primary rounded-xl px-4 py-3 text-sm"
           placeholder="z.B. Golf Hamburg, Gut Kaden..."
-          placeholderTextColor="#44445a"
+          placeholderTextColor="#444444"
           value={query}
           onChangeText={setQuery}
           onSubmitEditing={search}
@@ -72,13 +72,13 @@ function SearchStep({
         />
         <TouchableOpacity
           className="w-12 rounded-xl items-center justify-center"
-          style={{ backgroundColor: '#00e87a' }}
+          style={{ backgroundColor: '#FF6535' }}
           onPress={search}
           disabled={loading}
         >
           {loading
-            ? <ActivityIndicator size="small" color="#07070f" />
-            : <Ionicons name="search" size={18} color="#07070f" />
+            ? <ActivityIndicator size="small" color="#0A0A0A" />
+            : <Ionicons name="search" size={18} color="#0A0A0A" />
           }
         </TouchableOpacity>
       </View>
@@ -87,14 +87,14 @@ function SearchStep({
       <ScrollView showsVerticalScrollIndicator={false}>
         {loading && (
           <View className="items-center py-8">
-            <ActivityIndicator color="#00e87a" />
+            <ActivityIndicator color="#FF6535" />
             <Text className="text-ink-muted text-sm mt-3">Suche auf OpenStreetMap...</Text>
           </View>
         )}
 
         {!loading && searched && results.length === 0 && (
           <View className="items-center py-8 gap-2">
-            <Ionicons name="search-outline" size={32} color="#252535" />
+            <Ionicons name="search-outline" size={32} color="#2E2E2E" />
             <Text className="text-ink-secondary text-sm">Keine Ergebnisse für "{query}"</Text>
             <Text className="text-ink-muted text-xs text-center">
               Versuche einen kürzeren Begriff oder gib den Platz manuell ein
@@ -105,17 +105,17 @@ function SearchStep({
         {results.map((course) => (
           <TouchableOpacity
             key={course.id}
-            className="bg-bg-card border border-bg-border rounded-xl px-4 py-4 mb-2 flex-row items-center gap-3"
+            className="bg-bg-card rounded-2xl px-4 py-4 mb-2 flex-row items-center gap-3"
             onPress={() => onSelect(course)}
           >
             <View className="w-9 h-9 rounded-lg bg-bg-elevated items-center justify-center">
-              <Ionicons name="flag-outline" size={16} color="#00e87a" />
+              <Ionicons name="flag-outline" size={16} color="#FF6535" />
             </View>
             <View className="flex-1">
               <Text className="text-ink-primary font-semibold text-sm">{course.name}</Text>
               <Text className="text-ink-muted text-xs mt-0.5">{course.location}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#44445a" />
+            <Ionicons name="chevron-forward" size={14} color="#444444" />
           </TouchableOpacity>
         ))}
 
@@ -125,7 +125,7 @@ function SearchStep({
           onPress={onManual}
         >
           <View className="w-9 h-9 rounded-lg bg-bg-elevated items-center justify-center">
-            <Ionicons name="add" size={16} color="#8888aa" />
+            <Ionicons name="add" size={16} color="#8A8A8A" />
           </View>
           <View>
             <Text className="text-ink-secondary font-medium text-sm">Manuell anlegen</Text>
@@ -160,7 +160,7 @@ function HoleSetupStep({
 }) {
   const totalPar = holes.reduce((s, h) => s + h.par, 0);
   const inputStyle = "bg-bg-elevated border border-bg-border text-ink-primary rounded-xl px-4 py-3 text-sm";
-  const labelStyle = "text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2";
+  const labelStyle = "text-ink-secondary text-xs font-bold uppercase tracking-widest mb-2";
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -168,11 +168,11 @@ function HoleSetupStep({
       <View className="gap-4 mb-6">
         <View>
           <Text className={labelStyle}>Platzname</Text>
-          <TextInput className={inputStyle} value={courseName} onChangeText={onNameChange} placeholderTextColor="#44445a" />
+          <TextInput className={inputStyle} value={courseName} onChangeText={onNameChange} placeholderTextColor="#444444" />
         </View>
         <View>
           <Text className={labelStyle}>Standort</Text>
-          <TextInput className={inputStyle} value={courseLocation} onChangeText={onLocationChange} placeholderTextColor="#44445a" />
+          <TextInput className={inputStyle} value={courseLocation} onChangeText={onLocationChange} placeholderTextColor="#444444" />
         </View>
       </View>
 
@@ -186,7 +186,7 @@ function HoleSetupStep({
 
       {/* Vorder- und Hinterneun */}
       {[{ label: 'VORDERNEUN', range: [0, 9] }, { label: 'HINTERNEUN', range: [9, 18] }].map(({ label, range }) => (
-        <View key={label} className="bg-bg-card border border-bg-border rounded-xl overflow-hidden mb-3">
+        <View key={label} className="bg-bg-card rounded-2xl overflow-hidden mb-3">
           <View className="px-4 py-2 bg-bg-elevated border-b border-bg-border flex-row justify-between items-center">
             <Text className="text-ink-secondary text-xs font-bold tracking-widest">{label}</Text>
             <Text className="text-ink-muted text-xs">
@@ -210,13 +210,13 @@ function HoleSetupStep({
                       key={p}
                       className="w-9 h-8 rounded-lg items-center justify-center"
                       style={{
-                        backgroundColor: hole.par === p ? '#00e87a' : '#1c1c2e',
+                        backgroundColor: hole.par === p ? '#FF6535' : '#242424',
                         borderWidth: 1,
-                        borderColor: hole.par === p ? '#00e87a' : '#252535',
+                        borderColor: hole.par === p ? '#FF6535' : '#2E2E2E',
                       }}
                       onPress={() => onHoleChange(idx, 'par', p)}
                     >
-                      <Text className="text-xs font-bold" style={{ color: hole.par === p ? '#07070f' : '#8888aa' }}>
+                      <Text className="text-xs font-bold" style={{ color: hole.par === p ? '#0A0A0A' : '#8A8A8A' }}>
                         {p}
                       </Text>
                     </TouchableOpacity>
@@ -242,7 +242,7 @@ function HoleSetupStep({
 
       <TouchableOpacity
         className="rounded-xl py-4 items-center mb-8"
-        style={{ backgroundColor: '#00e87a', opacity: saving ? 0.6 : 1 }}
+        style={{ backgroundColor: '#FF6535', opacity: saving ? 0.6 : 1 }}
         onPress={onSave}
         disabled={saving}
       >
@@ -310,7 +310,7 @@ export function CreateCourseModal({ onClose, onCreated }: { onClose: () => void;
             {step === 'search'
               ? <Text className="text-ink-secondary text-sm">Abbrechen</Text>
               : <View className="flex-row items-center gap-1">
-                  <Ionicons name="arrow-back" size={16} color="#8888aa" />
+                  <Ionicons name="arrow-back" size={16} color="#8A8A8A" />
                   <Text className="text-ink-secondary text-sm">Zurück</Text>
                 </View>
             }

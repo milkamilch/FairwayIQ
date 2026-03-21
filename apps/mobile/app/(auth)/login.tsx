@@ -33,24 +33,22 @@ export default function LoginScreen() {
       <View className="flex-1 justify-center px-6">
 
         {/* Logo */}
-        <View className="mb-12">
-          <View className="flex-row items-center gap-3 mb-2">
-            <View className="w-10 h-10 rounded-lg bg-neon-glow border border-neon-green items-center justify-center">
-              <Text className="text-neon-green text-xl">⛳</Text>
-            </View>
-            <Text className="text-ink-primary text-3xl font-bold tracking-tight">FairwayIQ</Text>
+        <View className="mb-14">
+          <View className="w-14 h-14 rounded-2xl items-center justify-center mb-5" style={{ backgroundColor: '#FF653520' }}>
+            <Text style={{ fontSize: 28 }}>⛳</Text>
           </View>
-          <Text className="text-ink-secondary text-sm ml-14">{t('auth.login.tagline')}</Text>
+          <Text className="text-ink-primary text-4xl font-black tracking-tight">FairwayIQ</Text>
+          <Text className="text-ink-secondary text-base mt-2">{t('auth.login.tagline')}</Text>
         </View>
 
         {/* Form */}
         <View className="gap-4">
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">{t('auth.login.emailLabel')}</Text>
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-2">{t('auth.login.emailLabel')}</Text>
             <TextInput
-              className="bg-bg-card border border-bg-border text-ink-primary rounded-xl px-4 py-4 text-base"
+              className="bg-bg-card text-ink-primary rounded-2xl px-4 py-4 text-base"
               placeholder={t('auth.login.emailPlaceholder')}
-              placeholderTextColor="#44445a"
+              placeholderTextColor="#444444"
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
@@ -59,11 +57,11 @@ export default function LoginScreen() {
           </View>
 
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2">{t('auth.login.passwordLabel')}</Text>
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-2">{t('auth.login.passwordLabel')}</Text>
             <TextInput
-              className="bg-bg-card border border-bg-border text-ink-primary rounded-xl px-4 py-4 text-base"
+              className="bg-bg-card text-ink-primary rounded-2xl px-4 py-4 text-base"
               placeholder="••••••••"
-              placeholderTextColor="#44445a"
+              placeholderTextColor="#444444"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
@@ -71,12 +69,12 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity
-            className="rounded-xl py-4 items-center mt-2"
-            style={{ backgroundColor: '#00e87a', opacity: isLoading ? 0.6 : 1 }}
+            className="rounded-2xl py-4 items-center mt-2"
+            style={{ backgroundColor: '#FF6535', opacity: isLoading ? 0.6 : 1 }}
             onPress={handleLogin}
             disabled={isLoading}
           >
-            <Text className="text-bg-base font-bold text-base tracking-wide">
+            <Text className="text-white font-black text-base tracking-wide">
               {isLoading ? t('auth.login.loggingIn') : t('auth.login.loginButton')}
             </Text>
           </TouchableOpacity>
@@ -85,15 +83,13 @@ export default function LoginScreen() {
         {/* Divider */}
         <View className="flex-row items-center my-8">
           <View className="flex-1 h-px bg-bg-border" />
-          <Text className="text-ink-muted text-xs px-3">{t('auth.login.noAccount')}</Text>
+          <Text className="text-ink-muted text-xs px-4">{t('auth.login.noAccount')}</Text>
           <View className="flex-1 h-px bg-bg-border" />
         </View>
 
         <Link href="/(auth)/register" asChild>
-          <TouchableOpacity
-            className="rounded-xl py-4 items-center border border-bg-border"
-          >
-            <Text className="text-ink-primary font-semibold text-base">{t('auth.login.register')}</Text>
+          <TouchableOpacity className="rounded-2xl py-4 items-center bg-bg-card">
+            <Text className="text-ink-primary font-bold text-base">{t('auth.login.register')}</Text>
           </TouchableOpacity>
         </Link>
       </View>

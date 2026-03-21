@@ -26,10 +26,10 @@ function scoreDiff(n: number) {
 
 function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <View className="flex-1 bg-bg-card border border-bg-border rounded-xl p-3">
-      <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-1">{label}</Text>
-      <Text className="text-ink-primary text-2xl font-bold">{value}</Text>
-      {sub && <Text className="text-ink-muted text-xs mt-0.5">{sub}</Text>}
+    <View className="flex-1 bg-bg-card rounded-2xl p-4">
+      <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-1">{label}</Text>
+      <Text className="text-ink-primary text-2xl font-black">{value}</Text>
+      {sub && <Text className="text-ink-muted text-xs mt-1">{sub}</Text>}
     </View>
   );
 }
@@ -58,39 +58,37 @@ export default function DashboardScreen() {
     <SafeAreaView className="flex-1 bg-bg-base">
       <ScrollView
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6535" />}
       >
         {/* Header */}
-        <View className="px-5 pt-4 pb-6">
+        <View className="px-5 pt-6 pb-6">
           <View className="flex-row items-center justify-between">
             <View>
-              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('dashboard.sectionLabel')}</Text>
-              <Text className="text-ink-primary text-2xl font-bold mt-0.5">{user?.name}</Text>
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-1">{t('dashboard.sectionLabel')}</Text>
+              <Text className="text-ink-primary text-3xl font-black">{user?.name}</Text>
             </View>
-            <View className="items-end gap-1">
-              <View className="px-2 py-1 rounded bg-neon-glow border border-neon-green">
+            <View className="items-end gap-1.5">
+              <View className="px-3 py-1.5 rounded-full" style={{ backgroundColor: '#FF653520' }}>
                 <Text className="text-neon-green text-xs font-bold tracking-wider">
                   {t(`dashboard.level.${user?.level ?? 'BEGINNER'}`)}
                 </Text>
               </View>
               {user?.handicap !== null && user?.handicap !== undefined && (
-                <Text className="text-ink-secondary text-xs">HCP {user.handicap}</Text>
+                <Text className="text-ink-secondary text-sm font-semibold">HCP {user.handicap}</Text>
               )}
             </View>
           </View>
         </View>
 
-        <View className="px-5 gap-4 pb-8">
+        <View className="px-5 gap-5 pb-8">
           {/* Wetter-Widget */}
-          <View>
-            <WeatherWidget />
-          </View>
+          <WeatherWidget />
 
           {/* Stats Grid */}
           {stats && stats.rounds > 0 ? (
-            <View>
-              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3">{t('dashboard.performance')}</Text>
-              <View className="flex-row gap-2 mb-2">
+            <View className="gap-3">
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('dashboard.performance')}</Text>
+              <View className="flex-row gap-3">
                 <StatTile label={t('dashboard.stats.rounds')} value={String(stats.rounds)} />
                 <StatTile
                   label={t('dashboard.stats.avgScore')}
@@ -102,7 +100,7 @@ export default function DashboardScreen() {
                   value={stats.bestScore !== null ? scoreDiff(stats.bestScore) : '—'}
                 />
               </View>
-              <View className="flex-row gap-2">
+              <View className="flex-row gap-3">
                 <StatTile label={t('dashboard.stats.avgPutts')} value={stats.avgPutts !== null ? String(stats.avgPutts) : '—'} />
                 <StatTile label="FIR" value={stats.fairwayAvg !== null ? `${stats.fairwayAvg}%` : '—'} />
                 <StatTile label="GIR" value={stats.girAvg !== null ? `${stats.girAvg}%` : '—'} />
@@ -110,65 +108,64 @@ export default function DashboardScreen() {
             </View>
           ) : (
             <TouchableOpacity
-              className="bg-bg-card border border-bg-border rounded-xl p-5 items-center gap-2"
+              className="bg-bg-card rounded-2xl p-5 items-center gap-3"
               onPress={() => router.push('/(tabs)/rounds')}
             >
-              <Ionicons name="stats-chart-outline" size={28} color="#44445a" />
+              <Ionicons name="stats-chart-outline" size={32} color="#444444" />
               <Text className="text-ink-secondary text-sm">{t('dashboard.noRounds')}</Text>
-              <Text className="text-neon-green text-sm font-semibold">{t('dashboard.startRound')}</Text>
+              <Text className="text-neon-green text-sm font-bold">{t('dashboard.startRound')}</Text>
             </TouchableOpacity>
           )}
 
           {/* Aktiver Trainingsplan */}
-          <View>
-            <View className="flex-row items-center justify-between mb-3">
-              <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('dashboard.trainingPlan')}</Text>
+          <View className="gap-3">
+            <View className="flex-row items-center justify-between">
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('dashboard.trainingPlan')}</Text>
               <TouchableOpacity onPress={() => router.push('/(tabs)/training')}>
-                <Text className="text-neon-green text-xs font-semibold">{t('dashboard.viewAll')}</Text>
+                <Text className="text-neon-green text-xs font-bold">{t('dashboard.viewAll')}</Text>
               </TouchableOpacity>
             </View>
 
             {activePlan ? (
               <TouchableOpacity
-                className="bg-bg-card border border-bg-border rounded-xl p-4"
+                className="bg-bg-card rounded-2xl p-5"
                 onPress={() => router.push('/(tabs)/training')}
               >
-                <View className="flex-row items-start justify-between mb-3">
+                <View className="flex-row items-start justify-between mb-4">
                   <View className="flex-1">
-                    <Text className="text-ink-primary font-bold">{activePlan.plan.name}</Text>
-                    <Text className="text-ink-secondary text-xs mt-0.5">
+                    <Text className="text-ink-primary font-black text-base">{activePlan.plan.name}</Text>
+                    <Text className="text-ink-secondary text-xs mt-1">
                       {t('dashboard.day')} {activePlan.currentDay} / {activePlan.plan.days.length}
                     </Text>
                   </View>
-                  <Text className="text-neon-green text-sm font-bold">
+                  <Text className="text-neon-green text-xl font-black">
                     {Math.round((activePlan.completedDays.length / activePlan.plan.days.length) * 100)}%
                   </Text>
                 </View>
-                {/* Progress Bar */}
-                <View className="bg-bg-elevated rounded-full h-1.5 overflow-hidden">
+                <View className="bg-bg-elevated rounded-full h-2 overflow-hidden mb-3">
                   <View
-                    className="bg-neon-green h-1.5 rounded-full"
+                    className="bg-neon-green h-2 rounded-full"
                     style={{ width: `${(activePlan.completedDays.length / activePlan.plan.days.length) * 100}%` }}
                   />
                 </View>
-                <Text className="text-neon-dim text-xs mt-3 font-medium">
-                  → {activePlan.plan.days.find(d => d.dayNumber === activePlan.currentDay)?.title ?? t('dashboard.completed')}
+                <Text className="text-ink-secondary text-xs font-medium">
+                  {activePlan.plan.days.find(d => d.dayNumber === activePlan.currentDay)?.title ?? t('dashboard.completed')}
                 </Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
-                className="bg-bg-card border border-bg-border rounded-xl p-5 items-center gap-2"
+                className="bg-bg-card rounded-2xl p-5 items-center gap-3"
                 onPress={() => router.push('/(tabs)/training')}
               >
-                <Ionicons name="fitness-outline" size={28} color="#44445a" />
-                <Text className="text-neon-green text-sm font-semibold">{t('dashboard.startTraining')}</Text>
+                <Ionicons name="fitness-outline" size={32} color="#444444" />
+                <Text className="text-neon-green text-sm font-bold">{t('dashboard.startTraining')}</Text>
               </TouchableOpacity>
             )}
           </View>
 
           {/* Quick Actions */}
-          <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-3">{t('dashboard.quickAccess')}</Text>
+          <View className="gap-3">
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('dashboard.quickAccess')}</Text>
             <View className="gap-2">
               {[
                 { label: t('dashboard.quickActions.newRound'), sub: t('dashboard.quickActions.newRoundSub'), icon: 'stats-chart', route: '/(tabs)/rounds' },
@@ -179,17 +176,17 @@ export default function DashboardScreen() {
               ].map((a) => (
                 <TouchableOpacity
                   key={a.label}
-                  className="bg-bg-card border border-bg-border rounded-xl px-4 py-3 flex-row items-center gap-3"
+                  className="bg-bg-card rounded-2xl px-4 py-4 flex-row items-center gap-3"
                   onPress={() => router.push(a.route as any)}
                 >
-                  <View className="w-9 h-9 rounded-lg bg-bg-elevated items-center justify-center">
-                    <Ionicons name={a.icon as any} size={18} color="#00e87a" />
+                  <View className="w-10 h-10 rounded-xl bg-bg-elevated items-center justify-center">
+                    <Ionicons name={a.icon as any} size={20} color="#FF6535" />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-ink-primary font-semibold text-sm">{a.label}</Text>
-                    <Text className="text-ink-muted text-xs">{a.sub}</Text>
+                    <Text className="text-ink-primary font-bold text-sm">{a.label}</Text>
+                    <Text className="text-ink-muted text-xs mt-0.5">{a.sub}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="#44445a" />
+                  <Ionicons name="chevron-forward" size={14} color="#444444" />
                 </TouchableOpacity>
               ))}
             </View>

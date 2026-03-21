@@ -18,9 +18,9 @@ module.exports = {
           border:   'var(--color-bg-border)',
         },
         neon: {
-          green: '#00e87a',
-          dim:   '#00a855',
-          glow:  '#00e87a33',
+          green: '#FF6535',
+          dim:   '#CC4A20',
+          glow:  '#FF653533',
         },
         ink: {
           primary:   'var(--color-ink-primary)',
@@ -29,8 +29,8 @@ module.exports = {
         },
         score: {
           eagle:  '#7c3aed',
-          birdie: '#00e87a',
-          par:    '#f0f0ff',
+          birdie: '#FF6535',
+          par:    '#FFFFFF',
           bogey:  '#f59e0b',
           double: '#ef4444',
         },

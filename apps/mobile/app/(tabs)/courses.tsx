@@ -8,10 +8,11 @@ import { useTheme } from '../../src/lib/theme';
 import { Course } from '@fairwayiq/shared';
 import { CreateCourseModal } from '../../src/components/CreateCourseModal';
 
-const hazardIcons: Record<string, string> = { WATER: '💧', BUNKER: '⛱️', OB: '🚫', ROUGH: '🌿', TREES: '🌳' };
+const hazardIcons: Record<string, string> = { WATER: 'water-outline', BUNKER: 'golf-outline', OB: 'warning-outline', ROUGH: 'leaf-outline', TREES: 'leaf-outline' };
 
 function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
   const { t } = useTranslation();
+  const c = useTheme();
   const hasStrategy = !!hole.strategy;
   return (
     <TouchableOpacity
@@ -20,9 +21,9 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
     >
       <View
         className="w-8 h-8 rounded-lg items-center justify-center mr-3"
-        style={{ backgroundColor: hasStrategy ? '#00e87a15' : '#14141f' }}
+        style={{ backgroundColor: hasStrategy ? '#FF653515' : c.bgElevated }}
       >
-        <Text className="text-xs font-bold" style={{ color: hasStrategy ? '#00e87a' : '#44445a' }}>
+        <Text className="text-xs font-bold" style={{ color: hasStrategy ? '#FF6535' : c.inkMuted }}>
           {hole.number}
         </Text>
       </View>
@@ -32,7 +33,11 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
           <Text className="text-ink-muted text-xs">·</Text>
           <Text className="text-ink-muted text-xs">{hole.distanceMeters}m</Text>
           {hole.hazards?.length > 0 && (
-            <Text className="text-xs">{hole.hazards.map((h: any) => hazardIcons[h.type]).join('')}</Text>
+            <View className="flex-row gap-0.5">
+              {hole.hazards.map((h: any, i: number) => (
+                <Ionicons key={i} name={hazardIcons[h.type] as any} size={11} color={c.inkMuted} />
+              ))}
+            </View>
           )}
         </View>
         {hole.strategy ? (
@@ -43,7 +48,7 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
           <Text className="text-ink-muted text-xs">{t('courses.addStrategy')}</Text>
         )}
       </View>
-      <Ionicons name="chevron-forward" size={12} color="#252535" />
+      <Ionicons name="chevron-forward" size={12} color={c.inkMuted} />
     </TouchableOpacity>
   );
 }
@@ -57,6 +62,7 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
   const [avoidance, setAvoidance] = useState(hole.strategy?.avoidance ?? '');
   const [notes, setNotes] = useState(hole.strategy?.notes ?? '');
   const { t } = useTranslation();
+  const c = useTheme();
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
@@ -70,7 +76,7 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
   };
 
   const inputStyle = "bg-bg-elevated border border-bg-border text-ink-primary rounded-xl px-4 py-3 text-sm";
-  const labelStyle = "text-ink-secondary text-xs font-semibold uppercase tracking-widest mb-2";
+  const labelStyle = "text-ink-muted text-xs font-bold uppercase tracking-widest mb-2";
 
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
@@ -92,7 +98,7 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
           <View className="gap-5">
             <View>
               <Text className={labelStyle}>{t('courses.strategyModal.club')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor="#44445a" value={club} onChangeText={setClub} />
+              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor="#444444" value={club} onChangeText={setClub} />
             </View>
 
             <View>
@@ -103,13 +109,13 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
                     key={s}
                     className="flex-1 py-3 rounded-xl items-center"
                     style={{
-                      backgroundColor: shotShape === s ? '#00e87a' : '#14141f',
+                      backgroundColor: shotShape === s ? '#FF6535' : c.bgElevated,
                       borderWidth: 1,
-                      borderColor: shotShape === s ? '#00e87a' : '#252535',
+                      borderColor: shotShape === s ? '#FF6535' : c.bgBorder,
                     }}
                     onPress={() => setShotShape(s)}
                   >
-                    <Text className="text-xs font-bold" style={{ color: shotShape === s ? '#07070f' : '#8888aa' }}>
+                    <Text className="text-xs font-bold" style={{ color: shotShape === s ? '#0A0A0A' : '#8A8A8A' }}>
                       {t(`courses.strategyModal.shotShape.${s}`)}
                     </Text>
                   </TouchableOpacity>
@@ -119,12 +125,12 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
 
             <View>
               <Text className={labelStyle}>{t('courses.strategyModal.aimPoint')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.aimPlaceholder')} placeholderTextColor="#44445a" value={aimPoint} onChangeText={setAimPoint} />
+              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.aimPlaceholder')} placeholderTextColor="#444444" value={aimPoint} onChangeText={setAimPoint} />
             </View>
 
             <View>
               <Text className={labelStyle}>{t('courses.strategyModal.avoidance')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.avoidPlaceholder')} placeholderTextColor="#44445a" value={avoidance} onChangeText={setAvoidance} multiline />
+              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.avoidPlaceholder')} placeholderTextColor="#444444" value={avoidance} onChangeText={setAvoidance} multiline />
             </View>
 
             <View>
@@ -132,7 +138,7 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
               <TextInput
                 className={`${inputStyle} min-h-20`}
                 placeholder={t('courses.strategyModal.notesPlaceholder')}
-                placeholderTextColor="#44445a"
+                placeholderTextColor="#444444"
                 value={notes}
                 onChangeText={setNotes}
                 multiline
@@ -220,7 +226,7 @@ export default function CoursesScreen() {
         <View className="px-5 pt-4 pb-4 border-b border-bg-border">
           <View className="flex-row items-center gap-3">
             <TouchableOpacity onPress={() => setSelectedCourse(null)}>
-              <Ionicons name="arrow-back" size={22} color="#8888aa" />
+              <Ionicons name="arrow-back" size={22} color="#8A8A8A" />
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-ink-primary font-bold text-lg">{selectedCourse.name}</Text>
@@ -234,7 +240,7 @@ export default function CoursesScreen() {
         </View>
 
         <ScrollView>
-          <View className="bg-bg-card border border-bg-border rounded-xl mx-4 mt-4 overflow-hidden">
+          <View className="bg-bg-card rounded-2xl mx-4 mt-4 overflow-hidden">
             <View className="flex-row px-4 py-2 bg-bg-elevated border-b border-bg-border">
               <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('courses.table.nr')}</Text>
               <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest ml-11 flex-1">{t('courses.table.info')}</Text>
@@ -264,15 +270,15 @@ export default function CoursesScreen() {
       <View className="px-5 pt-4 pb-3">
         <View className="flex-row items-end justify-between mb-4">
           <View>
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">{t('courses.sectionLabel')}</Text>
-            <Text className="text-ink-primary text-2xl font-bold mt-0.5">{t('courses.title')}</Text>
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('courses.sectionLabel')}</Text>
+            <Text className="text-ink-primary text-3xl font-black">{t('courses.title')}</Text>
           </View>
           <TouchableOpacity
-            className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl border border-neon-green"
-            style={{ backgroundColor: '#00e87a15' }}
+            className="flex-row items-center gap-2 px-4 py-2.5 rounded-2xl"
+            style={{ backgroundColor: '#FF653520' }}
             onPress={() => setShowCreate(true)}
           >
-            <Ionicons name="add" size={16} color="#00e87a" />
+            <Ionicons name="add" size={16} color="#FF6535" />
             <Text className="text-neon-green text-xs font-bold">{t('courses.manualAdd')}</Text>
           </TouchableOpacity>
         </View>
@@ -292,7 +298,7 @@ export default function CoursesScreen() {
             onChangeText={onSearchChange}
             autoCorrect={false}
           />
-          {searching && <ActivityIndicator size="small" color="#00e87a" />}
+          {searching && <ActivityIndicator size="small" color="#FF6535" />}
           {searchQuery.length > 0 && !searching && (
             <TouchableOpacity onPress={() => { setSearchQuery(''); setSearchResults([]); }}>
               <Ionicons name="close-circle" size={17} color={c.inkMuted} />
@@ -326,12 +332,12 @@ export default function CoursesScreen() {
               >
                 <View style={{
                   width: 36, height: 36, borderRadius: 10,
-                  backgroundColor: '#00e87a15', borderWidth: 1, borderColor: '#00e87a30',
+                  backgroundColor: '#FF653520', borderRadius: 16,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
                   {saving === r.apiId
-                    ? <ActivityIndicator size="small" color="#00e87a" />
-                    : <Text style={{ fontSize: 18 }}>⛳</Text>
+                    ? <ActivityIndicator size="small" color="#FF6535" />
+                    : <Ionicons name="golf-outline" size={20} color="#FF6535" />
                   }
                 </View>
                 <View style={{ flex: 1 }}>
@@ -347,12 +353,12 @@ export default function CoursesScreen() {
                 <View style={{ alignItems: 'flex-end', gap: 2 }}>
                   <Text style={{ color: c.inkSecondary, fontSize: 12 }}>Par {r.totalPar}</Text>
                   {r.hasHoles && (
-                    <View style={{ backgroundColor: '#00e87a20', borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 }}>
-                      <Text style={{ color: '#00e87a', fontSize: 9, fontWeight: '700' }}>{t('courses.holes18')}</Text>
+                    <View style={{ backgroundColor: '#FF653520', borderRadius: 6, paddingHorizontal: 5, paddingVertical: 2 }}>
+                      <Text style={{ color: '#FF6535', fontSize: 9, fontWeight: '700' }}>{t('courses.holes18')}</Text>
                     </View>
                   )}
                 </View>
-                <Ionicons name="add-circle-outline" size={20} color="#00e87a" />
+                <Ionicons name="add-circle-outline" size={20} color="#FF6535" />
               </TouchableOpacity>
             ))}
             </ScrollView>
@@ -369,11 +375,11 @@ export default function CoursesScreen() {
       <ScrollView
         className="flex-1 px-5"
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#00e87a" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6535" />}
       >
         {courses.length === 0 && searchQuery.length === 0 ? (
           <View className="items-center py-16 gap-3">
-            <Ionicons name="map-outline" size={48} color="#252535" />
+            <Ionicons name="map-outline" size={48} color="#2E2E2E" />
             <Text className="text-ink-secondary font-semibold">{t('courses.noCourses')}</Text>
             <Text className="text-ink-muted text-sm text-center">{t('courses.noCoursesHint')}</Text>
           </View>
@@ -384,7 +390,7 @@ export default function CoursesScreen() {
             return (
               <TouchableOpacity
                 key={course.id}
-                className="bg-bg-card border border-bg-border rounded-xl mb-3 overflow-hidden"
+                className="bg-bg-card rounded-2xl mb-3 overflow-hidden"
                 onPress={() => fetchCourseDetail(course.id)}
               >
                 <View className="p-4">
@@ -403,14 +409,14 @@ export default function CoursesScreen() {
                     <View className="mt-3">
                       <View className="flex-row items-center justify-between mb-1">
                         <Text className="text-ink-muted text-xs">{t('courses.strategyCoverage')}</Text>
-                        <Text className="text-xs font-semibold" style={{ color: strategies === 18 ? '#00e87a' : '#8888aa' }}>
+                        <Text className="text-xs font-semibold" style={{ color: strategies === 18 ? '#FF6535' : '#8A8A8A' }}>
                           {strategies}/18
                         </Text>
                       </View>
                       <View className="bg-bg-elevated rounded-full h-1 overflow-hidden">
                         <View
                           className="h-1 rounded-full"
-                          style={{ width: `${(strategies / 18) * 100}%`, backgroundColor: strategies === 18 ? '#00e87a' : '#44445a' }}
+                          style={{ width: `${(strategies / 18) * 100}%`, backgroundColor: strategies === 18 ? '#FF6535' : '#444444' }}
                         />
                       </View>
                     </View>
@@ -418,7 +424,7 @@ export default function CoursesScreen() {
                 </View>
                 <View className="px-4 py-2.5 border-t border-bg-border flex-row items-center justify-between">
                   <Text className="text-neon-green text-xs font-semibold">{t('courses.editStrategy')}</Text>
-                  <Ionicons name="chevron-forward" size={12} color="#00e87a" />
+                  <Ionicons name="chevron-forward" size={12} color="#FF6535" />
                 </View>
               </TouchableOpacity>
             );

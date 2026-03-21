@@ -22,15 +22,15 @@ interface OpenMeteoResponse {
   };
 }
 
-// ── WMO code icons (labels come from translation) ──────────────────────
+// ── WMO code icons (Ionicons names) ───────────────────────────────────
 const WMO_ICONS: Record<number, string> = {
-  0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️',
-  45: '🌫️', 48: '🌫️',
-  51: '🌦️', 53: '🌦️', 55: '🌧️',
-  61: '🌧️', 63: '🌧️', 65: '🌧️',
-  71: '🌨️', 73: '❄️', 75: '❄️',
-  80: '🌦️', 81: '🌧️', 82: '🌧️',
-  95: '⛈️', 96: '⛈️', 99: '⛈️',
+  0: 'sunny-outline', 1: 'partly-sunny-outline', 2: 'partly-sunny-outline', 3: 'cloudy-outline',
+  45: 'cloud-outline', 48: 'cloud-outline',
+  51: 'rainy-outline', 53: 'rainy-outline', 55: 'rainy-outline',
+  61: 'rainy-outline', 63: 'rainy-outline', 65: 'rainy-outline',
+  71: 'snow-outline', 73: 'snow-outline', 75: 'snow-outline',
+  80: 'rainy-outline', 81: 'rainy-outline', 82: 'rainy-outline',
+  95: 'thunderstorm-outline', 96: 'thunderstorm-outline', 99: 'thunderstorm-outline',
 };
 
 type PlayRating = 'perfect' | 'good' | 'fair' | 'tough' | 'nogo';
@@ -39,7 +39,7 @@ interface PlayRecommendation {
   rating: PlayRating;
   labelKey: string; // key for full label (in expanded view)
   color: string;
-  icon: string;
+  iconName: string;
   tipKeys: string[];
   tipValues?: Record<string, string | number>[];
 }
@@ -66,7 +66,7 @@ function getPlayRecommendation(
       rating: 'nogo',
       labelKey: 'weather.dark',
       color: '#6366f1',
-      icon: '🌙',
+      iconName: 'moon-outline',
       tipKeys: ['weatherPlay.tips.darkLight', 'weatherPlay.tips.darkOnly'],
     };
   }
@@ -75,7 +75,7 @@ function getPlayRecommendation(
       rating: 'nogo',
       labelKey: 'weatherPlay.labels.nogo',
       color: '#ef4444',
-      icon: '⚡',
+      iconName: 'thunderstorm-outline',
       tipKeys: ['weatherPlay.tips.thunderAlert', 'weatherPlay.tips.lightningRisk'],
     };
   }
@@ -84,7 +84,7 @@ function getPlayRecommendation(
       rating: 'nogo',
       labelKey: 'weatherPlay.labels.nogo',
       color: '#ef4444',
-      icon: '🌬️',
+      iconName: 'cloudy-outline',
       tipKeys: ['weatherPlay.tips.orkanicWind', 'weatherPlay.tips.treeRisk'],
     };
   }
@@ -93,7 +93,7 @@ function getPlayRecommendation(
       rating: 'nogo',
       labelKey: 'weatherPlay.labels.nogo',
       color: '#ef4444',
-      icon: '🌊',
+      iconName: 'rainy-outline',
       tipKeys: ['weatherPlay.tips.heavyRain', 'weatherPlay.tips.courseClosed'],
     };
   }
@@ -104,7 +104,7 @@ function getPlayRecommendation(
     if (windKmh > 35) { keys.push('weatherPlay.tips.windDistance'); vals.push({}); }
     if (precipitation > 2.5) { keys.push('weatherPlay.tips.rainGear'); vals.push({}); }
     if (precipitation > 2.5) { keys.push('weatherPlay.tips.slowGreens'); vals.push({}); }
-    return { rating: 'tough', labelKey: 'weatherPlay.labels.tough', color: '#f97316', icon: '🌧️', tipKeys: keys, tipValues: vals };
+    return { rating: 'tough', labelKey: 'weatherPlay.labels.tough', color: '#f97316', iconName: 'rainy-outline', tipKeys: keys, tipValues: vals };
   }
   if (windKmh > 20 || precipitation > 0.5 || [3, 45, 48, 55, 61, 63, 71, 80, 81].includes(weatherCode)) {
     const keys: string[] = [];
@@ -113,20 +113,20 @@ function getPlayRecommendation(
     if (windKmh > 20) { keys.push('weatherPlay.tips.crosswindAim'); vals.push({}); }
     if (precipitation > 0.5) { keys.push('weatherPlay.tips.rainGlove'); vals.push({}); }
     if (tempC < 10) { keys.push('weatherPlay.tips.coldWarm'); vals.push({}); }
-    return { rating: 'fair', labelKey: 'weatherPlay.labels.fair', color: '#f59e0b', icon: '⛅', tipKeys: keys, tipValues: vals };
+    return { rating: 'fair', labelKey: 'weatherPlay.labels.fair', color: '#f59e0b', iconName: 'partly-sunny-outline', tipKeys: keys, tipValues: vals };
   }
   if (windKmh > 10 || tempC < 8) {
     const keys: string[] = [];
     const vals: Record<string, string | number>[] = [];
     if (windKmh > 10) { keys.push('weatherPlay.tips.lightWind'); vals.push({ value: Math.round(windKmh) }); }
     if (tempC < 8) { keys.push('weatherPlay.tips.coldShort'); vals.push({}); }
-    return { rating: 'good', labelKey: 'weatherPlay.labels.good', color: '#00e87a', icon: '🌤️', tipKeys: keys, tipValues: vals };
+    return { rating: 'good', labelKey: 'weatherPlay.labels.good', color: '#FF6535', iconName: 'partly-sunny-outline', tipKeys: keys, tipValues: vals };
   }
   return {
     rating: 'perfect',
     labelKey: 'weatherPlay.labels.perfect',
-    color: '#00e87a',
-    icon: '☀️',
+    color: '#FF6535',
+    iconName: 'sunny-outline',
     tipKeys: ['weatherPlay.tips.idealConditions', tempC > 18 && tempC < 28 ? 'weatherPlay.tips.optimalTemp' : ''].filter(Boolean),
   };
 }
@@ -185,8 +185,8 @@ export function WeatherWidget() {
 
   if (loading) {
     return (
-      <View className="bg-bg-card border border-bg-border rounded-xl p-4 flex-row items-center gap-3">
-        <ActivityIndicator size="small" color="#00e87a" />
+      <View className="bg-bg-card rounded-2xl p-4 flex-row items-center gap-3">
+        <ActivityIndicator size="small" color="#FF6535" />
         <Text className="text-ink-muted text-sm">{t('weather.loading')}</Text>
       </View>
     );
@@ -195,7 +195,7 @@ export function WeatherWidget() {
   if (error || !weather) {
     return (
       <TouchableOpacity
-        className="bg-bg-card border border-bg-border rounded-xl p-4 flex-row items-center gap-3"
+        className="bg-bg-card rounded-2xl p-4 flex-row items-center gap-3"
         onPress={loadWeather}
       >
         <Ionicons name="cloud-offline-outline" size={20} color={c.inkMuted} />
@@ -207,7 +207,7 @@ export function WeatherWidget() {
     );
   }
 
-  const wmoIcon = WMO_ICONS[weather.weathercode] ?? '🌡️';
+  const wmoIcon = WMO_ICONS[weather.weathercode] ?? 'thermometer-outline';
   const wmoLabel = t(`weather.conditions.${weather.weathercode}`, { defaultValue: t('weather.unknown') });
   const dark = sunrise && sunset ? isNight(sunrise, sunset) : false;
   const rec = getPlayRecommendation(
@@ -221,8 +221,8 @@ export function WeatherWidget() {
 
   return (
     <TouchableOpacity
-      className="rounded-xl overflow-hidden"
-      style={{ borderWidth: 1, borderColor: c.bgBorder }}
+      className="rounded-2xl overflow-hidden"
+      style={{ backgroundColor: c.bgCard }}
       onPress={() => setExpanded((v) => !v)}
       activeOpacity={0.9}
     >
@@ -231,7 +231,7 @@ export function WeatherWidget() {
         <View className="flex-row items-center justify-between mb-3">
           <View className="flex-row items-center gap-2">
             <Ionicons name="partly-sunny-outline" size={14} color={c.inkMuted} />
-            <Text className="text-ink-secondary text-xs font-semibold uppercase tracking-widest">
+            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest">
               {t('weather.label')}{locationName ? ` · ${locationName}` : ''}
             </Text>
           </View>
@@ -241,7 +241,7 @@ export function WeatherWidget() {
         <View className="flex-row items-center gap-4">
           {/* Temp + Condition */}
           <View className="flex-row items-center gap-3">
-            <Text style={{ fontSize: 36 }}>{wmoIcon}</Text>
+            <Ionicons name={wmoIcon as any} size={36} color={c.inkPrimary} />
             <View>
               <Text className="text-ink-primary font-bold" style={{ fontSize: 28, lineHeight: 32 }}>
                 {Math.round(weather.temperature_2m)}°
@@ -273,10 +273,10 @@ export function WeatherWidget() {
             </View>
             {sunrise && sunset ? (
               <View className="flex-row items-center gap-2">
-                <Text style={{ fontSize: 11 }}>🌅</Text>
+                <Ionicons name="sunny-outline" size={11} color={c.inkMuted} />
                 <Text className="text-ink-muted text-xs">
-                  {formatTime(sunrise)} · 🌇 {formatTime(sunset)}
-                  {dark ? `  · 🌙 ${t('weather.dark')}` : ''}
+                  {formatTime(sunrise)} · {formatTime(sunset)}
+                  {dark ? `  · ${t('weather.dark')}` : ''}
                 </Text>
               </View>
             ) : (
@@ -289,7 +289,7 @@ export function WeatherWidget() {
             className="px-3 py-2 rounded-xl items-center"
             style={{ backgroundColor: rec.color + '20' }}
           >
-            <Text style={{ fontSize: 18 }}>{rec.icon}</Text>
+            <Ionicons name={rec.iconName as any} size={18} color={rec.color} />
             <Text className="text-xs font-bold mt-0.5" style={{ color: rec.color }} numberOfLines={2}>
               {t(`weather.ratings.${rec.rating}`)}
             </Text>
@@ -322,14 +322,14 @@ export function WeatherWidget() {
               borderBottomWidth: 1, borderBottomColor: c.bgBorder,
             }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 16 }}>🌅</Text>
+                <Ionicons name="sunny-outline" size={16} color="#f59e0b" />
                 <View>
                   <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('weather.sunrise')}</Text>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{formatTime(sunrise)}</Text>
                 </View>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 16 }}>🌇</Text>
+                <Ionicons name="moon-outline" size={16} color="#f97316" />
                 <View>
                   <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('weather.sunset')}</Text>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{formatTime(sunset)}</Text>
@@ -337,7 +337,7 @@ export function WeatherWidget() {
               </View>
               {dark && (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Text style={{ fontSize: 16 }}>🌙</Text>
+                  <Ionicons name="moon-outline" size={16} color="#6366f1" />
                   <View>
                     <Text style={{ color: c.inkMuted, fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>{t('weather.status')}</Text>
                     <Text style={{ color: '#6366f1', fontWeight: '700', fontSize: 15 }}>{t('weather.dark')}</Text>

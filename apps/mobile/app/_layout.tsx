@@ -9,25 +9,25 @@ import { useAuthStore } from '../src/store/authStore';
 
 // ── Theme-Variablen (werden von allen Tailwind-Klassen via var(--*) aufgelöst)
 const DARK_VARS = vars({
-  '--color-bg-base':     '#07070f',
-  '--color-bg-surface':  '#0f0f1a',
-  '--color-bg-card':     '#14141f',
-  '--color-bg-elevated': '#1c1c2e',
-  '--color-bg-border':   '#252535',
-  '--color-ink-primary':   '#f0f0ff',
-  '--color-ink-secondary': '#8888aa',
-  '--color-ink-muted':     '#44445a',
+  '--color-bg-base':     '#0A0A0A',
+  '--color-bg-surface':  '#111111',
+  '--color-bg-card':     '#1A1A1A',
+  '--color-bg-elevated': '#242424',
+  '--color-bg-border':   '#2E2E2E',
+  '--color-ink-primary':   '#FFFFFF',
+  '--color-ink-secondary': '#8A8A8A',
+  '--color-ink-muted':     '#444444',
 });
 
 const LIGHT_VARS = vars({
-  '--color-bg-base':     '#f5f5fd',
-  '--color-bg-surface':  '#ededf8',
-  '--color-bg-card':     '#ffffff',
-  '--color-bg-elevated': '#f0f0fa',
-  '--color-bg-border':   '#ddddf0',
-  '--color-ink-primary':   '#07070f',
-  '--color-ink-secondary': '#4a4a72',
-  '--color-ink-muted':     '#8888aa',
+  '--color-bg-base':     '#F9F9F9',
+  '--color-bg-surface':  '#F0F0F0',
+  '--color-bg-card':     '#FFFFFF',
+  '--color-bg-elevated': '#F5F5F5',
+  '--color-bg-border':   '#E8E8E8',
+  '--color-ink-primary':   '#0A0A0A',
+  '--color-ink-secondary': '#555555',
+  '--color-ink-muted':     '#AAAAAA',
 });
 
 export default function RootLayout() {
