@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityIndicator, Modal, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../src/store/authStore';
 import { useTheme } from '../../src/lib/theme';
 import { api } from '../../src/lib/api';
@@ -190,6 +191,36 @@ export default function ProfileScreen() {
 
   const meta = levelMeta[user?.level ?? 'BEGINNER'];
 
+  const pickAvatar = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(t('common.error'), t('profile.avatarPermission'));
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled) return;
+    const asset = result.assets[0];
+    const formData = new FormData();
+    formData.append('avatar', {
+      uri: asset.uri,
+      name: 'avatar.jpg',
+      type: 'image/jpeg',
+    } as any);
+    try {
+      const { data } = await api.post('/auth/me/avatar', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      updateUser(data);
+    } catch {
+      Alert.alert(t('common.error'), t('profile.avatarUploadFailed'));
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -303,12 +334,23 @@ export default function ProfileScreen() {
           />
 
           <View className="flex-row items-center gap-4 mb-4">
-            <View
-              className="w-16 h-16 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: meta.color + '25' }}
-            >
-              <Ionicons name={meta.iconName as any} size={28} color={meta.color} />
-            </View>
+            <TouchableOpacity onPress={editing ? pickAvatar : undefined} activeOpacity={editing ? 0.7 : 1}>
+              <View className="w-16 h-16 rounded-2xl overflow-hidden items-center justify-center" style={{ backgroundColor: meta.color + '25' }}>
+                {user?.avatarUrl ? (
+                  <Image
+                    source={{ uri: `${process.env.EXPO_PUBLIC_API_URL}${user.avatarUrl}` }}
+                    style={{ width: 64, height: 64 }}
+                  />
+                ) : (
+                  <Ionicons name={meta.iconName as any} size={28} color={meta.color} />
+                )}
+              </View>
+              {editing && (
+                <View className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full items-center justify-center" style={{ backgroundColor: '#FF6535' }}>
+                  <Ionicons name="camera" size={11} color="#0A0A0A" />
+                </View>
+              )}
+            </TouchableOpacity>
             <View className="flex-1">
               {editing ? (
                 <TextInput
@@ -570,6 +612,20 @@ export default function ProfileScreen() {
             <View className="flex-1">
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.progress')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.progressSub')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color="#444444" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-bg-card rounded-2xl px-4 py-3.5 flex-row items-center gap-3"
+            onPress={() => router.push('/notifications' as any)}
+          >
+            <View className="w-8 h-8 rounded-lg bg-bg-elevated items-center justify-center">
+              <Ionicons name="notifications-outline" size={16} color="#FF6535" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-ink-primary font-medium text-sm">{t('profile.links.notifications')}</Text>
+              <Text className="text-ink-muted text-xs">{t('profile.links.notificationsSub')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={14} color="#444444" />
           </TouchableOpacity>

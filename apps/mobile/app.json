@@ -39,6 +39,13 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
+      "expo-notifications",
+      [
+        "expo-calendar",
+        {
+          "calendarPermission": "FairwayIQ möchte Trainings zu deinem Kalender hinzufügen."
+        }
+      ],
       [
         "expo-location",
         {

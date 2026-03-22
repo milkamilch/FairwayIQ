@@ -2,10 +2,32 @@ import { Router, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { sendVerificationEmail } from '../lib/mailer';
+
+const uploadDir = path.join(__dirname, '../../../uploads/avatars');
+fs.mkdirSync(uploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, uploadDir),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname) || '.jpg';
+    cb(null, `${crypto.randomBytes(16).toString('hex')}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Only images allowed'));
+  },
+});
 
 export const authRouter = Router();
 
@@ -113,14 +135,32 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
   const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET!, { expiresIn: '30d' });
 
-  const { password: _, emailVerificationToken: __, ...userWithoutSecrets } = user;
+  const { password: _, emailVerificationToken: __, emailVerified: ___, ...userWithoutSecrets } = user;
   res.json({ token, user: userWithoutSecrets });
+});
+
+authRouter.post('/me/avatar', authMiddleware, upload.single('avatar'), async (req: AuthRequest, res: Response) => {
+  if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return; }
+
+  const user = await prisma.user.findUnique({ where: { id: req.userId }, select: { avatarUrl: true } });
+  if (user?.avatarUrl) {
+    const old = path.join(__dirname, '../../../', user.avatarUrl.replace(/^\//, ''));
+    if (fs.existsSync(old)) fs.unlinkSync(old);
+  }
+
+  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+  const updated = await prisma.user.update({
+    where: { id: req.userId },
+    data: { avatarUrl },
+    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
+  });
+  res.json(updated);
 });
 
 authRouter.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
   const user = await prisma.user.findUnique({
     where: { id: req.userId },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, createdAt: true },
+    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
   });
 
   if (!user) {
@@ -164,7 +204,7 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
       ...(level && { level }),
       ...(homeClub !== undefined && { homeClub }),
     },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, createdAt: true },
+    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
   });
 
   res.json(user);

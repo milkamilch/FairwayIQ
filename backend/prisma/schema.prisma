@@ -74,6 +74,12 @@ model User {
   homeClub               String?
   emailVerified          Boolean     @default(false)
   emailVerificationToken String?     @unique
+  avatarUrl              String?
+  pushToken              String?
+  notifTraining          Boolean     @default(true)
+  notifStreak            Boolean     @default(true)
+  notifWeather           Boolean     @default(false)
+  notifFriends           Boolean     @default(true)
   createdAt              DateTime    @default(now())
   updatedAt              DateTime    @updatedAt
 
@@ -88,9 +94,11 @@ model User {
   badges            UserBadge[]
   clubs             Club[]
   goals             UserGoal[]
-  sentRequests      Friendship[] @relation("FriendshipRequester")
-  receivedRequests  Friendship[] @relation("FriendshipAddressee")
-  wearables         WearableConnection[]
+  sentRequests        Friendship[]        @relation("FriendshipRequester")
+  receivedRequests    Friendship[]        @relation("FriendshipAddressee")
+  wearables           WearableConnection[]
+  drillSets           DrillSet[]
+  scheduledTrainings  ScheduledTraining[]
 }
 
 model Friendship {
@@ -183,6 +191,7 @@ model TrainingDrill {
 
   trainingDayDrills TrainingDayDrill[]
   results           DrillResult[]
+  drillSetItems     DrillSetItem[]
 }
 
 model DrillResult {
@@ -358,6 +367,56 @@ model WearableConnection {
 
   @@unique([userId, provider])
   @@index([userId])
+}
+
+model DrillSet {
+  id        String            @id @default(cuid())
+  userId    String?
+  name      String
+  category  TrainingCategory?
+  isPreset  Boolean           @default(false)
+  color     String            @default("#FF6535")
+  createdAt DateTime          @default(now())
+
+  user               User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items              DrillSetItem[]
+  scheduledTrainings ScheduledTraining[]
+
+  @@index([userId])
+}
+
+model DrillSetItem {
+  id          String  @id @default(cuid())
+  drillSetId  String
+  drillId     String?
+  customName  String?
+  durationMin Int     @default(10)
+  order       Int     @default(0)
+
+  drillSet DrillSet       @relation(fields: [drillSetId], references: [id], onDelete: Cascade)
+  drill    TrainingDrill? @relation(fields: [drillId], references: [id], onDelete: SetNull)
+
+  @@index([drillSetId])
+}
+
+model ScheduledTraining {
+  id              String            @id @default(cuid())
+  userId          String
+  date            DateTime
+  title           String
+  category        TrainingCategory?
+  drillSetId      String?
+  notes           String?
+  completed       Boolean           @default(false)
+  completedAt     DateTime?
+  calendarEventId String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drillSet DrillSet? @relation(fields: [drillSetId], references: [id], onDelete: SetNull)
+
+  @@index([userId, date])
 }
 
 model Round {

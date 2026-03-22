@@ -6,6 +6,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { vars } from 'nativewind';
 import { useAuthStore } from '../src/store/authStore';
+import { useNotifications } from '../src/lib/useNotifications';
 
 // ── Theme-Variablen (werden von allen Tailwind-Klassen via var(--*) aufgelöst)
 const DARK_VARS = vars({
@@ -32,6 +33,7 @@ const LIGHT_VARS = vars({
 
 export default function RootLayout() {
   const { isInitialized, user, initialize } = useAuthStore();
+  useNotifications();
   const colorScheme = useColorScheme();
   const router = useRouter();
   const segments = useSegments();
