@@ -8,6 +8,7 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useTrainingStore } from '../../src/store/trainingStore';
 import { api } from '../../src/lib/api';
 import { WeatherWidget } from '../../src/components/WeatherWidget';
+import { useTheme } from '../../src/lib/theme';
 
 interface Stats {
   rounds: number;
@@ -41,6 +42,7 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const { t } = useTranslation();
+  const c = useTheme();
 
   const loadData = async () => {
     await fetchActivePlan();
