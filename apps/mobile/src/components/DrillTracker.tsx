@@ -88,15 +88,16 @@ function Sparkline({ data }: { data: number[] }) {
 // ── Haupt-Komponente ───────────────────────────────────────────────────
 export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
   const c = useTheme();
+  const [mode, setMode] = useState<'simple' | 'detailed'>('simple');
   const [hits, setHits] = useState(0);
-  const [attempts, setAttempts] = useState(10);
+  const [attempts, setAttempts] = useState(0);
   const [history, setHistory] = useState<DrillResultEntry[]>([]);
   const [stats, setStats] = useState<DrillStats | null>(null);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
-  const setHitsSafe = (v: number) => setHits(Math.min(v, attempts));
+  const setHitsSafe = (v: number) => setHits(attempts > 0 ? Math.min(v, attempts) : v);
   const setAttemptsSafe = (v: number) => {
     setAttempts(v);
     setHits((h) => Math.min(h, v));
@@ -123,7 +124,10 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
     if (saving || saved) return;
     setSaving(true);
     try {
-      await api.post(`/training/drills/${drillId}/result`, { hits, attempts, userPlanId, dayNumber });
+      const payload = mode === 'simple'
+        ? { hits: 1, attempts: 1, userPlanId, dayNumber }
+        : { hits, attempts: attempts || 1, userPlanId, dayNumber };
+      await api.post(`/training/drills/${drillId}/result`, payload);
       setSaved(true);
       await fetchHistory();
     } catch {}
@@ -137,33 +141,60 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
       className="mt-3 rounded-xl overflow-hidden"
       style={{ borderWidth: 1, borderColor: c.bgBorder, backgroundColor: c.bgSurface }}
     >
-      {/* Header */}
+      {/* Header mit Modus-Toggle */}
       <View
-        className="px-4 py-2.5 flex-row items-center gap-2"
+        className="px-4 py-2.5 flex-row items-center justify-between"
         style={{ backgroundColor: c.bgCard, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}
       >
-        <Ionicons name="stats-chart-outline" size={13} color="#FF6535" />
-        <Text className="text-neon-green text-xs font-bold uppercase tracking-widest">Treffer erfassen</Text>
+        <View className="flex-row items-center gap-2">
+          <Ionicons name="stats-chart-outline" size={13} color="#FF6535" />
+          <Text className="text-neon-green text-xs font-bold uppercase tracking-widest">Ergebnis erfassen</Text>
+        </View>
+        <TouchableOpacity
+          onPress={() => { setMode((m) => m === 'simple' ? 'detailed' : 'simple'); setSaved(false); }}
+          className="flex-row items-center gap-1 px-2 py-0.5 rounded-full"
+          style={{ backgroundColor: c.bgElevated }}
+        >
+          <Ionicons name={mode === 'detailed' ? 'list-outline' : 'calculator-outline'} size={11} color={c.inkMuted} />
+          <Text className="text-ink-muted" style={{ fontSize: 10 }}>
+            {mode === 'simple' ? 'Treffer zählen' : 'Einfach'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <View className="p-4 gap-4">
-        {/* Stepper Row */}
-        <View className="flex-row items-start">
-          <Stepper value={hits} min={0} max={attempts} onChange={setHitsSafe} label="Treffer" color={rateColor} />
-          <View className="w-px bg-bg-border mx-2 self-stretch" />
-          <Stepper value={attempts} min={1} max={100} onChange={setAttemptsSafe} label="Versuche" color={c.inkSecondary} />
-        </View>
+        {mode === 'simple' ? (
+          /* ── Einfacher Modus: nur Abgeschlossen ── */
+          <View className="items-center gap-2 py-2">
+            <Text className="text-ink-muted text-xs text-center">
+              Übung abgeschlossen? Tippe auf Speichern.
+            </Text>
+            <Text className="text-ink-muted text-xs text-center" style={{ fontSize: 10 }}>
+              Zum Zählen von Treffern → "Treffer zählen"
+            </Text>
+          </View>
+        ) : (
+          /* ── Detaillierter Modus: Treffer / Versuche ── */
+          <>
+            <View className="flex-row items-start">
+              <Stepper value={hits} min={0} max={attempts > 0 ? attempts : 999} onChange={setHitsSafe} label="Treffer" color={attempts > 0 ? rateColor : c.inkSecondary} />
+              <View className="w-px bg-bg-border mx-2 self-stretch" />
+              <Stepper value={attempts} min={0} max={200} onChange={setAttemptsSafe} label="Versuche" color={c.inkSecondary} />
+            </View>
 
-        {/* Rate Indicator */}
-        <View>
-          <View className="flex-row items-center justify-between mb-1.5">
-            <Text className="text-ink-muted text-xs">Trefferquote</Text>
-            <Text className="text-sm font-bold" style={{ color: rateColor }}>{pct}%</Text>
-          </View>
-          <View className="bg-bg-elevated rounded-full h-2 overflow-hidden">
-            <View className="h-2 rounded-full" style={{ width: `${pct}%`, backgroundColor: rateColor }} />
-          </View>
-        </View>
+            {attempts > 0 && (
+              <View>
+                <View className="flex-row items-center justify-between mb-1.5">
+                  <Text className="text-ink-muted text-xs">Trefferquote</Text>
+                  <Text className="text-sm font-bold" style={{ color: rateColor }}>{pct}%</Text>
+                </View>
+                <View className="bg-bg-elevated rounded-full h-2 overflow-hidden">
+                  <View className="h-2 rounded-full" style={{ width: `${pct}%`, backgroundColor: rateColor }} />
+                </View>
+              </View>
+            )}
+          </>
+        )}
 
         {/* Save Button */}
         <TouchableOpacity
@@ -181,7 +212,7 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
             : <Ionicons name={saved ? 'checkmark-circle' : 'save-outline'} size={16} color={saved ? '#FF6535' : '#0A0A0A'} />
           }
           <Text className="text-sm font-bold" style={{ color: saved ? '#FF6535' : '#0A0A0A' }}>
-            {saved ? 'Gespeichert' : 'Ergebnis speichern'}
+            {saved ? 'Gespeichert' : mode === 'simple' ? 'Abgeschlossen' : 'Ergebnis speichern'}
           </Text>
         </TouchableOpacity>
 
@@ -233,21 +264,33 @@ export function DrillTracker({ drillId, userPlanId, dayNumber }: Props) {
 
             <View className="mt-3 gap-1">
               {history.slice(-3).reverse().map((r, i) => {
+                const isSimple = r.hits === 1 && r.attempts === 1;
                 const r_rate = Math.round((r.hits / r.attempts) * 100);
                 const date = new Date(r.createdAt);
                 const label = i === 0 ? 'Zuletzt' : date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
                 return (
                   <View key={r.id} className="flex-row items-center justify-between">
                     <Text className="text-ink-muted text-xs w-16">{label}</Text>
-                    <View className="flex-1 mx-3 bg-bg-elevated rounded-full h-1.5 overflow-hidden">
-                      <View
-                        className="h-1.5 rounded-full"
-                        style={{ width: `${r_rate}%`, backgroundColor: r_rate >= 80 ? '#FF6535' : r_rate >= 50 ? '#f59e0b' : '#f97316' }}
-                      />
-                    </View>
-                    <Text className="text-xs font-semibold w-14 text-right" style={{ color: r_rate >= 80 ? '#FF6535' : c.inkSecondary }}>
-                      {r.hits}/{r.attempts} ({r_rate}%)
-                    </Text>
+                    {isSimple ? (
+                      <View className="flex-1 mx-3 items-start">
+                        <View className="flex-row items-center gap-1">
+                          <Ionicons name="checkmark-circle" size={12} color="#FF6535" />
+                          <Text className="text-xs font-semibold" style={{ color: '#FF6535' }}>Abgeschlossen</Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <>
+                        <View className="flex-1 mx-3 bg-bg-elevated rounded-full h-1.5 overflow-hidden">
+                          <View
+                            className="h-1.5 rounded-full"
+                            style={{ width: `${r_rate}%`, backgroundColor: r_rate >= 80 ? '#FF6535' : r_rate >= 50 ? '#f59e0b' : '#f97316' }}
+                          />
+                        </View>
+                        <Text className="text-xs font-semibold w-14 text-right" style={{ color: r_rate >= 80 ? '#FF6535' : c.inkSecondary }}>
+                          {r.hits}/{r.attempts} ({r_rate}%)
+                        </Text>
+                      </>
+                    )}
                   </View>
                 );
               })}
