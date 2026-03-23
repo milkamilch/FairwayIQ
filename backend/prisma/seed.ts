@@ -959,6 +959,802 @@ async function main() {
         'Ziel: Routine unabhängig von verfügbarer Zeit gleich gut ausführen',
       ],
     },
+
+    // ── PUTTING (weitere) ──────────────────────────────────────────────
+    {
+      id: 'lib-putt-11',
+      name: 'Tempo-Kontrolle: Pendelmetronom',
+      description: 'Schwinge den Putter wie ein Pendel mit exakt gleich langem Rück- und Durchschwung. Miss mit zwei Tees die Länge beider Seiten und mache sie identisch. 30 Putts von 3 m. Ungleichmäßiges Pendel ist eine der häufigsten Ursachen für Distanzfehler.',
+      duration: 20,
+      category: 'PUTTING',
+      difficulty: 'EASY',
+      tips: [
+        'Rückschwung = Durchschwung, nicht kürzer!',
+        'Kein Impuls beim Übergang – fließende Bewegung',
+        'Gravitationsgesetz nutzen: kein aktiver Krafteinsatz nötig',
+        'Auf kurzen Putts bewusst die Länge beider Seiten kontrollieren',
+      ],
+    },
+    {
+      id: 'lib-putt-12',
+      name: 'Handhaltungs-Drill (Reverse Overlap)',
+      description: 'Übe bewusst den Reverse-Overlap-Griff (linker Zeigefinger liegt über rechter Hand). Putte 20 Bälle aus 2 m und achte darauf, dass der Griff während des ganzen Schlags konstant bleibt. Ein instabiler Griff ist ein häufig übersehener Präzisionskiller.',
+      duration: 15,
+      category: 'PUTTING',
+      difficulty: 'EASY',
+      tips: [
+        'Griff fest genug, dass er sich nicht dreht – aber nicht verkrampft',
+        'Handgelenke bleiben passiv, Schultern führen die Bewegung',
+        'Beide Daumen zeigen gerade auf den Schaft',
+        'Vergleiche mit deiner normalen Griffhaltung',
+      ],
+    },
+    {
+      id: 'lib-putt-13',
+      name: 'Hangputt-Mastery (Aufstieg und Abstieg)',
+      description: 'Suche drei Putts auf verschiedenen Hängen: bergauf, bergab und seitlich brechend. Schlage je 5 Bälle von jeder Position aus 4 m. Dokumentiere: Wo läuft der Ball zu weit? Wo bleibt er kurz? Hänge erfordern grundlegend andere Kraftdosierung.',
+      duration: 25,
+      category: 'PUTTING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Bergauf: mehr Kraft nötig, Linie ändert sich kaum',
+        'Bergab: deutlich weniger Kraft, Linie bricht stark',
+        'Seitlicher Hang: Eintrittspunkt viel höher als das Loch anvisieren',
+        'Niemals kurz auf Bergab-Putts – rollt weit über das Loch',
+      ],
+    },
+    {
+      id: 'lib-putt-14',
+      name: '3-Putt-Eliminierungs-Drill',
+      description: 'Putte von 8 m mit dem Ziel, den Ball in einem 60-cm-Kreis um das Loch zu stoppen (kein Einlochen nötig). Wiederhole 15 Mal und zähle, wie oft du den Kreis triffst. Dieser Drill adressiert das häufigste Score-Killer-Problem: der 3-Putt.',
+      duration: 20,
+      category: 'PUTTING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Ziel ist das Ankergebiet, nicht das Loch',
+        '60 cm Kreis mit Tees markieren',
+        'Fokus auf Distanz, nicht auf Richtung',
+        'Wenn Distanz stimmt, liegt die Richtung meist auch richtig',
+      ],
+    },
+    {
+      id: 'lib-putt-15',
+      name: 'Stochastic-Putting-Drill',
+      description: 'Putte von 10 verschiedenen Positionen rund ums Loch (verschiedene Distanzen 1–5 m, verschiedene Winkel). Kein Putt von derselben Position zweimal. Zähle Made/Missed. Simuliert den echten Wechsel zwischen Variablen auf dem Platz – Greens-Lesen muss neu bei jedem Putt.',
+      duration: 30,
+      category: 'PUTTING',
+      difficulty: 'HARD',
+      tips: [
+        'Lies jede Linie frisch – keine Routine aus vorherigem Putt übernehmen',
+        'Vor jedem Putt 5 Sekunden für die Analyse',
+        'Zähle made/missed separat nach Distanz',
+        'Merke: Kurze Putts verfehlen = Linien-Problem, lange = Distanz-Problem',
+      ],
+    },
+    {
+      id: 'lib-putt-16',
+      name: 'Speed-Kontrolle: Rampendrill',
+      description: 'Lege einen Putter flach auf den Boden als Rampe. Rolle Bälle mit der Hand unterschiedlich stark. Beobachte, wie viel Kraft du für verschiedene Distanzen benötigst. Überträgt dieses kinästhetische Gefühl dann auf deinen Putter-Schwung.',
+      duration: 15,
+      category: 'PUTTING',
+      difficulty: 'EASY',
+      tips: [
+        'Gefühl aus dem Handgelenk auf den Schulterpendel übertragen',
+        'Ruhige Augen während der Schwungbewegung',
+        'Distanzen mit Tees markieren zum Vergleich',
+        'Ideale Ergänzung zu Tempo-Drills',
+      ],
+    },
+    {
+      id: 'lib-putt-17',
+      name: 'Wedge-als-Leitschiene-Drill',
+      description: 'Lege ein Wedge parallel zur Ziellinie auf den Boden, 2 cm rechts des Balls. Führe den Putter so, dass er beim Rückschwung und Durchschwung das Wedge nicht berührt. Trainiert eine gerade oder leicht bogenförmige Putterbahn.',
+      duration: 15,
+      category: 'PUTTING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Wenn du das Wedge berührst, verlässt die Bahn die gewünschte Linie',
+        'Innen-nach-Innen Bahn ist korrekt für ein Pendel',
+        'Putter-Kopf folgt einem leichten Bogen, kein perfektes Gerade',
+        'Schulterhöhe und -achse kontrollieren',
+      ],
+    },
+    {
+      id: 'lib-putt-18',
+      name: 'Footprint-Putt-Drill',
+      description: 'Suche eine Stelle auf dem Grün, wo ein frischer Fußabdruck leicht in den Rasen gedrückt ist. Lege den Ball hinein und putte. Der unebene Untergrund simuliert schwierige Liegeverhältnisse und trainiert den Umgang mit Unregelmäßigkeiten.',
+      duration: 15,
+      category: 'PUTTING',
+      difficulty: 'HARD',
+      tips: [
+        'Etwas mehr Kraft nötig – der Abdruck bremst den Ball',
+        'Ball liegt leicht tiefer = mehr Widerstand beim Abgehen',
+        'Mentale Einstellung: akzeptiere, dass nicht jede Lage perfekt ist',
+        'Auf Wettkampf-Greens häufiger als man denkt',
+      ],
+    },
+    {
+      id: 'lib-putt-19',
+      name: 'Doppel-Ball-Drill (Ausrichtungs-Check)',
+      description: 'Lege zwei Bälle direkt nebeneinander (berühren sich). Putte beide gleichzeitig. Treffen beide das Loch (oder verfehlen symmetrisch), ist deine Bahn gerade. Weichen sie auseinander, ist die Bahn schief oder der Impact ungleichmäßig.',
+      duration: 15,
+      category: 'PUTTING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Beide Bälle müssen gleich weit rollen',
+        'Wenn der rechte Ball vorauseilt: Bahn geht nach innen',
+        'Wenn der linke vorauseilt: Bahn geht nach außen',
+        'Nur mit geraden Putts üben (keine Breaks)',
+      ],
+    },
+    {
+      id: 'lib-putt-20',
+      name: 'Birdie-Zone-Training (1–2 m)',
+      description: 'Markiere einen Kreis von 2 m Durchmesser um das Loch. Schlage Approach-Schläge von 50 m, 100 m und 150 m. Jeder Ball in der Birdie-Zone zählt als "Birdie-Chance". Verknüpft Approach-Training mit realistischen Putt-Distanzen.',
+      duration: 30,
+      category: 'PUTTING',
+      difficulty: 'HARD',
+      tips: [
+        'Birdie-Zone-Treffer als echten Erfolg werten',
+        'Kombinationsübung: Approach + Putt in einer Session',
+        'Verfolge Prozentsatz der Birdie-Chancen über Wochen',
+        'Ziel: 30–40% aller Approaches in die 2-m-Zone',
+      ],
+    },
+
+    // ── SHORT GAME (weitere) ───────────────────────────────────────────
+    {
+      id: 'lib-short-11',
+      name: 'Texas-Wedge vom Vorgrün',
+      description: 'Übe den "Texas Wedge" – putten vom Vorgrün statt chippen. Von 5–8 m außerhalb des Grüns, bei kurzem, flachem Gras, putte mit dem Putter statt dem Wedge. Trainiert die Entscheidungsfindung: Wann ist putten besser als chippen?',
+      duration: 20,
+      category: 'SHORT_GAME',
+      difficulty: 'EASY',
+      tips: [
+        'Flaches, kurzes Gras: Putten ist oft zuverlässiger als Chippen',
+        'Mehr Kraft nötig als auf dem Grün – Gras bremst den Ball',
+        'Hindernisse zwischen Ball und Grün? Dann muss Chip her',
+        'Bei Gegenwind: Putter schlägt flatter Ball, weniger Windeinfluss',
+      ],
+    },
+    {
+      id: 'lib-short-12',
+      name: 'Pitch-Distanz-Leiter (10-20-30 m)',
+      description: 'Pitche je 5 Bälle auf 3 verschiedene Zielzonen: 10 m, 20 m, 30 m. Markiere Zonen mit Tees. Wechsle nach jedem Schlag die Distanz (nicht alle 5 auf dieselbe Distanz). Trainiert das schnelle Anpassen der Distanzkontrolle.',
+      duration: 25,
+      category: 'SHORT_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Schwunggröße ändert sich – Tempo bleibt gleich',
+        'Abwechseln erzwingt mehr Konzentration als Blocküben',
+        'Merke: Schwung auf 9 Uhr = ca. halbe Distanz eines vollen Schwungs',
+        'Landepunkt visualisieren, bevor du schlägst',
+      ],
+    },
+    {
+      id: 'lib-short-13',
+      name: 'Bunker-Rake-Line-Drill',
+      description: 'Ziehe eine gerade Linie in den Sand (mit Bunker-Rechen). Schlage Bunker-Schläge, bei denen der Schläger die Linie exakt auf Höhe des gedachten Ballstandorts kreuzt. Trainiert konsistenten Entry-Point im Bunker – der häufigste Fehlerort.',
+      duration: 20,
+      category: 'SHORT_GAME',
+      difficulty: 'EASY',
+      tips: [
+        'Linie = Entry-Point. Immer vor der Linie einschlagen',
+        'Ohne Ball üben: nur den Sandeinschlag perfektionieren',
+        'Dann Ball auf die Linie legen und scharfen Entry-Point halten',
+        'Überprüfe nach jedem Schlag den Sandaushub-Punkt',
+      ],
+    },
+    {
+      id: 'lib-short-14',
+      name: 'Ansteigendes-Grün-Chip (Uphill)',
+      description: 'Übe Chips auf ein ansteigendes Grün (Uphill). Der Ball stoppt viel schneller als auf flachem Grün – weniger Roll als gewohnt. Schlage 15 Bälle von 10 m auf ein Uphill-Grün und lerne, die Rolle neu zu kalibrieren.',
+      duration: 20,
+      category: 'SHORT_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Mehr Loft verwenden, da der Ball durch den Hang abgebremst wird',
+        'Landezone weiter vorn wählen als auf flachem Grün',
+        'Bergauf-Putts sind einfacher – Chip zur Fahne anpeilen',
+        'Downhill-Approach: Gegenteil – viel mehr Roll einplanen',
+      ],
+    },
+    {
+      id: 'lib-short-15',
+      name: 'Schwieriger-Lie-Drill (Abfallende Lage)',
+      description: 'Trainiere Chips aus abfallender Lage (Downhill Lie): Ball liegt tiefer als die Füße. Öffne die Schulterachse parallel zum Hang, nehme mehr Loft. Schlage 15 Bälle aus dieser Lage. Eine der technisch anspruchsvollsten Short-Game-Situationen.',
+      duration: 25,
+      category: 'SHORT_GAME',
+      difficulty: 'HARD',
+      tips: [
+        'Schulterachse parallel zum Hang – nicht zur Horizontalen',
+        'Ball weiter hinten in der Stance für stabileren Kontakt',
+        'Schlag nach unten dem Hang folgen – nicht anheben',
+        'Mehr Loft: Sand-Wedge statt 9er Eisen',
+      ],
+    },
+    {
+      id: 'lib-short-16',
+      name: 'Tight-Lie-Chip (sehr kurzes Gras)',
+      description: 'Übe Chips von einer extrem kurzen, harten Lage (Tight Lie). Ball liegt auf Nacktboden oder sehr kurzem Gras. Dieser Chip erfordert präzisen Ball-first Contact – der häufigste Fehler ist das Drunterschieben des Schlägers.',
+      duration: 20,
+      category: 'SHORT_GAME',
+      difficulty: 'HARD',
+      tips: [
+        'Ball etwas weiter hinten in der Stance (mehr Kontrolle)',
+        'Hände vor dem Ball beim Impact – kein Löffelstellen',
+        'Keine Angst! Tight Lies erlauben sauberen Spin',
+        'Sand-Wedge ist hier oft schlechter als ein 8er Eisen',
+      ],
+    },
+    {
+      id: 'lib-short-17',
+      name: 'Kurzspiel-Wettbewerb (Solitär)',
+      description: 'Spiele einen 9-Loch-Wettbewerb gegen dich selbst: Von 9 verschiedenen Lagen rund ums Grün (markiere Tee-Positionen), schlage Chip + Putt und zähle Schläge. Ziel: Unter 18 Schläge (Up & Down jedes Mal). Wettbewerb gegen sich selbst steigert Konzentration massiv.',
+      duration: 45,
+      category: 'SHORT_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Alle 9 Positionen mit Tees markieren für Wiederholbarkeit',
+        'Jede Session messen – Verbesserung über Wochen sichtbar',
+        'Wähle echte Positionen, keine einfachen Lagen',
+        'Analysiere: Welche Lagen kosten die meisten Schläge?',
+      ],
+    },
+    {
+      id: 'lib-short-18',
+      name: 'Scramble-Simulation',
+      description: 'Spiele 9 Löcher im Scramble-Format: schlage immer 2 Bälle und nehme den schlechter liegenden. Trainiert Kurzspiel aus schwierigen Lagen, da der bessere Ball bewusst nicht genutzt wird. Zwingt zu Kreativität und technischer Flexibilität.',
+      duration: 90,
+      category: 'SHORT_GAME',
+      difficulty: 'HARD',
+      tips: [
+        'Wähle bewusst die schwierigere Lage',
+        'Trainiere "Bad Lie Recovery" – wichtige Tour-Fähigkeit',
+        'Keine Verzögerung: aus jeder Lage sofort Lösung finden',
+        'Auch im Bunker: schlimmere Bunker-Lage spielen',
+      ],
+    },
+    {
+      id: 'lib-short-19',
+      name: 'Spin-Kontrolle-Drill (Wedge-Technik)',
+      description: 'Schlage je 10 Bälle mit maximalem Spin (kurzer, steiler Schwung, Ball stoppt sofort) und 10 mit minimalem Spin (Bump & Run). Lerne, wann du welchen Spin brauchst. Spin-Kontrolle ist das Merkmal fortgeschrittener Kurzspiel-Technik.',
+      duration: 25,
+      category: 'SHORT_GAME',
+      difficulty: 'HARD',
+      tips: [
+        'Maximaler Spin: groovigester Wedge, Ball sauber, steiler Winkel',
+        'Minimaler Spin: Ball weit hinten, Hände vor, abgerollte Grooves',
+        'Feuchtes Gras reduziert Spin erheblich – Planung anpassen',
+        'Spin hängt auch vom Grün ab: weiches Grün = mehr Stopwirkung',
+      ],
+    },
+    {
+      id: 'lib-short-20',
+      name: 'Yardage-Book-Chip (Präzisions-Chip)',
+      description: 'Chippe mit absolutem Präzisions-Fokus: Bestimme vor jedem Schlag exakt Landepunkt, Schläger und erwarteten Roll. Vergleiche das Ergebnis mit der Prognose. Trainiert die Fähigkeit, Chips im Kopf zu berechnen – wie es Tour-Caddies tun.',
+      duration: 30,
+      category: 'SHORT_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Schreibe Prognose auf: "Lande bei Flagge − 3 m, Roll 2 m rechts"',
+        'Vergleiche nach 10 Chips: Wie oft war die Prognose richtig?',
+        'Fehler in der Prognose = Wissenslücke in Schläger-Verhalten',
+        'Präzises Planen verbessert auch die Ausführung',
+      ],
+    },
+
+    // ── IRON PLAY (weitere) ────────────────────────────────────────────
+    {
+      id: 'lib-iron-09',
+      name: 'Impact-Bag-Drill',
+      description: 'Schlage mit vollem Eisen-Schwung gegen einen gefüllten Impact-Bag (oder gefüllten Rucksack). Die Bag simuliert den Impact-Moment und zeigt, ob deine Hände beim Treff vor oder hinter dem Schläger-Kopf sind. Sofortiges Feedback ohne Ball.',
+      duration: 15,
+      category: 'IRON_PLAY',
+      difficulty: 'EASY',
+      tips: [
+        'Hände vor dem Bag beim Impact = korrekte Shaft-Lean',
+        'Wenn der Schläger-Kopf die Bag zuerst trifft: Frühzeitiges Release',
+        'Bag nach vorne schieben – nicht schlagen',
+        'Ideal zum Aufwärmen vor Übungseinheiten',
+      ],
+    },
+    {
+      id: 'lib-iron-10',
+      name: 'Leiternspiel mit Langen Eisen (4–7 Eisen)',
+      description: 'Schlage je 5 Bälle mit 4er, 5er, 6er und 7er Eisen auf dasselbe Ziel (150 m). Beobachte die Distanzlücken zwischen den Schlägern. Ideal: ca. 10–15 m zwischen jedem Schläger. Trainiert die Kalibrierung der Schläger-Distanzen.',
+      duration: 30,
+      category: 'IRON_PLAY',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Notiere Carry-Distanzen (ohne Roll)',
+        'Wenn Lücken zu klein sind: Schwungtempo überprüfen',
+        'Lücken zu groß: möglicherweise ein Schläger überbenutzt',
+        'Ehrliche Durchschnittswerte – nicht die besten Schläge',
+      ],
+    },
+    {
+      id: 'lib-iron-11',
+      name: 'Towel-Under-Arms-Drill',
+      description: 'Klemme ein Handtuch unter beide Achseln. Schlage 20 Eisen-Schläge ohne dass das Handtuch fällt. Verhindert das Abkippen der Arme (Flying Elbow) und fördert eine synchrone Körper-Arm-Verbindung.',
+      duration: 20,
+      category: 'IRON_PLAY',
+      difficulty: 'EASY',
+      tips: [
+        'Handtuch fällt = Arme lösen sich vom Körper (Connection-Problem)',
+        'Starte mit Halbschwüngen bevor du Vollschwünge versuchst',
+        'Körper und Arme als Einheit bewegen',
+        'Klassischer Drill aus dem Ben-Hogan-Lehrsystem',
+      ],
+    },
+    {
+      id: 'lib-iron-12',
+      name: 'Pause-at-the-Top-Drill',
+      description: 'Pause am oberen Umkehrpunkt des Schwungs für genau 1 Sekunde. Dann erst der Durchschwung. 20 Bälle mit dieser Methode. Trainiert Rückschwung-Vervollständigung und verhindert das Hämmern mit den Armen beim Durchschwung.',
+      duration: 20,
+      category: 'IRON_PLAY',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Pause erzwingt ruhigen Übergangspunkt',
+        'Fühle die Zugkraft des Schlägers am oberen Punkt',
+        'Initiiere den Durchschwung mit der Hüfte, nicht den Händen',
+        'Ben Hogan nutzte diese Methode in seinem Training',
+      ],
+    },
+    {
+      id: 'lib-iron-13',
+      name: 'Zielband-Drill (Precision Targeting)',
+      description: 'Befestige zwei Stangen 5 m vor dem Startpunkt als schmales Tor (2 m breit). Schlage mit 7er und 5er Eisen durch das Tor. Trainiert präzise Schlagbahn und schult das Bewusstsein für Schussform direkt nach dem Impact.',
+      duration: 25,
+      category: 'IRON_PLAY',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Richtung beim Start (direkt nach Impact) ist entscheidend',
+        'Tor verhindert extreme Haken und Slices in der Startrichtung',
+        'Tore enger stellen bei Fortschritt',
+        'Videoaufnahme von hinten für besseres Feedback',
+      ],
+    },
+    {
+      id: 'lib-iron-14',
+      name: 'Schläger-gegen-Schläger-Vergleich',
+      description: 'Schlage mit 6er Eisen, dann sofort mit Hybrid (gleiche Distanz). Vergleiche: Welcher Schläger gibt dir mehr Kontrolle? Welcher mehr Distanz? Diese Erkenntnis hilft bei Bag-Optimierung und Schläger-Auswahl auf dem Platz.',
+      duration: 25,
+      category: 'IRON_PLAY',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Gleiche Schwungtechnik bei beiden Schlägern',
+        'Notiere Distanz und Konsistenz (Streuungsbreite)',
+        'Hybrid: höherer Abflugwinkel, mehr Roll',
+        'Long Iron: flacher, mehr Kontrollgefühl für geübte Spieler',
+      ],
+    },
+    {
+      id: 'lib-iron-15',
+      name: 'Feet-Together-Iron-Drill',
+      description: 'Schlage mit geschlossenen Füßen (Absätze berühren sich) 20 Bälle mit 7er Eisen. Der enge Stand erzwingt Gleichgewicht und zeigt technische Schwächen. Spieler mit zu viel Seitwärtsbewegung verlieren sofort das Gleichgewicht.',
+      duration: 20,
+      category: 'IRON_PLAY',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Kein Gleichgewicht → zu viel laterale Gewichtsverlagerung',
+        'Körperrotation erzwungen – Schiebe-Bewegung eliminiert',
+        'Starte mit 50% Kraft, steigere langsam',
+        'Klassischer Drill von Hank Haney und Butch Harmon',
+      ],
+    },
+    {
+      id: 'lib-iron-16',
+      name: 'Approach-Präzision (Fahnenfarben)',
+      description: 'Übe gezielt auf Fahnenpositionen: vorne links, vorne rechts, hinten links, hinten rechts, Mitte. Schlage je 5 Approaches auf jede der 5 Positionen. Tour-Spieler zielen immer auf eine spezifische Fahnenposition, nie auf "das Grün".',
+      duration: 35,
+      category: 'IRON_PLAY',
+      difficulty: 'HARD',
+      tips: [
+        'Verschiedene Fahnenfarben = verschiedene Positionen (rot=vorne, gelb=hinten)',
+        'Vom Wind ausgehend: aggressiv oder sicher spielen?',
+        'Bunker und Wasser: auf die sichere Seite des Grüns zielen',
+        'Profi-Regel: Birdie ist gut, Double ist katastrophal',
+      ],
+    },
+    {
+      id: 'lib-iron-17',
+      name: 'Knock-Down-Schlag (Kontrollierter Niedrigball)',
+      description: 'Trainiere den Knock-Down: Ball weit hinten in der Stance, Hände weit vor dem Ball, 80% Schwung, Follow-Through unter Schulterhöhe stoppen. Schlag fliegt niedrig und hat viel Backspin. Unverzichtbar bei starkem Wind.',
+      duration: 20,
+      category: 'IRON_PLAY',
+      difficulty: 'HARD',
+      tips: [
+        'Follow-Through bei Hüfthöhe anhalten',
+        'Schaft bleibt durch Impact nach vorn geneigt',
+        'Ball verliert 1–2 Schläger Distanz – Einplanen',
+        'Ideal mit 6–8er Eisen aus dem Fairway',
+      ],
+    },
+    {
+      id: 'lib-iron-18',
+      name: 'Schläger-Auswahl-Kompass',
+      description: 'Erstelle deinen persönlichen Distanz-Kompass: Schlage je 10 Bälle mit jedem Schläger (PW bis 4er Eisen) und miss die Carrier-Distanz. Trage alle Werte in eine Tabelle ein. Dieses "Kompass-Wissen" ist Grundlage jeder guten Schläger-Entscheidung.',
+      duration: 60,
+      category: 'IRON_PLAY',
+      difficulty: 'EASY',
+      tips: [
+        'Ehrliche Durchschnittswerte, nicht die Bestleistungen',
+        'Unter verschiedenen Bedingungen messen (warm/kalt)',
+        'Trage Werte in dein Handy ein – immer dabei',
+        'Einmal im Monat aktualisieren – Schwung verbessert sich',
+      ],
+    },
+
+    // ── DRIVING (weitere) ──────────────────────────────────────────────
+    {
+      id: 'lib-drive-09',
+      name: 'Power-Stacking-Drill',
+      description: 'Übe die korrekte Gewichtsverlagerung: Im Rückschwung 80% Gewicht auf dem Hinterfuß (Stacking), im Durchschwung vollständige Verlagerung auf den Vorderfuß. Schlage 20 Driver-Bälle mit bewusst übertriebenem Gewichtsshift.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Fühle das Gewicht auf der Innenseite des Hinterfußes (nicht der Außenseite)',
+        'Im Durchschwung: komplettes Gewicht auf dem Vorderfuß',
+        'Hintere Ferse hebt sich am Finish leicht an',
+        'Keine Seitwärtsbewegung – Rotation, nicht Translation',
+      ],
+    },
+    {
+      id: 'lib-drive-10',
+      name: 'Hip-Bump-Drill',
+      description: 'Initiiere den Downswing mit einer bewussten seitlichen Hüft-Verschiebung (Hip Bump) in Richtung Ziel, bevor die Schultern sich drehen. 20 Bälle mit übertriebener Hüft-Initiierung. Korrigiert das häufige Problem des "Over-the-Top" Schwungs.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Hüfte leitet den Downswing – Schultern folgen',
+        '"Bump" = 5 cm seitliche Verschiebung, kein übertriebenes Gleiten',
+        'Hinteres Knie treibt leicht in Richtung vorderes Knie',
+        'Eliminiert Over-the-Top und erzeugt Draw-Tendenz',
+      ],
+    },
+    {
+      id: 'lib-drive-11',
+      name: 'Upswing-Attack-Drill',
+      description: 'Trainiere bewusst einen aufsteigenden Treff-Winkel beim Driver (+3 bis +5 Grad). Tee höher stecken als gewohnt und visualisiere, unter den Ball zu schlagen. 15 Bälle mit Fokus auf Aufwärts-Impact. Erhöht Carry-Distanz erheblich.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'HARD',
+      tips: [
+        'Ball weiter vorne in der Stance (linke Schulter)',
+        'Kopf hinter dem Ball halten beim Impact',
+        'Niedrigeres Ballflug-Spin durch Aufwärts-Impact',
+        'Höheres Tee erzwingt automatisch Aufwärts-Treff',
+      ],
+    },
+    {
+      id: 'lib-drive-12',
+      name: 'Swing-Speed-Training (Leichter Schläger)',
+      description: 'Übe mit einem leichteren Schläger (Wedge, Stab oder Speed-Trainingsstab) und maximiere die Schwunggeschwindigkeit. 20 Schwünge mit maximalem Speed. Dann sofort 10 Driver-Schwünge. Die erhöhte neuromuskuläre Aktivierung verbessert die Driver-Geschwindigkeit.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Maximaler Speed beim leichten Schläger erzeugt "Speed Transfer"',
+        'Schwingen, nicht schlagen',
+        'Whoosh-Geräusch maximieren',
+        'Regelmäßiges Speed-Training steigert Distanz über Monate',
+      ],
+    },
+    {
+      id: 'lib-drive-13',
+      name: 'Wide-Arc-Drill (Weiter Rückschwung-Bogen)',
+      description: 'Übe, den Schläger beim Rückschwung so weit wie möglich vom Körper entfernt zu halten (weiter Bogen). Schlage 15 Bälle und achte darauf, dass der Schläger-Kopf einen großen Radius zieht. Weiter Bogen = mehr Clubhead Speed.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Linker Arm gestreckt im Rückschwung (nicht eingeknickt)',
+        'Schulterdrehung erzeugt den weiten Bogen',
+        'Nicht die Arme anheben – Bogen durch Rotation',
+        'Weiter Bogen erhöht Schwungradius → mehr Speed',
+      ],
+    },
+    {
+      id: 'lib-drive-14',
+      name: 'Fairway-Finder-Drill',
+      description: 'Markiere zwei Punkte 30 m vor dem Abschlag als simuliertes Fairway (ca. 20 m breit). Schlage 15 Driver-Bälle und zähle Treffer im Fairway. Verwende dann bewusst ein 3-Holz oder langer Hybrid (engeres Fairway). Trainiert Entscheidung zwischen Distanz und Kontrolle.',
+      duration: 25,
+      category: 'DRIVING',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Fairway-Trefferquote zählen (%) über Wochen messen',
+        '3-Holz: oft 80% Fairway vs. Driver 60% – lohnt der Unterschied?',
+        'Auf engen Löchern: Sicherheit schlägt Distanz immer',
+        'Tee-Shot-Fehler sind der häufigste Doppel-Bogey-Auslöser',
+      ],
+    },
+    {
+      id: 'lib-drive-15',
+      name: 'Cross-Wind-Control-Drill',
+      description: 'Übe bei echtem Seitenwind gezielt: Links-Seitenwind → Schlag nach rechts vom Ziel beginnen lassen. Rechts-Wind → nach links. Lernen, den Wind zu spielen statt gegen ihn. 20 Schläge mit Windeinsatz als Lernfaktor.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'HARD',
+      tips: [
+        'Starte den Ball in den Wind, nicht mit dem Wind',
+        'Der Wind bringt ihn zurück zur Ziellinie',
+        'Gegen den Wind: flachere Schläger-Loft wählen',
+        'Grashalmen in die Luft werfen – Windrichtung exakt bestimmen',
+      ],
+    },
+    {
+      id: 'lib-drive-16',
+      name: 'Drei-Viertel-Driver-Drill',
+      description: 'Schlage mit ¾-Schwung (Rückschwung bis zu 10-Uhr-Position) mit dem Driver. Erwartet: 85–90% der vollen Distanz bei deutlich mehr Kontrolle. 15 Bälle mit ¾-Schwung. Wertvoll auf engen Bahnen oder unter Druck.',
+      duration: 20,
+      category: 'DRIVING',
+      difficulty: 'EASY',
+      tips: [
+        '10-Uhr-Position: Linker Arm parallel zum Boden (Rechtshänder)',
+        'Körperrotation trotzdem vollständig ausführen',
+        'Mehr Kontrolle durch kürzeren Hebel',
+        'Ideale Notfallstrategie bei Drucksituationen auf dem Platz',
+      ],
+    },
+    {
+      id: 'lib-drive-17',
+      name: 'Tee-Shot-Strategie-Drill',
+      description: 'Analysiere 9 verschiedene Tee-Shot-Szenarien (Dogleg links, Dogleg rechts, enges Fairway, Wasser rechts, Bunker links usw.) und entscheide für jedes: Schläger, Startrichtung, Ballkurve. Dann schlage diese Szenarien. Kombiniert Strategie mit Ausführung.',
+      duration: 45,
+      category: 'DRIVING',
+      difficulty: 'HARD',
+      tips: [
+        'Dogleg rechts: Draw (Ball dreht nach rechts) ist optimal',
+        'Wasser rechts: Starte links, lass Ball nicht zu weit drehen',
+        'Engste Stellen immer auf der sicheren Seite spielen',
+        'Guter Plan eliminiert Druck beim Ausführen',
+      ],
+    },
+    {
+      id: 'lib-drive-18',
+      name: 'Long-Drive-Technik-Drill',
+      description: 'Trainiere gezielt Distanz: Maximaler Schulterdreh (90°+), weiter Bogen, verzögertes Release (Lag halten). 15 Bälle mit vollem Tempo. Miss die Carry-Distanz. Einmal pro Woche Distanztraining erhält und verbessert Schwunggeschwindigkeit.',
+      duration: 25,
+      category: 'DRIVING',
+      difficulty: 'HARD',
+      tips: [
+        'Lag halten: Schläger-Winkel zwischen Armen so lange wie möglich halten',
+        'Release erst nach Hüfthöhe – "Late Hit"',
+        'Körper vor dem Schläger: Hüfte dreht weiter als Hände',
+        '3–5 km/h mehr Schlägerkopfgeschwindigkeit = 10–15 m mehr Distanz',
+      ],
+    },
+
+    // ── COURSE MANAGEMENT (weitere) ───────────────────────────────────
+    {
+      id: 'lib-mgmt-07',
+      name: 'Bogey-Golf-Strategie',
+      description: 'Entwickle eine "Bogey-Golf-Strategie": Für jedes Loch plane einen Weg, der sicher einen Bogey ergibt, ohne Risiko. Dann berechne: Was muss ich aufgeben, um ein Par oder Birdie zu versuchen? Tour-Spieler kalkulieren Risiko/Nutzen bei jedem Schlag.',
+      duration: 30,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'EASY',
+      tips: [
+        'Bogey-Plan eliminiert Doubles und schlimmere Zahlen',
+        'Aus dem Bunker: sicher raus ist wichtiger als nah an die Fahne',
+        'Faustregel: 3 Bogeys < 1 Double + 2 Pars (Mathematik des Handicaps)',
+        'Auf Loch 18: Score schützen, kein Risiko',
+      ],
+    },
+    {
+      id: 'lib-mgmt-08',
+      name: 'Pin-Position-Analyse',
+      description: 'Lerne, Fahnen-Positionen systematisch zu bewerten: Gefährlich (Bunker/Wasser hinter Fahne) → auf die sichere Seite spielen. Neutral → auf Fahne spielen. Einfach → aggressiv attackieren. Übe das für 18 Löcher deines Heimatplatzes.',
+      duration: 30,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'MEDIUM',
+      tips: [
+        '"Fat of the Green" = sicherste Zone in Greenmitte',
+        'Gefährliche Fahnen: 5 m kurz spielen ist oft besser',
+        'Nutze die Greengröße: Anpassen nach Fahnenposition',
+        'Frage: "Was ist das Schlimmste, das passieren kann?"',
+      ],
+    },
+    {
+      id: 'lib-mgmt-09',
+      name: 'Recovery-Schlag-Training',
+      description: 'Trainiere gezielt Recovery-Schläge: aus dem Rough (hoch raus), aus Bäumen (niedrig durch Lücken), aus abfallender Lage (Hang-Anpassung). Schlage je 10 Recovery-Schläge aus typischen "Trouble"-Lagen deines Heimatplatzes.',
+      duration: 40,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'HARD',
+      tips: [
+        'Recovery zuerst: aus dem Trouble RAUS, dann zur Fahne',
+        'Niemals aus dem Rough ein heroisches Eisen versuchen',
+        'Bäume: Lücke suchen statt über die Bäume versuchen',
+        'Sicherer Ausweg spart im Schnitt 0,5 Schläge pro Loch',
+      ],
+    },
+    {
+      id: 'lib-mgmt-10',
+      name: 'Aufschlag-Zonen-Training',
+      description: 'Teile das Fairway in 3 Zonen: Zone A (ideal, beste Approach-Distanz), Zone B (akzeptabel), Zone C (gefährlich). Trainiere auf dem Übungsplatz, Drives in Zone A zu spielen statt maximale Distanz zu suchen.',
+      duration: 25,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Zone A definiert sich durch verbleibende Approach-Distanz',
+        'Von Zone A: voller Approach-Schläger → Birdie-Chance',
+        'Von Zone C: Schwierige Lage → oft nur Bogey-Chance',
+        'Tee-Shot-Qualität korreliert direkt mit Greens in Regulation (GIR)',
+      ],
+    },
+    {
+      id: 'lib-mgmt-11',
+      name: 'Layup-Präzisions-Training',
+      description: 'Übe gezielte Layups: Bestimme eine "perfekte Layup-Distanz" (z.B. 80 m vor dem Grün für volle Wedge-Distanz). Schlage dann Schläge, die genau diese Distanz erzeugen – weder weiter noch kürzer. Präzise Layups erzeugen planbare Up & Downs.',
+      duration: 25,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Halber Wedge-Schwung auf 80 m besser als voller 5er Eisen auf 90 m',
+        'Deine "volle Wedge-Distanz" auswendig wissen',
+        'Layup-Ziel: niemals zu weit! Bunker oder Rough bitte vermeiden',
+        'Planung: Wie weit ist der Layup vor dem letzten Wasserhindernis?',
+      ],
+    },
+    {
+      id: 'lib-mgmt-12',
+      name: 'Golfplatz-Memory-Training',
+      description: 'Gehe jeden Abend 5 Minuten durch dein Heimat-Scorecard. Zeichne in Gedanken jeden Lochverlauf, merke dir Gefahren, beste Strategien, typische Windrichtungen. Mental vertrauter Platz = weniger Überraschungen = besseres Scoring.',
+      duration: 30,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'EASY',
+      tips: [
+        'Notiere für jedes Loch: Abschlag-Ziel, Approach-Distanz, typische Gefahren',
+        'Stärken der Routine: immer gleicher Platzplan',
+        'Neue Plätze: 30 Minuten Studieren vor der Runde',
+        'Ein bekannter Platz spart durchschnittlich 2–3 Schläge',
+      ],
+    },
+    {
+      id: 'lib-mgmt-13',
+      name: 'Schlechtes-Wetter-Strategie',
+      description: 'Entwickle einen Schlechtwetter-Plan: Bei Regen und Wind werden Schläger gewechselt (+1–2 Schläger), Spin-Schläge vermieden, Greens bremsen. Trainiere an einem windigen Tag gezielt mit angepasster Strategie.',
+      duration: 30,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Regen: Griffe trocken halten, mehr Loft wählen',
+        'Kälte: Ball fliegt 5–10% kürzer unter 10°C',
+        'Wind: Schläger nach oben oder unten anpassen',
+        'Mentally: schlechtes Wetter trifft alle gleich – nur Planung scheidet',
+      ],
+    },
+    {
+      id: 'lib-mgmt-14',
+      name: 'Statistik-Analyse-Session',
+      description: 'Sammle 5 Scorekarten und analysiere Statistiken: GIR (Greens in Regulation), Fairways getroffen, Putts pro Runde, Up & Down %. Identifiziere den schwächsten Bereich. Hier liegt der größte Verbesserungs-Hebel.',
+      duration: 45,
+      category: 'COURSE_MANAGEMENT',
+      difficulty: 'EASY',
+      tips: [
+        'GIR unter 30%? Eisenspiel ist das Problem',
+        'Putts über 32/Runde? Putting trainieren',
+        'Fairways unter 50%? Driver oder Strategie anpassen',
+        'Apps wie Arccos oder 18Birdies automatisieren diese Analyse',
+      ],
+    },
+
+    // ── MENTAL GAME (weitere) ──────────────────────────────────────────
+    {
+      id: 'lib-mental-08',
+      name: 'Anger-Management-Routine',
+      description: 'Übe nach absichtlich schlechten Schlägen (lass einen Ball ins Rough fallen) die "10-Sekunden-Regel": Ärger für genau 10 Sekunden erlauben, dann Atemübung, dann 100% Fokus auf den nächsten Schlag. Kontrolliertes Ärger-Management ist messbar leistungsfördernd.',
+      duration: 20,
+      category: 'MENTAL_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        '10 Sekunden: alles erlaubt (Frust, Schütteln, etc.)',
+        'Danach: tiefes Einatmen = physischer Reset',
+        'Der nächste Schlag IST der einzige Schlag, der zählt',
+        'Profis haben Fehler – was sie unterscheidet ist die Erholung',
+      ],
+    },
+    {
+      id: 'lib-mental-09',
+      name: 'Focus-Keyword-Training',
+      description: 'Wähle 3 Focus-Keywords für verschiedene Spielsituationen: 1 für lange Schläge, 1 für Kurzspiel, 1 für Putts. Nutze diese Keywords als mentalen "Schalter" vor jedem Schlag. Keywords verankern den Fokus und unterbrechen negative Gedanken.',
+      duration: 15,
+      category: 'MENTAL_GAME',
+      difficulty: 'EASY',
+      tips: [
+        'Beispiel: "Smooth" (Drive), "Crisp" (Chip), "Roll" (Putt)',
+        'Keywords müssen persönlich bedeutsam sein',
+        'Notiere auf Scorecard – sichtbare Erinnerung',
+        '3 Wochen konsequent nutzen bis zum Automatismus',
+      ],
+    },
+    {
+      id: 'lib-mental-10',
+      name: 'Bogey-Bounce-Back-Training',
+      description: 'Übe mental den "Bounce Back": Nach einem Bogey (oder schlechten Schlag) bewusst das nächste Loch als Neustart visualisieren. Trainiere, ein Par oder Birdie direkt nach einem Fehler zu spielen. Die beste Reaktion auf Fehler ist Sofort-Erholung.',
+      duration: 20,
+      category: 'MENTAL_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Profi-Statistik: Bounce-Back-Rate (Par/Birdie nach Bogey) unterscheidet Niveau-Spieler',
+        'Fehler ist Vergangenheit – nächster Schlag ist Zukunft',
+        'Ritual: Schritt vorwärts = mentaler Neustart',
+        'Tracke deinen persönlichen Bounce-Back-Prozentsatz',
+      ],
+    },
+    {
+      id: 'lib-mental-11',
+      name: 'Wettkampf-Simulation: Skins-Spiel',
+      description: 'Spiele ein Skins-Spiel gegen Freunde oder allein (jedes Loch hat einen kleinen Einsatz). Der Druck, jedes Loch zu gewinnen, simuliert Wettkampfbedingungen. Trainiert die Fähigkeit, unter Einsatz-Druck zu presformen.',
+      duration: 120,
+      category: 'MENTAL_GAME',
+      difficulty: 'HARD',
+      tips: [
+        'Einsatz gering halten – es geht um den Druck, nicht das Geld',
+        'Beobachte: Wann ändert sich deine Routine unter Druck?',
+        'Analysiere nach der Runde: Wo bist du verkrampft?',
+        'Skins erzeugen Hole-for-Hole-Fokus – kein Schludern',
+      ],
+    },
+    {
+      id: 'lib-mental-12',
+      name: 'Non-Judgmental-Observation-Drill',
+      description: 'Spiele 9 Löcher ohne jedes Urteil über deine Schläge ("gut" oder "schlecht"). Beobachte nur neutral: "Ball ging rechts", "Putt war 2 m zu lang". Trainiert emotionale Distanz und verhindert, dass ein schlechter Schlag die Routine beeinflusst.',
+      duration: 90,
+      category: 'MENTAL_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Keine Bewertung – nur neutrale Beobachtung',
+        'Scientist-Mindset: Daten sammeln, nicht urteilen',
+        'Negative Sprache verboten: kein "Mist", "Idiot", "immer das gleiche"',
+        'Langfristig: weniger Emotionen → konsistentere Leistung',
+      ],
+    },
+    {
+      id: 'lib-mental-13',
+      name: 'Shot-Shaping-Visualization',
+      description: 'Visualisiere vor jedem Schlag nicht nur die Flugbahn, sondern auch das Geräusch des Kontakts, das Gewicht des Schlägers und das Gefühl des Impact. Multi-Sense-Visualisierung ist messbar effektiver als rein visuelle Vorstellung.',
+      duration: 20,
+      category: 'MENTAL_GAME',
+      difficulty: 'EASY',
+      tips: [
+        'Alle 5 Sinne aktivieren: Sehen, Hören, Fühlen, riechen (frisch gemähtes Gras!)',
+        'Schlag erst ausführen, wenn das Bild vollständig ist',
+        'Negative Bilder mit Handbewegung "löschen" (Jack Nicklaus-Methode)',
+        'Je klarer das Bild, desto wahrscheinlicher die Ausführung',
+      ],
+    },
+    {
+      id: 'lib-mental-14',
+      name: 'Turnier-Vorbereitung (Runden-Ritual)',
+      description: 'Entwickle ein komplettes Wettkampf-Ritual: Ankunftszeit, Warm-Up-Sequenz (Putting, Chipping, Eisen, Driver), mentale Einstimmung. Übe dieses Ritual bei normalen Runden. Konstante Vorbereitung reduziert Turnier-Nervosität.',
+      duration: 60,
+      category: 'MENTAL_GAME',
+      difficulty: 'MEDIUM',
+      tips: [
+        'Warm-Up sollte 45–60 Minuten vor dem Start beginnen',
+        'Reihenfolge: kurze Putts → langes Putting → Chipping → Irons → Driver',
+        'Kein "Reparatur-Warm-Up" – das letzte Bild soll positiv sein',
+        'Gleiche Musik, gleicher Ablauf: Ritual schafft Sicherheit',
+      ],
+    },
+    {
+      id: 'lib-mental-15',
+      name: 'Golf-Journal (Weekly Review)',
+      description: 'Führe ein Golf-Journal: Notiere nach jeder Runde 3 Positives und 1 Verbesserungs-Fokus. Lies die letzten 4 Einträge vor der nächsten Runde. Regelmäßige Reflexion ist der dokumentierte Schlüssel zur mentalen Weiterentwicklung.',
+      duration: 20,
+      category: 'MENTAL_GAME',
+      difficulty: 'EASY',
+      tips: [
+        'Journal handschriftlich führen – Gehirn verarbeitet es besser',
+        '3 Positives zwingen dich, auch nach Misserfolgen Lernmomente zu finden',
+        '1 Fokus: Konkret und handlungsorientiert ("Routine auf jedem Putt")',
+        'Nach 1 Monat Journal: Muster erkennen und gezielt trainieren',
+      ],
+    },
   ];
 
   for (const drill of libraryDrills) {
@@ -1242,6 +2038,279 @@ async function main() {
       difficulty: TrainingDifficulty.MEDIUM,
       tips: ['3 Doppelbogeys = 3 Schläge über Soll — oft vermeidbar', 'Muster findest du nur durch schriftliche Analyse', 'Plane: was machst du beim nächsten Mal anders?'],
     },
+
+    // ── PUTTING (weitere Home) ──
+    {
+      id: 'home-putt-06',
+      name: 'Teppich-Breakputt-Simulation',
+      description: 'Lege ein Buch unter eine Seite deiner Putting-Matte, um einen Hang zu simulieren. Übe 15 Putts auf den Break. Trainiert das Lesen von Kurven, ohne auf das Grün zu gehen.',
+      duration: 15,
+      category: TrainingCategory.PUTTING,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Schätze den Break, bevor du schaust wohin der Ball läuft', 'Buch weiter unter die Matte schieben für mehr Break', 'Öffne die Augen erst nach dem Schlag'],
+    },
+    {
+      id: 'home-putt-07',
+      name: 'Lange-Distanz-Teppich-Putt',
+      description: 'Putte von 4–5 Metern auf deiner Putting-Matte (oder markierter Teppichfläche) mit dem Ziel, den Ball im letzten 30 cm vor einem Marker zu stoppen. Trainiert Distanzgefühl für Langputts zuhause.',
+      duration: 10,
+      category: TrainingCategory.PUTTING,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Teppich bremst stärker als Grün – Kraft entsprechend erhöhen', 'Achte auf gleich langen Rück- und Durchschwung', 'Distanzgefühl ist wichtiger als Liniengefühl bei Langputts'],
+    },
+    {
+      id: 'home-putt-08',
+      name: 'Stoppuhr-Rhythmus-Drill',
+      description: 'Starte eine Stoppuhr. Rückschwung bei 0, Durchschwung nach exakt 1 Sekunde. Wiederhole 20 Mal. Messung erzwingt konstanten Rhythmus und eliminiert Hetzen.',
+      duration: 10,
+      category: TrainingCategory.PUTTING,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['1 Sekunde = Standardrhythmus guter Putter', 'Zu schnell (0.5s) → Impuls statt Pendel', 'Zu langsam (2s) → Muskelspannung aufbaut sich', 'Finde deinen persönlich optimalen Rhythmus'],
+    },
+    {
+      id: 'home-putt-09',
+      name: 'Balance-Board-Putten',
+      description: 'Stelle dich auf ein Balance-Board (oder ein zusammengerolltes Handtuch) und übe Putter-Bewegungen. Instabiler Untergrund erzwingt noch stabilere Körperhaltung und trainiert Gleichgewicht.',
+      duration: 10,
+      category: TrainingCategory.PUTTING,
+      difficulty: TrainingDifficulty.HARD,
+      tips: ['Ohne Bewegung zuerst: Balance finden, dann Pendel starten', 'Schulterpendel auf instabilem Untergrund schwieriger – sehr effektiv', 'Danach auf stabilem Untergrund: das Gefühl überträgt sich'],
+    },
+    {
+      id: 'home-putt-10',
+      name: 'Spiegel-Augen-Position-Check',
+      description: 'Stelle einen kleinen Spiegel unter den Ball auf der Putting-Matte. Richte dich auf, bis du deine Augen direkt über dem Ball siehst. Das ist die korrekte Augenposition – die meisten Spieler stehen zu weit innen.',
+      duration: 10,
+      category: TrainingCategory.PUTTING,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Augen über dem Ball = korrekte Perspektive auf die Linie', 'Zu weit innen = Linie erscheint weiter links als sie ist', 'Tägliche Routine: 2 Minuten Spiegel-Check vor dem Üben'],
+    },
+
+    // ── SHORT GAME (weitere Home) ──
+    {
+      id: 'home-short-05',
+      name: 'Wrist-Hinge-Drill (Handgelenk-Drill)',
+      description: 'Halte den Wedge nur mit den Fingern der rechten Hand. Übe das Aufheben (Hinge) und Freigeben des Handgelenks. Trainiert das Gefühl für den richtigen Handgelenk-Einsatz beim Pitch-Schlag.',
+      duration: 10,
+      category: TrainingCategory.SHORT_GAME,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Hinge beim Rückschwung, Release beim Durchschwung', 'Kein Hinge = Topfen, zu viel = Fetten', 'Übe auch mit der linken Hand für Balance'],
+    },
+    {
+      id: 'home-short-06',
+      name: 'Chip-Impact-Kissen-Drill',
+      description: 'Schlage sanft gegen ein festes Kissen mit deinem Wedge und achte auf die Haltung beim Impact: Hände vor dem Schläger, Gewicht vorne, Schaft geneigt. Wiederholen bis die Position verinnerlicht ist.',
+      duration: 10,
+      category: TrainingCategory.SHORT_GAME,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Kissen gibt Widerstand – wie echter Ballkontakt', 'Impact-Position mental einprägen', 'Schultern, Hüfte und Arme als Einheit'],
+    },
+    {
+      id: 'home-short-07',
+      name: 'Chipping-Matte-Präzision',
+      description: 'Chipse auf einer kleinen Chipping-Matte (oder festem Teppichstück) auf ein Ziel (Glas, Schale) in 3–5 m Entfernung. Zähle Treffer von 20 Versuchen. Ideal für regelmäßiges Kontakt-Training zuhause.',
+      duration: 15,
+      category: TrainingCategory.SHORT_GAME,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Glas mit engem Durchmesser für mehr Präzision', 'Verschiedene Distanzen testen', 'Gleiche Landezone wie auf dem Platz visualisieren'],
+    },
+    {
+      id: 'home-short-08',
+      name: 'Open-Face-Technik üben (ohne Ball)',
+      description: 'Übe die offene Schlägerface-Position (Lob-Shot-Haltung) vor dem Spiegel: Clubface zeigt zur Decke, Griff wird nach links gedreht, Stance offen. 10 Minuten täglich etabliert das motorische Programm.',
+      duration: 10,
+      category: TrainingCategory.SHORT_GAME,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Griff erst drehen, dann Clubface öffnen – in dieser Reihenfolge', 'Stance offen: linker Fuß zurückgezogen', 'Manche Spieler öffnen zu wenig – Spiegel zeigt die Wahrheit'],
+    },
+    {
+      id: 'home-short-09',
+      name: 'Tee-Stack-Chip (Präzisions-Drill)',
+      description: 'Stecke 3 Tees in einer Reihe mit 10 cm Abstand. Chipse über das erste Tee und lande zwischen dem zweiten und dritten. Verlangt präzise Loft-Kontrolle und konsistentes Impaktniveau.',
+      duration: 12,
+      category: TrainingCategory.SHORT_GAME,
+      difficulty: TrainingDifficulty.HARD,
+      tips: ['Zu hoch → landet hinter dem dritten Tee', 'Zu flach → trifft erstes Tee', 'Übe mit verschiedenen Schlägern für verschiedene Loft-Gefühle'],
+    },
+
+    // ── IRON PLAY (weitere Home) ──
+    {
+      id: 'home-iron-06',
+      name: 'X-Factor-Dehn-Übung',
+      description: 'Halte einen Schläger auf Schulterhöhe waagerecht. Drehe die Schultern 90°, während die Hüfte nur 45° dreht. Halte 3 Sekunden. 15 Wiederholungen. Trainiert den Trennungswinkel (X-Factor), der die Schwungkraft erzeugt.',
+      duration: 10,
+      category: TrainingCategory.IRON_PLAY,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Je größer der X-Faktor, desto mehr gespeicherte Energie', 'Schultern ≥ 90°, Hüfte ≤ 45°', 'Langsam dehnen – keine Verletzungen'],
+    },
+    {
+      id: 'home-iron-07',
+      name: 'Gewichtsverlagerungs-Drill (Fersen-Zehen)',
+      description: 'Stehe in der Adresse. Verlagere Gewicht bewusst auf die Fersen (Rückschwung-Gefühl) dann auf die Zehen (Durchschwung-Gefühl). 20 langsame Wiederholungen. Schult das Gefühl für korrekte Gewichtsverlagerung.',
+      duration: 10,
+      category: TrainingCategory.IRON_PLAY,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Fersen = Rückschwung-Gleichgewicht', 'Zehen-Druck = falsches Muster – Fußballen sind richtig', 'Kombiniere mit vollem Schwung im Anschluss'],
+    },
+    {
+      id: 'home-iron-08',
+      name: 'Hip-Rotation-Stretching',
+      description: 'Lege deinen Schläger waagerecht in die Kniekehlen. Drehe die Hüfte ohne Schulterbeteiligung. 20 isolierte Hüft-Rotationen nach links und rechts. Trainiert die Hüftführung beim Downswing.',
+      duration: 10,
+      category: TrainingCategory.IRON_PLAY,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Hüfte dreht um die Wirbelsäule, nicht seitwärts', 'Schultern bleiben ruhig während Hüfte dreht', 'Täglich 5 Minuten erhöht Hüft-Mobilität signifikant'],
+    },
+    {
+      id: 'home-iron-09',
+      name: 'Follow-Through-Positions-Drill',
+      description: 'Übe den perfekten Finish vor dem Spiegel: Gewicht 100% auf dem Vorderfuß, Gürtelschnalle zeigt zum Ziel, Hinterknie berührt fast das vordere, Schläger hinter dem Kopf. Halte 10 Sekunden. 15 Wiederholungen.',
+      duration: 12,
+      category: TrainingCategory.IRON_PLAY,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Ein guter Finish entsteht durch gute Bewegung davor', 'Gleichgewicht halten = sauberer Schwung', 'Vergleiche deinen Finish mit Profi-Videos'],
+    },
+    {
+      id: 'home-iron-10',
+      name: 'Stärkungstraining Unterarme (Griffstärke)',
+      description: 'Trainiere Griffstärke mit einem Tennisball oder Stressball: 3 Sätze à 20 Wiederholungen pro Hand. Starke Unterarme verbessern Schläger-Kontrolle, Griffkonsistenz und Vibrations-Dämpfung beim Impact.',
+      duration: 10,
+      category: TrainingCategory.IRON_PLAY,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Nicht zu viel Kraft beim Spielen – aber Stärke als Reserve ist gut', 'Auch Handgelenk-Rotationen trainieren', 'Tägliches Grifftraining zeigt Ergebnisse nach 4 Wochen'],
+    },
+
+    // ── DRIVING (weitere Home) ──
+    {
+      id: 'home-drive-05',
+      name: 'Coil-and-Recoil-Drill (Torso-Rotation)',
+      description: 'Stehe in breitem Golf-Stand. Verschränke die Arme auf der Brust. Drehe den Torso vollständig in den Rückschwung (Coil), dann explosiv zum Finish (Recoil). 20 Wiederholungen. Trainiert die explosiven Rotationsmuskeln für den Driver.',
+      duration: 10,
+      category: TrainingCategory.DRIVING,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Coil: maximale Schulterdrehung, Hüfte folgt leicht', 'Recoil: Hüfte startet zuerst, Schultern folgen', 'Explosivität steigern über Wochen – Grundlage für Distanz'],
+    },
+    {
+      id: 'home-drive-06',
+      name: 'Weighted-Club-Speed-Drill',
+      description: 'Hänge ein kleines Gewicht (Tuch, Socke mit Münzen) ans Griffende des Schlägers. Mache langsame Schwünge mit dem Gewicht. Das zusätzliche Gewicht am Ende trainiert Gleichgewicht und bewusste Schläger-Kontrolle.',
+      duration: 12,
+      category: TrainingCategory.DRIVING,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Langsame Schwünge zuerst – Gewicht erhöht Hebelkraft', 'Fühle den Schläger-Kopf durch das gesamte Schwung', 'Ohne Gewicht danach: Schläger fühlt sich "leichter" an'],
+    },
+    {
+      id: 'home-drive-07',
+      name: 'Lag-Drill (Hangelenk-Winkel halten)',
+      description: 'Übe den Downswing-Lag: Beginne den Durchschwung und halte den 90°-Winkel zwischen Schaft und Unterarm so lange wie möglich. Erst kurz vor dem Impact freigeben. 15 langsame Bewegungen vor dem Spiegel.',
+      duration: 15,
+      category: TrainingCategory.DRIVING,
+      difficulty: TrainingDifficulty.HARD,
+      tips: ['Lag = gespeicherte Energie = mehr Schlägerkopfgeschwindigkeit', 'Zu frühes Freigeben = "Casting" – häufigster Distanzkiller', 'Fühle den Winkel im rechten Handgelenk (Rechtshänder)', 'Release erst bei Hüfthöhe im Downswing'],
+    },
+    {
+      id: 'home-drive-08',
+      name: 'Postur-Drill (Rücken-Winkel)',
+      description: 'Stelle dich vor den Spiegel in die Adresse. Halte einen Schläger an deinen Rücken (Griff am Kopf, Schläger-Kopf nach unten). Der Schläger sollte 3 Kontaktpunkte haben: Kopf, Oberer Rücken, Steißbein. Das ist die neutrale Wirbelsäulenposition.',
+      duration: 10,
+      category: TrainingCategory.DRIVING,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Krummer Rücken = inkonsistente Schwungbahn', 'Oberkörper kippt aus der Hüfte, nicht dem Rücken', 'Knie leicht gebeugt für dynamische Basis'],
+    },
+    {
+      id: 'home-drive-09',
+      name: 'Squat-Move-Drill (Abwärts-Bewegung)',
+      description: 'Übe die leichte Abwärtsbewegung ("Squat") zu Beginn des Downswings: Wenn der Rückschwung endet, senke dich minimal durch Kniebeugen bevor du rotierst. 20 Wiederholungen. Diese Bewegung findet sich bei fast allen langen Spielern.',
+      duration: 12,
+      category: TrainingCategory.DRIVING,
+      difficulty: TrainingDifficulty.HARD,
+      tips: ['Squat = 2–3 cm Absenkung, nicht mehr', 'Danach Hüfte explosiv nach vorn rotieren', 'Zu viel Squat = zu tief = schlechter Kontakt'],
+    },
+
+    // ── MENTAL GAME (weitere Home) ──
+    {
+      id: 'home-mental-06',
+      name: 'Golf-Meditation (10 Minuten)',
+      description: 'Setze dich ruhig hin, atme tief und konzentriere dich 10 Minuten lang ausschließlich auf das Gefühl deiner besten Schwünge. Keine Analyse – nur das Körpergefühl. Verbindet Entspannung mit positivem motorischen Gedächtnis.',
+      duration: 10,
+      category: TrainingCategory.MENTAL_GAME,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Beste Schläge intensiv erinnern – alle Sinne', 'Wenn Gedanken abschweifen: tief atmen und zurückkommen', 'Regelmäßige Praxis stärkt mentales Vertrauen'],
+    },
+    {
+      id: 'home-mental-07',
+      name: 'Fehleranalyse-Journal',
+      description: 'Notiere nach jeder Runde die 3 Schläge, die dich am meisten Schläge gekostet haben. Analysiere NICHT die Technik, sondern die Entscheidung davor. War es ein guter Schlag-Plan? Trainiert die Entscheidungsqualität langfristig.',
+      duration: 15,
+      category: TrainingCategory.MENTAL_GAME,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Oft ist schlechte Entscheidung schuld, nicht schlechte Technik', '"War das das richtige Ziel für meinen Schlag?" ist die wichtigste Frage', 'Muster über 10 Einträge: gleiche Fehler = systemisches Problem'],
+    },
+    {
+      id: 'home-mental-08',
+      name: 'Ziel-Visualisierung (Season Goal)',
+      description: 'Visualisiere einmal wöchentlich 10 Minuten lang dein Saisonziel (neues Handicap, erstes Turnier, bestimmter Score). So konkret wie möglich: Wo bist du? Wie fühlt es sich an? Was sagst du? Langfristige Ziele brauchen regelmäßige mentale Verankerung.',
+      duration: 10,
+      category: TrainingCategory.MENTAL_GAME,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Ziel SMART formulieren: spezifisch, messbar, attraktiv, realistisch, terminiert', 'Bild des Ziels als Handy-Hintergrundbild', 'Kombiniere Ziel-Visualisierung mit Affirmationen'],
+    },
+    {
+      id: 'home-mental-09',
+      name: 'Komfort-Zone-Training',
+      description: 'Identifiziere 3 Schläge oder Situationen, die dir Angst machen (z.B. Putt mit Zuschauern, Abschlag auf Loch 1). Übe diese mental: Stelle dir die Situation vor, atme tief, führe den Schlag mental perfekt aus. 5 Minuten täglich.',
+      duration: 10,
+      category: TrainingCategory.MENTAL_GAME,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Mentales Üben schwieriger Situationen reduziert echte Angst', 'Positive Ausführung immer visualisieren, nie den Fehler', 'Körper reagiert auf mentales Bild ähnlich wie auf Realität'],
+    },
+    {
+      id: 'home-mental-10',
+      name: 'Erfolgs-Tagebuch (Positive Highlights)',
+      description: 'Schreibe täglich 1–2 positive Golferlebnisse auf – egal wie klein: ein guter Putt, eine gute Entscheidung, ein tolles Gespräch. Trainiert den Fokus auf Positives und baut langfristig Selbstvertrauen und Freude am Spiel auf.',
+      duration: 5,
+      category: TrainingCategory.MENTAL_GAME,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Auch kleine Erfolge zählen: "Habe heute 30 min geübt"', 'Im Bett vor dem Schlafen: perfekte Wiederholung des Tages', 'Golf ist ein Spiel – Freude ist die wichtigste Ressource'],
+    },
+
+    // ── COURSE MANAGEMENT (weitere Home) ──
+    {
+      id: 'home-course-05',
+      name: 'Schläger-Distanz-Tabelle erstellen',
+      description: 'Erstelle eine persönliche Schläger-Distanz-Tabelle auf dem Handy oder einer Karte: Carry-Distanz für jeden Schläger (PW bis Driver) bei 50%, 75% und 100% Schwung. Diese Tabelle ist das wichtigste Werkzeug auf dem Platz.',
+      duration: 20,
+      category: TrainingCategory.COURSE_MANAGEMENT,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Ehrliche Werte – keine Wunsch-Distanzen', 'Auf dem Übungsplatz mit Rangefinder messen', 'Einmal im Monat aktualisieren'],
+    },
+    {
+      id: 'home-course-06',
+      name: 'Platz-Visualisierung (Heimplatz)',
+      description: 'Visualisiere alle 18 Löcher deines Heimatplatzes: Abschlag-Position, Fairway-Verlauf, Gefahren, optimaler Approach. Erstelle eine mentale "Karte". Das vertraute Bild reduziert Stress auf dem Platz.',
+      duration: 25,
+      category: TrainingCategory.COURSE_MANAGEMENT,
+      difficulty: TrainingDifficulty.EASY,
+      tips: ['Schließe die Augen und gehe jeden Abschlag durch', 'Notiere schwierige Löcher mit konkretem Plan', 'Neue Plätze: Satellite-Ansicht vor der Runde studieren'],
+    },
+    {
+      id: 'home-course-07',
+      name: 'Regel-Quiz (Selbsttest)',
+      description: 'Erstelle dir selbst 10 Regel-Fragen zu typischen Situationen (Unspielbar, Wasserhindernis, Identifikation, Grün-Privilegien). Beantworte sie ohne Nachschlagen. Überprüfe dann die richtigen Antworten. Regelkenntnis spart echte Strafschläge.',
+      duration: 20,
+      category: TrainingCategory.COURSE_MANAGEMENT,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Regel 17 (Wasserhindernis) und Regel 19 (unspielbar) am wichtigsten', 'R&A Rules App: kostenlose, offizielle Quelle', 'Jährlich aktualisieren – Regeln ändern sich gelegentlich'],
+    },
+    {
+      id: 'home-course-08',
+      name: 'Video-Analyse eigener Runden',
+      description: 'Nimm dich bei 3 verschiedenen Schlägen pro Runde mit dem Handy auf. Analysiere zuhause: Stimmt die Ausrichtung? Wie ist die Balance? Ist die Pre-Shot-Routine gleich? Video zeigt Fehler, die du im Spiel nicht spürst.',
+      duration: 30,
+      category: TrainingCategory.COURSE_MANAGEMENT,
+      difficulty: TrainingDifficulty.MEDIUM,
+      tips: ['Von hinten (hinter der Ziellinie) und von der Seite filmen', 'Suche Muster über mehrere Videos', 'Vergleiche mit deinen besten Schlägen auf dem Übungsplatz', 'Eine gute Analyse erspart viele Fahrstunden beim Pro'],
+    },
   ];
 
   for (const drill of homeDrills) {
@@ -1272,6 +2341,502 @@ async function main() {
   }
 
   console.log(`Seeded ${homeDrills.length} home drills.`);
+
+  // ── Weitere Template-Pläne ─────────────────────────────────────────
+  console.log('Seeding additional template plans...');
+
+  const connect = (id: string) => ({ drill: { connect: { id } } });
+
+  // ── BEGINNER ──────────────────────────────────────────────────────
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-beginner-2' },
+    update: {},
+    create: {
+      id: 'plan-beginner-2',
+      name: 'Putting-Grundschule',
+      description: 'Für absolute Anfänger: 3 Wochen reines Putting-Training. Solide Basis für das wichtigste Teilspiel im Golf – die Hälfte aller Schläge entstehen auf dem Grün.',
+      targetLevel: GolferLevel.BEGINNER,
+      durationWeeks: 3,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Putter kennenlernen', focus: TrainingCategory.PUTTING, totalMinutes: 40,
+            drills: { create: [{ order: 1, ...connect('lib-putt-01') }, { order: 2, ...connect('lib-putt-07') }, { order: 3, ...connect('lib-putt-11') }] },
+          },
+          {
+            dayNumber: 2, title: 'Distanzgefühl entwickeln', focus: TrainingCategory.PUTTING, totalMinutes: 40,
+            drills: { create: [{ order: 1, ...connect('lib-putt-03') }, { order: 2, ...connect('lib-putt-16') }, { order: 3, ...connect('lib-putt-06') }] },
+          },
+          {
+            dayNumber: 3, title: 'Kurzputts sichern', focus: TrainingCategory.PUTTING, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-putt-02') }, { order: 2, ...connect('lib-putt-12') }, { order: 3, ...connect('lib-putt-05') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-beginner-3' },
+    update: {},
+    create: {
+      id: 'plan-beginner-3',
+      name: 'Short Game für Einsteiger',
+      description: 'Der schnellste Weg, Schläge zu sparen: 4 Wochen Fokus auf Chip, Bunker und Kurzputts. Ideal für Golfer, die gerade mit dem Spielen beginnen.',
+      targetLevel: GolferLevel.BEGINNER,
+      durationWeeks: 4,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Chip & Run lernen', focus: TrainingCategory.SHORT_GAME, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-short-01') }, { order: 2, ...connect('lib-short-02') }, { order: 3, ...connect('lib-short-04') }] },
+          },
+          {
+            dayNumber: 2, title: 'Bunker Basics', focus: TrainingCategory.SHORT_GAME, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-short-13') }, { order: 2, ...connect('lib-short-06') }] },
+          },
+          {
+            dayNumber: 3, title: 'Putting Kombination', focus: TrainingCategory.PUTTING, totalMinutes: 35,
+            drills: { create: [{ order: 1, ...connect('lib-putt-01') }, { order: 2, ...connect('lib-putt-16') }, { order: 3, ...connect('lib-putt-02') }] },
+          },
+          {
+            dayNumber: 4, title: 'Up & Down erste Versuche', focus: TrainingCategory.SHORT_GAME, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-short-03') }, { order: 2, ...connect('lib-short-11') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-beginner-4' },
+    update: {},
+    create: {
+      id: 'plan-beginner-4',
+      name: 'Golf ABC – Rundum-Einsteiger',
+      description: 'Alle Bereiche in 6 Wochen: Eisen, Driver, Putting, Kurzspiel und Platzmanagement. Der komplette Einstiegs-Kurs für neue Golfer, die das Gesamtbild verstehen wollen.',
+      targetLevel: GolferLevel.BEGINNER,
+      durationWeeks: 6,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Eisenspiel Basics', focus: TrainingCategory.IRON_PLAY, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-iron-01') }, { order: 2, ...connect('lib-iron-02') }, { order: 3, ...connect('lib-iron-03') }] },
+          },
+          {
+            dayNumber: 2, title: 'Driver Einführung', focus: TrainingCategory.DRIVING, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-drive-01') }, { order: 2, ...connect('lib-drive-02') }, { order: 3, ...connect('lib-drive-16') }] },
+          },
+          {
+            dayNumber: 3, title: 'Putting Basis', focus: TrainingCategory.PUTTING, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-putt-01') }, { order: 2, ...connect('lib-putt-07') }, { order: 3, ...connect('lib-putt-16') }] },
+          },
+          {
+            dayNumber: 4, title: 'Kurzspiel Einstieg', focus: TrainingCategory.SHORT_GAME, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-short-01') }, { order: 2, ...connect('lib-short-02') }] },
+          },
+          {
+            dayNumber: 5, title: 'Platz verstehen', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-03') }, { order: 2, ...connect('lib-mgmt-04') }, { order: 3, ...connect('lib-mgmt-05') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // ── INTERMEDIATE ──────────────────────────────────────────────────
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-intermediate-2' },
+    update: {},
+    create: {
+      id: 'plan-intermediate-2',
+      name: 'Eisenspiel-Boost',
+      description: 'Gezieltes 6-Wochen-Programm für Golfer mit HCP 20–30: Kontakt verbessern, Ausrichtung stabilisieren, Approach-Distanzen kalibrieren. Mehr Greens in Regulation bedeutet direkt weniger Schläge.',
+      targetLevel: GolferLevel.INTERMEDIATE,
+      durationWeeks: 6,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Kontakt & Divot', focus: TrainingCategory.IRON_PLAY, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-iron-01') }, { order: 2, ...connect('lib-iron-07') }, { order: 3, ...connect('lib-iron-09') }] },
+          },
+          {
+            dayNumber: 2, title: 'Ausrichtung & Ziel', focus: TrainingCategory.IRON_PLAY, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-iron-02') }, { order: 2, ...connect('lib-iron-13') }, { order: 3, ...connect('lib-iron-18') }] },
+          },
+          {
+            dayNumber: 3, title: 'Approach-Präzision', focus: TrainingCategory.IRON_PLAY, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-iron-06') }, { order: 2, ...connect('lib-iron-16') }, { order: 3, ...connect('lib-iron-10') }] },
+          },
+          {
+            dayNumber: 4, title: 'Halbschwung & Punch', focus: TrainingCategory.IRON_PLAY, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-iron-03') }, { order: 2, ...connect('lib-iron-05') }, { order: 3, ...connect('lib-iron-17') }] },
+          },
+          {
+            dayNumber: 5, title: 'Mentale Stabilität', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 40,
+            drills: { create: [{ order: 1, ...connect('lib-mental-01') }, { order: 2, ...connect('lib-mental-05') }, { order: 3, ...connect('lib-mental-09') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-intermediate-3' },
+    update: {},
+    create: {
+      id: 'plan-intermediate-3',
+      name: 'Short Game Masterclass',
+      description: 'In 6 Wochen zum gefürchteten Kurzspieler: Chip-Varianten, Bunker-Kontrolle, Lob-Shots und Up & Down aus jeder Lage. Wer das Kurzspiel beherrscht, spart 5–8 Schläge pro Runde.',
+      targetLevel: GolferLevel.INTERMEDIATE,
+      durationWeeks: 6,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Chip-Varianten meistern', focus: TrainingCategory.SHORT_GAME, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-short-01') }, { order: 2, ...connect('lib-short-02') }, { order: 3, ...connect('lib-short-03') }] },
+          },
+          {
+            dayNumber: 2, title: 'Bunker-Kontrolle', focus: TrainingCategory.SHORT_GAME, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-short-13') }, { order: 2, ...connect('lib-short-06') }, { order: 3, ...connect('lib-short-07') }] },
+          },
+          {
+            dayNumber: 3, title: 'Lob & Flop', focus: TrainingCategory.SHORT_GAME, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-short-05') }, { order: 2, ...connect('lib-short-10') }, { order: 3, ...connect('lib-short-19') }] },
+          },
+          {
+            dayNumber: 4, title: 'Putting Qualität', focus: TrainingCategory.PUTTING, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-putt-03') }, { order: 2, ...connect('lib-putt-13') }, { order: 3, ...connect('lib-putt-14') }] },
+          },
+          {
+            dayNumber: 5, title: 'Up & Down Wettbewerb', focus: TrainingCategory.SHORT_GAME, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-short-17') }, { order: 2, ...connect('lib-short-09') }] },
+          },
+          {
+            dayNumber: 6, title: 'Schwierige Lagen', focus: TrainingCategory.SHORT_GAME, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-short-15') }, { order: 2, ...connect('lib-short-16') }, { order: 3, ...connect('lib-short-08') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-intermediate-4' },
+    update: {},
+    create: {
+      id: 'plan-intermediate-4',
+      name: 'Driver & Langspiel',
+      description: '4 Wochen Fokus auf den Abschlag: mehr Fairways treffen, mehr Distanz, weniger OB. Mit besseren Tee-Shots beginnt jede gute Runde.',
+      targetLevel: GolferLevel.INTERMEDIATE,
+      durationWeeks: 4,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Tee-Shot Grundlagen', focus: TrainingCategory.DRIVING, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-drive-01') }, { order: 2, ...connect('lib-drive-02') }, { order: 3, ...connect('lib-drive-08') }] },
+          },
+          {
+            dayNumber: 2, title: 'Körperrotation & Kraft', focus: TrainingCategory.DRIVING, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-drive-04') }, { order: 2, ...connect('lib-drive-05') }, { order: 3, ...connect('lib-drive-09') }] },
+          },
+          {
+            dayNumber: 3, title: 'Präzision & Treffpunkt', focus: TrainingCategory.DRIVING, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-drive-06') }, { order: 2, ...connect('lib-drive-07') }, { order: 3, ...connect('lib-drive-14') }] },
+          },
+          {
+            dayNumber: 4, title: 'Distanz & Speed', focus: TrainingCategory.DRIVING, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-drive-12') }, { order: 2, ...connect('lib-drive-13') }, { order: 3, ...connect('lib-drive-18') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-intermediate-5' },
+    update: {},
+    create: {
+      id: 'plan-intermediate-5',
+      name: 'Putting-Upgrade',
+      description: '5 Wochen intensives Putting für Spieler mit HCP 18–28. Von 36 auf unter 30 Putts pro Runde ist realistisch – das entspricht 6 eingesparten Schlägen.',
+      targetLevel: GolferLevel.INTERMEDIATE,
+      durationWeeks: 5,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Kurzputts unter Druck', focus: TrainingCategory.PUTTING, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-putt-02') }, { order: 2, ...connect('lib-putt-10') }, { order: 3, ...connect('lib-putt-06') }] },
+          },
+          {
+            dayNumber: 2, title: 'Distanzkontrolle', focus: TrainingCategory.PUTTING, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-putt-09') }, { order: 2, ...connect('lib-putt-14') }, { order: 3, ...connect('lib-putt-03') }] },
+          },
+          {
+            dayNumber: 3, title: 'Break lesen', focus: TrainingCategory.PUTTING, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-putt-08') }, { order: 2, ...connect('lib-putt-13') }, { order: 3, ...connect('lib-putt-17') }] },
+          },
+          {
+            dayNumber: 4, title: 'Rhythmus & Tempo', focus: TrainingCategory.PUTTING, totalMinutes: 40,
+            drills: { create: [{ order: 1, ...connect('lib-putt-01') }, { order: 2, ...connect('lib-putt-07') }, { order: 3, ...connect('lib-putt-05') }] },
+          },
+          {
+            dayNumber: 5, title: 'Putting-Wettbewerb', focus: TrainingCategory.PUTTING, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-putt-15') }, { order: 2, ...connect('lib-putt-04') }, { order: 3, ...connect('lib-putt-19') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // ── ADVANCED ──────────────────────────────────────────────────────
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-advanced-2' },
+    update: {},
+    create: {
+      id: 'plan-advanced-2',
+      name: 'Mental Performance',
+      description: 'Für Golfer mit HCP 9–18: In 8 Wochen die mentale Stärke aufbauen, die technisch gute Spieler von wirklich konstanten Spielern unterscheidet. Visualisierung, Druck-Resilienz und Wettkampf-Routine.',
+      targetLevel: GolferLevel.ADVANCED,
+      durationWeeks: 8,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Visualisierung & Fokus', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-mental-01') }, { order: 2, ...connect('lib-mental-13') }, { order: 3, ...connect('lib-mental-09') }] },
+          },
+          {
+            dayNumber: 2, title: 'Drucktraining', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-mental-04') }, { order: 2, ...connect('lib-mental-11') }, { order: 3, ...connect('lib-putt-10') }] },
+          },
+          {
+            dayNumber: 3, title: 'Platzmanagement Strategie', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-01') }, { order: 2, ...connect('lib-mgmt-08') }, { order: 3, ...connect('lib-mgmt-02') }] },
+          },
+          {
+            dayNumber: 4, title: 'Routine perfektionieren', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-mental-05') }, { order: 2, ...connect('lib-mental-07') }, { order: 3, ...connect('lib-mental-14') }] },
+          },
+          {
+            dayNumber: 5, title: 'Fehler-Resilienz', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-mental-02') }, { order: 2, ...connect('lib-mental-08') }, { order: 3, ...connect('lib-mental-10') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-advanced-3' },
+    update: {},
+    create: {
+      id: 'plan-advanced-3',
+      name: 'Platzmanagement Elite',
+      description: '6 Wochen strategisches Denken auf dem Platz: Risikoanalyse, Fahnen-Strategie, Recovery-Schläge und statistische Selbstanalyse. Klügeres Golf schlägt mutigeres Golf.',
+      targetLevel: GolferLevel.ADVANCED,
+      durationWeeks: 6,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Strategie-Grundlagen', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-03') }, { order: 2, ...connect('lib-mgmt-04') }, { order: 3, ...connect('lib-mgmt-05') }] },
+          },
+          {
+            dayNumber: 2, title: 'Fahnen & Zonen', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-08') }, { order: 2, ...connect('lib-mgmt-10') }, { order: 3, ...connect('lib-mgmt-06') }] },
+          },
+          {
+            dayNumber: 3, title: 'Recovery & Trouble', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-09') }, { order: 2, ...connect('lib-short-15') }, { order: 3, ...connect('lib-short-16') }] },
+          },
+          {
+            dayNumber: 4, title: 'Wind & Wetter', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 45,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-02') }, { order: 2, ...connect('lib-mgmt-13') }, { order: 3, ...connect('lib-drive-15') }] },
+          },
+          {
+            dayNumber: 5, title: 'Layup & Aufschlag-Zonen', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-11') }, { order: 2, ...connect('lib-mgmt-07') }, { order: 3, ...connect('lib-drive-17') }] },
+          },
+          {
+            dayNumber: 6, title: 'Statistik & Analyse', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 50,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-14') }, { order: 2, ...connect('lib-mgmt-12') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-advanced-4' },
+    update: {},
+    create: {
+      id: 'plan-advanced-4',
+      name: 'Komplettpaket HCP unter 9',
+      description: '10 Wochen All-in-One für Spieler, die den einstelligen Bereich anstreben: Hochleistungs-Putting, Wedge-Präzision, Langspiel-Optimierung und mentale Elite-Techniken.',
+      targetLevel: GolferLevel.ADVANCED,
+      durationWeeks: 10,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Wedge-Präzision', focus: TrainingCategory.SHORT_GAME, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-short-19') }, { order: 2, ...connect('lib-short-20') }, { order: 3, ...connect('lib-iron-06') }] },
+          },
+          {
+            dayNumber: 2, title: 'Langspiel Elite', focus: TrainingCategory.DRIVING, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-drive-15') }, { order: 2, ...connect('lib-drive-17') }, { order: 3, ...connect('lib-drive-18') }] },
+          },
+          {
+            dayNumber: 3, title: 'Putting Hochleistung', focus: TrainingCategory.PUTTING, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-putt-08') }, { order: 2, ...connect('lib-putt-15') }, { order: 3, ...connect('lib-putt-20') }] },
+          },
+          {
+            dayNumber: 4, title: 'Eisen Elite', focus: TrainingCategory.IRON_PLAY, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-iron-04') }, { order: 2, ...connect('lib-iron-16') }, { order: 3, ...connect('lib-iron-17') }] },
+          },
+          {
+            dayNumber: 5, title: 'Platz-Strategie', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-08') }, { order: 2, ...connect('lib-mgmt-09') }, { order: 3, ...connect('lib-mgmt-10') }] },
+          },
+          {
+            dayNumber: 6, title: 'Mentale Elite', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 55,
+            drills: { create: [{ order: 1, ...connect('lib-mental-12') }, { order: 2, ...connect('lib-mental-13') }, { order: 3, ...connect('lib-mental-14') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  // ── PRO ───────────────────────────────────────────────────────────
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-pro-1' },
+    update: {},
+    create: {
+      id: 'plan-pro-1',
+      name: 'Tour Performance Training',
+      description: '12 Wochen Hochleistungstraining für Spieler mit HCP unter 5: Speed-Training, Tour-Wedge-Präzision, Putting unter Druck und Turnier-Mentalität. Das Programm, das Profis nutzen.',
+      targetLevel: GolferLevel.PRO,
+      durationWeeks: 12,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Speed & Power', focus: TrainingCategory.DRIVING, totalMinutes: 70,
+            drills: { create: [{ order: 1, ...connect('lib-drive-12') }, { order: 2, ...connect('lib-drive-13') }, { order: 3, ...connect('lib-drive-18') }] },
+          },
+          {
+            dayNumber: 2, title: 'Tour Wedge', focus: TrainingCategory.SHORT_GAME, totalMinutes: 70,
+            drills: { create: [{ order: 1, ...connect('lib-short-09') }, { order: 2, ...connect('lib-short-19') }, { order: 3, ...connect('lib-short-20') }] },
+          },
+          {
+            dayNumber: 3, title: 'Tour Putting', focus: TrainingCategory.PUTTING, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-putt-04') }, { order: 2, ...connect('lib-putt-10') }, { order: 3, ...connect('lib-putt-15') }] },
+          },
+          {
+            dayNumber: 4, title: 'Scoring Zone Eisen', focus: TrainingCategory.IRON_PLAY, totalMinutes: 70,
+            drills: { create: [{ order: 1, ...connect('lib-iron-04') }, { order: 2, ...connect('lib-iron-16') }, { order: 3, ...connect('lib-iron-17') }] },
+          },
+          {
+            dayNumber: 5, title: 'Strategie & Analyse', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-09') }, { order: 2, ...connect('lib-mgmt-10') }, { order: 3, ...connect('lib-mgmt-11') }] },
+          },
+          {
+            dayNumber: 6, title: 'Pressure Performance', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-mental-11') }, { order: 2, ...connect('lib-mental-04') }, { order: 3, ...connect('lib-mental-08') }] },
+          },
+          {
+            dayNumber: 7, title: 'Simulation & Review', focus: TrainingCategory.COURSE_MANAGEMENT, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-mgmt-13') }, { order: 2, ...connect('lib-mgmt-14') }, { order: 3, ...connect('lib-mental-15') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-pro-2' },
+    update: {},
+    create: {
+      id: 'plan-pro-2',
+      name: 'Wettkampfvorbereitung',
+      description: '4 Wochen gezielte Turnier-Vorbereitung: Warm-Up-Protokoll, Druck-Simulation, Strategie-Feinschliff und mentale Wettkampf-Routine. Für Spieler, die in Turnieren ihr Bestes abrufen wollen.',
+      targetLevel: GolferLevel.PRO,
+      durationWeeks: 4,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: 'Warm-Up Protokoll', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-mental-14') }, { order: 2, ...connect('lib-mental-01') }, { order: 3, ...connect('lib-putt-07') }] },
+          },
+          {
+            dayNumber: 2, title: 'Kurzspiel unter Druck', focus: TrainingCategory.SHORT_GAME, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-short-09') }, { order: 2, ...connect('lib-short-17') }, { order: 3, ...connect('lib-putt-10') }] },
+          },
+          {
+            dayNumber: 3, title: 'Tee-Shot Kontrolle', focus: TrainingCategory.DRIVING, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-drive-03') }, { order: 2, ...connect('lib-drive-14') }, { order: 3, ...connect('lib-drive-17') }] },
+          },
+          {
+            dayNumber: 4, title: 'Grüns lesen & Putten', focus: TrainingCategory.PUTTING, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-putt-08') }, { order: 2, ...connect('lib-putt-17') }, { order: 3, ...connect('lib-putt-15') }] },
+          },
+          {
+            dayNumber: 5, title: 'Turnier-Simulation', focus: TrainingCategory.MENTAL_GAME, totalMinutes: 70,
+            drills: { create: [{ order: 1, ...connect('lib-mental-11') }, { order: 2, ...connect('lib-mental-03') }, { order: 3, ...connect('lib-mental-12') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  await prisma.trainingPlan.upsert({
+    where: { id: 'plan-pro-3' },
+    update: {},
+    create: {
+      id: 'plan-pro-3',
+      name: 'Scoring: Das 9-Schuss-Arsenal',
+      description: '6 Wochen für Spieler, die ihr vollständiges Shot-Repertoire entwickeln wollen: Draw/Fade, Hoch/Niedrig, Punch-Shots und kreatives Kurzspiel aus jeder Lage.',
+      targetLevel: GolferLevel.PRO,
+      durationWeeks: 6,
+      isTemplate: true,
+      days: {
+        create: [
+          {
+            dayNumber: 1, title: '9-Schuss-Drill', focus: TrainingCategory.IRON_PLAY, totalMinutes: 70,
+            drills: { create: [{ order: 1, ...connect('lib-iron-04') }, { order: 2, ...connect('lib-iron-05') }, { order: 3, ...connect('lib-iron-17') }] },
+          },
+          {
+            dayNumber: 2, title: 'Draw & Fade Driver', focus: TrainingCategory.DRIVING, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-drive-03') }, { order: 2, ...connect('lib-drive-11') }, { order: 3, ...connect('lib-drive-10') }] },
+          },
+          {
+            dayNumber: 3, title: 'Kreatives Kurzspiel', focus: TrainingCategory.SHORT_GAME, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-short-05') }, { order: 2, ...connect('lib-short-10') }, { order: 3, ...connect('lib-short-18') }] },
+          },
+          {
+            dayNumber: 4, title: 'Wedge-Arsenal', focus: TrainingCategory.SHORT_GAME, totalMinutes: 65,
+            drills: { create: [{ order: 1, ...connect('lib-iron-06') }, { order: 2, ...connect('lib-short-19') }, { order: 3, ...connect('lib-short-07') }] },
+          },
+          {
+            dayNumber: 5, title: 'Knockdown & Kontrollschläge', focus: TrainingCategory.IRON_PLAY, totalMinutes: 60,
+            drills: { create: [{ order: 1, ...connect('lib-iron-17') }, { order: 2, ...connect('lib-drive-16') }, { order: 3, ...connect('lib-mgmt-02') }] },
+          },
+        ],
+      },
+    },
+  });
+
+  console.log('Seeded additional template plans.');
   console.log('Seed complete.');
 }
 

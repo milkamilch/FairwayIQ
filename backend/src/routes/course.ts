@@ -1,5 +1,6 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
@@ -21,19 +22,32 @@ const holeSchema = z.object({
   hazards: z.array(hazardSchema).optional().default([]),
 });
 
+const teeSchema = z.object({
+  name: z.string().min(1),
+  color: z.enum(['yellow', 'blue', 'red', 'white']),
+  rating: z.number().optional(),
+  slope: z.number().optional(),
+  distances: z.record(z.string(), z.number()).optional(),
+});
+
 const courseSchema = z.object({
   name: z.string().min(2),
   location: z.string().min(2),
+  isPublic: z.boolean().optional().default(false),
   rating: z.number().optional(),
   slope: z.number().optional(),
   holes: z.array(holeSchema).length(18),
+  tees: z.array(teeSchema).optional().default([]),
 });
 
 // GET eigene Plätze des Users
 courseRouter.get('/', async (req: AuthRequest, res: Response) => {
   const courses = await prisma.course.findMany({
     where: { createdBy: req.userId! },
-    include: { holes: { orderBy: { number: 'asc' } } },
+    include: {
+      holes: { orderBy: { number: 'asc' } },
+      tees: { orderBy: { name: 'asc' } },
+    },
     orderBy: { createdAt: 'desc' },
   });
   res.json(courses);
@@ -163,6 +177,7 @@ courseRouter.get('/:id', async (req: AuthRequest, res: Response) => {
         orderBy: { number: 'asc' },
         include: { hazards: true, strategy: true },
       },
+      tees: { orderBy: { name: 'asc' } },
     },
   });
 
@@ -178,7 +193,7 @@ courseRouter.post('/', async (req: AuthRequest, res: Response) => {
     return;
   }
 
-  const { holes, ...courseData } = parsed.data;
+  const { holes, tees, ...courseData } = parsed.data;
   const totalPar = holes.reduce((sum, h) => sum + h.par, 0);
 
   const course = await prisma.course.create({
@@ -201,8 +216,22 @@ courseRouter.post('/', async (req: AuthRequest, res: Response) => {
           },
         })),
       },
+      ...(tees.length > 0 && {
+        tees: {
+          create: tees.map((tee) => ({
+            name: tee.name,
+            color: tee.color,
+            rating: tee.rating ?? null,
+            slope: tee.slope ?? null,
+            distances: tee.distances ?? Prisma.JsonNull,
+          })),
+        },
+      }),
     },
-    include: { holes: { include: { hazards: true, strategy: true } } },
+    include: {
+      holes: { include: { hazards: true, strategy: true } },
+      tees: { orderBy: { name: 'asc' } },
+    },
   });
 
   res.status(201).json(course);
