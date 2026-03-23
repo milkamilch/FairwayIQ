@@ -382,7 +382,7 @@ export default function ProfileScreen() {
             </View>
             {user?.createdAt && (
               <View className="flex-row items-center gap-1.5">
-                <Ionicons name="calendar-outline" size={11} color="#444444" />
+                <Ionicons name="calendar-outline" size={11} color={c.inkMuted} />
                 <Text className="text-ink-muted text-xs">
                   {t('profile.since')} {new Date(user.createdAt).toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })}
                 </Text>
@@ -467,7 +467,7 @@ export default function ProfileScreen() {
               )}
             </View>
             {!editing && (
-              <Ionicons name="chevron-forward" size={12} color="#2E2E2E" />
+              <Ionicons name="chevron-forward" size={12} color={c.inkMuted} />
             )}
           </View>
 
@@ -585,7 +585,7 @@ export default function ProfileScreen() {
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.bag')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.bagSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#444444" />
+            <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -599,7 +599,7 @@ export default function ProfileScreen() {
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.wearables')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.wearablesSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#444444" />
+            <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -613,7 +613,7 @@ export default function ProfileScreen() {
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.progress')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.progressSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#444444" />
+            <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -627,7 +627,7 @@ export default function ProfileScreen() {
               <Text className="text-ink-primary font-medium text-sm">{t('profile.links.notifications')}</Text>
               <Text className="text-ink-muted text-xs">{t('profile.links.notificationsSub')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={14} color="#444444" />
+            <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
           </TouchableOpacity>
 
           <TouchableOpacity

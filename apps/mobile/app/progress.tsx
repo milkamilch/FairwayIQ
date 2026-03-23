@@ -180,8 +180,8 @@ export default function ProgressScreen() {
               style={{ backgroundColor: active ? '#FF653520' : 'transparent' }}
               onPress={() => setActiveSection(s)}
             >
-              <Ionicons name={sectionIcons[s]} size={14} color={active ? '#FF6535' : '#444444'} />
-              <Text className="text-xs font-black mt-0.5" style={{ color: active ? '#FF6535' : '#444444' }}>
+              <Ionicons name={sectionIcons[s]} size={14} color={active ? '#FF6535' : c.inkMuted} />
+              <Text className="text-xs font-black mt-0.5" style={{ color: active ? '#FF6535' : c.inkMuted }}>
                 {t(`progress.sections.${s}`)}
               </Text>
             </TouchableOpacity>
@@ -340,9 +340,9 @@ export default function ProgressScreen() {
                                   <Ionicons
                                     name={improving ? 'trending-down' : diff === 0 ? 'remove' : 'trending-up'}
                                     size={11}
-                                    color={improving ? '#FF6535' : diff === 0 ? '#444444' : '#f97316'}
+                                    color={improving ? '#FF6535' : diff === 0 ? c.inkMuted : '#f97316'}
                                   />
-                                  <Text className="text-xs" style={{ color: improving ? '#FF6535' : diff === 0 ? '#444444' : '#f97316' }}>
+                                  <Text className="text-xs" style={{ color: improving ? '#FF6535' : diff === 0 ? c.inkMuted : '#f97316' }}>
                                     {diff > 0 ? '+' : ''}{diff.toFixed(1)}
                                   </Text>
                                 </View>
