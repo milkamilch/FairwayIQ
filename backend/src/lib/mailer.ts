@@ -7,7 +7,7 @@ const APP_URL = process.env.APP_URL ?? 'https://api.faiway-iq.com';
 export async function sendVerificationEmail(email: string, name: string, token: string) {
   const link = `${APP_URL}/auth/verify-email?token=${token}`;
 
-  await resend.emails.send({
+  const result = await resend.emails.send({
     from: FROM,
     to: email,
     subject: 'FairwayIQ – E-Mail bestätigen',
@@ -24,4 +24,8 @@ export async function sendVerificationEmail(email: string, name: string, token: 
       </div>
     `,
   });
+  console.log('Resend result:', JSON.stringify(result));
+  if (result.error) {
+    throw new Error(`Resend error: ${result.error.message}`);
+  }
 }
