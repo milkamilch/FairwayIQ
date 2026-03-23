@@ -160,11 +160,11 @@ function LibraryTab() {
     <View className="flex-1">
       {/* Search Bar */}
       <View className="mx-5 mb-2 flex-row items-center bg-bg-elevated border border-bg-border rounded-xl px-3 gap-2">
-        <Ionicons name="search-outline" size={16} color="#444444" />
+        <Ionicons name="search-outline" size={16} color={c.inkMuted} />
         <TextInput
           className="flex-1 py-3 text-ink-primary text-sm"
           placeholder={t('training.library.searchPlaceholder')}
-          placeholderTextColor="#444444"
+          placeholderTextColor={c.inkMuted}
           value={search}
           onChangeText={handleSearchChange}
           returnKeyType="search"
@@ -172,7 +172,7 @@ function LibraryTab() {
         />
         {search.length > 0 && (
           <TouchableOpacity onPress={() => { setSearch(''); fetchDrills('', activeCategory, activeDifficulty, homeOnly); }}>
-            <Ionicons name="close-circle" size={16} color="#444444" />
+            <Ionicons name="close-circle" size={16} color={c.inkMuted} />
           </TouchableOpacity>
         )}
       </View>
@@ -230,7 +230,7 @@ function LibraryTab() {
               }}
               onPress={() => setActiveDifficulty(active ? null : diff)}
             >
-              <Text className="text-xs font-semibold" style={{ color: active ? color : '#444444' }}>
+              <Text className="text-xs font-semibold" style={{ color: active ? color : c.inkMuted }}>
                 {t(`training.difficulty.${diff}`)}
               </Text>
             </TouchableOpacity>
@@ -244,7 +244,7 @@ function LibraryTab() {
           <ActivityIndicator color="#FF6535" className="mt-8" />
         ) : drills.length === 0 ? (
           <View className="items-center py-16 gap-3">
-            <Ionicons name="search-outline" size={48} color="#2E2E2E" />
+            <Ionicons name="search-outline" size={48} color={c.inkMuted} />
             <Text className="text-ink-secondary font-semibold">{t('training.library.noResults')}</Text>
             <Text className="text-ink-muted text-sm text-center">{t('training.library.noResultsSub')}</Text>
           </View>
@@ -687,11 +687,11 @@ export default function TrainingScreen() {
               style={{ backgroundColor: streak > 0 ? '#f9730320' : c.bgElevated }}
               onPress={() => router.push('/challenges' as any)}
             >
-              <Ionicons name={streak > 0 ? 'flame-outline' : 'golf-outline'} size={16} color={streak > 0 ? '#f97316' : '#444444'} />
-              <Text className="font-black text-sm" style={{ color: streak > 0 ? '#f97316' : '#444444' }}>
+              <Ionicons name={streak > 0 ? 'flame-outline' : 'golf-outline'} size={16} color={streak > 0 ? '#f97316' : c.inkMuted} />
+              <Text className="font-black text-sm" style={{ color: streak > 0 ? '#f97316' : c.inkMuted }}>
                 {streak > 0 ? `${streak}` : '0'}
               </Text>
-              <Ionicons name="trophy-outline" size={14} color={streak > 0 ? '#f97316' : '#444444'} />
+              <Ionicons name="trophy-outline" size={14} color={streak > 0 ? '#f97316' : c.inkMuted} />
             </TouchableOpacity>
           </View>
         </View>
@@ -705,7 +705,7 @@ export default function TrainingScreen() {
             >
               <Text
                 className="text-xs font-black tracking-wider"
-                style={{ color: tab === t_key ? '#FF6535' : '#444444' }}
+                style={{ color: tab === t_key ? '#FF6535' : c.inkMuted }}
               >
                 {tabLabels[t_key]}
               </Text>

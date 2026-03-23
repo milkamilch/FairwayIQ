@@ -21,12 +21,12 @@ interface Club {
 
 // ── Club type metadata ────────────────────────────────────────────────
 const TYPE_META: Record<ClubType, { icon: string; suggestions: string[] }> = {
-  DRIVER:       { icon: '🏌️', suggestions: ['Driver'] },
-  FAIRWAY_WOOD: { icon: '🌳', suggestions: ['3er Holz', '5er Holz', '7er Holz'] },
-  HYBRID:       { icon: '⚡', suggestions: ['2er Hybrid', '3er Hybrid', '4er Hybrid', '5er Hybrid'] },
-  IRON:         { icon: '🔩', suggestions: ['3er Eisen', '4er Eisen', '5er Eisen', '6er Eisen', '7er Eisen', '8er Eisen', '9er Eisen'] },
-  WEDGE:        { icon: '🎯', suggestions: ['PW', 'GW (50°)', 'SW (54°)', 'LW (58°)', 'LW (60°)'] },
-  PUTTER:       { icon: '🏁', suggestions: ['Putter'] },
+  DRIVER:       { icon: 'golf-outline', suggestions: ['Driver'] },
+  FAIRWAY_WOOD: { icon: 'leaf-outline', suggestions: ['3er Holz', '5er Holz', '7er Holz'] },
+  HYBRID:       { icon: 'flash-outline', suggestions: ['2er Hybrid', '3er Hybrid', '4er Hybrid', '5er Hybrid'] },
+  IRON:         { icon: 'build-outline', suggestions: ['3er Eisen', '4er Eisen', '5er Eisen', '6er Eisen', '7er Eisen', '8er Eisen', '9er Eisen'] },
+  WEDGE:        { icon: 'flag-outline', suggestions: ['PW', 'GW (50°)', 'SW (54°)', 'LW (58°)', 'LW (60°)'] },
+  PUTTER:       { icon: 'radio-button-on-outline', suggestions: ['Putter'] },
 };
 
 const TYPE_ORDER: ClubType[] = ['DRIVER', 'FAIRWAY_WOOD', 'HYBRID', 'IRON', 'WEDGE', 'PUTTER'];
@@ -115,9 +115,12 @@ function ClubModal({
                       borderColor: active ? '#FF6535' : c.bgBorder,
                     }}
                   >
-                    <Text style={{ color: active ? '#FF6535' : c.inkSecondary, fontWeight: '600', fontSize: 13 }}>
-                      {m.icon} {t(`bag.types.${clubType}`)}
-                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                      <Ionicons name={m.icon as any} size={14} color={active ? '#FF6535' : c.inkSecondary} />
+                      <Text style={{ color: active ? '#FF6535' : c.inkSecondary, fontWeight: '600', fontSize: 13 }}>
+                        {t(`bag.types.${clubType}`)}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 );
               })}
@@ -257,7 +260,7 @@ export default function BagScreen() {
         </View>
       ) : clubs.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
-          <Text style={{ fontSize: 40 }}>🏌️</Text>
+          <Ionicons name="golf-outline" size={48} color={c.inkMuted} />
           <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>{t('bag.empty')}</Text>
           <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('bag.emptyHint')}</Text>
           <TouchableOpacity
@@ -278,7 +281,7 @@ export default function BagScreen() {
             return (
               <View key={type} style={{ marginTop: 20 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                  <Text style={{ fontSize: 14 }}>{meta.icon}</Text>
+                  <Ionicons name={meta.icon as any} size={14} color={c.inkMuted} />
                   <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
                     {t(`bag.types.${type}`)}
                   </Text>

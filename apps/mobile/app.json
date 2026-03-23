@@ -17,9 +17,10 @@
       "bundleIdentifier": "com.fairwayiq.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "FairwayIQ verwendet die Kamera nicht.",
-        "NSHealthShareUsageDescription": "FairwayIQ liest Fitness- und Aktivit\u00e4tsdaten f\u00fcr deine Golfrunden.",
-        "NSHealthUpdateUsageDescription": "FairwayIQ speichert keine Gesundheitsdaten."
+        "NSCameraUsageDescription": "FairwayIQ uses the camera to set your profile picture.",
+        "NSPhotoLibraryUsageDescription": "FairwayIQ needs access to your photo library to set your profile picture.",
+        "NSHealthShareUsageDescription": "FairwayIQ reads fitness and activity data to enrich your golf rounds.",
+        "NSHealthUpdateUsageDescription": "FairwayIQ does not write health data."
       },
       "entitlements": {
         "com.apple.developer.healthkit": true,
@@ -41,15 +42,21 @@
       "expo-secure-store",
       "expo-notifications",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "FairwayIQ needs access to your photo library to set your profile picture."
+        }
+      ],
+      [
         "expo-calendar",
         {
-          "calendarPermission": "FairwayIQ möchte Trainings zu deinem Kalender hinzufügen."
+          "calendarPermission": "FairwayIQ would like to add your training sessions to your calendar."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "FairwayIQ benötigt deinen Standort für aktuelle Wetterdaten und Spielempfehlungen."
+          "locationWhenInUsePermission": "FairwayIQ needs your location for current weather data and play recommendations."
         }
       ]
     ],
