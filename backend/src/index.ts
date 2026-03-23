@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { authRouter } from './routes/auth';
 import { trainingRouter } from './routes/training';
 import { courseRouter } from './routes/course';
@@ -11,6 +12,9 @@ import { clubsRouter } from './routes/clubs';
 import { goalsRouter } from './routes/goals';
 import { socialRouter } from './routes/social';
 import { wearablesRouter } from './routes/wearables';
+import { notificationsRouter } from './routes/notifications';
+import calendarRouter from './routes/calendar';
+import { startNotificationCron } from './lib/notificationCron';
 
 dotenv.config();
 
@@ -29,6 +33,7 @@ app.use(cors({
   },
 }));
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', version: '1.0.0' });
@@ -44,7 +49,10 @@ app.use('/api/clubs', clubsRouter);
 app.use('/api/goals', goalsRouter);
 app.use('/api/social', socialRouter);
 app.use('/api/wearables', wearablesRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/calendar', calendarRouter);
 
 app.listen(PORT, () => {
   console.log(`FairwayIQ Backend running on port ${PORT}`);
+  startNotificationCron();
 });

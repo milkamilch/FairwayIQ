@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, TextInput, ActivityIndicator, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -463,6 +463,178 @@ function ActivePlanView({ activePlan }: { activePlan: UserTrainingPlan & { plan:
   );
 }
 
+// ── Plan Schedule Modal ───────────────────────────────────────────────────────
+
+const WEEKDAY_LABELS_DE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+
+function addDays(d: Date, n: number): Date {
+  const r = new Date(d); r.setDate(r.getDate() + n); return r;
+}
+
+function PlanScheduleModal({ visible, planId, userPlanId, hasActivePlan, onClose, onStarted, startPlan }: {
+  visible: boolean;
+  planId: string;
+  userPlanId?: string;
+  hasActivePlan: boolean;
+  onClose: () => void;
+  onStarted: () => void;
+  startPlan: (planId: string) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const c = useTheme();
+
+  const [weekdays, setWeekdays] = useState<number[]>([0, 2, 4]); // Mon, Wed, Fri
+  const [startDate, setStartDate] = useState<Date>(() => {
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d;
+  });
+  const [scheduling, setScheduling] = useState(false);
+
+  useEffect(() => {
+    if (visible) {
+      setWeekdays([0, 2, 4]);
+      const d = new Date(); d.setHours(0, 0, 0, 0);
+      setStartDate(d);
+    }
+  }, [visible]);
+
+  const toggleDay = (i: number) => {
+    setWeekdays((prev) =>
+      prev.includes(i) ? prev.filter((d) => d !== i) : [...prev, i].sort((a, b) => a - b),
+    );
+  };
+
+  const handleConfirm = async () => {
+    if (weekdays.length === 0) return;
+    setScheduling(true);
+    try {
+      let planUserId = userPlanId;
+      if (!planUserId) {
+        // Preset plan: start it first, then get the new userPlan id
+        await startPlan(planId);
+        planUserId = useTrainingStore.getState().activePlan?.id;
+      }
+
+      if (planUserId) {
+        await api.post('/calendar/schedule-plan', {
+          userPlanId: planUserId,
+          startDate: startDate.toISOString(),
+          weekdays,
+        });
+      }
+
+      onStarted();
+      onClose();
+    } catch {
+      Alert.alert(t('common.error'));
+    } finally {
+      setScheduling(false);
+    }
+  };
+
+  return (
+    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: c.bgBase }}>
+        <View className="px-5 pt-12 pb-4 flex-row items-center gap-3">
+          <TouchableOpacity onPress={onClose}>
+            <Ionicons name="close" size={22} color={c.inkPrimary} />
+          </TouchableOpacity>
+          <Text className="text-ink-primary text-lg font-bold flex-1">
+            {t('training.scheduleTitle')}
+          </Text>
+        </View>
+
+        <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+          {hasActivePlan && (
+            <View
+              className="rounded-xl p-3 mb-5 flex-row items-start gap-2"
+              style={{ backgroundColor: '#f59e0b20', borderWidth: 1, borderColor: '#f59e0b40' }}
+            >
+              <Ionicons name="warning-outline" size={16} color="#f59e0b" style={{ marginTop: 1 }} />
+              <Text className="text-xs flex-1 leading-4" style={{ color: '#f59e0b' }}>
+                {t('training.confirmReplace')}
+              </Text>
+            </View>
+          )}
+
+          {/* Weekday picker */}
+          <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-3">
+            {t('training.scheduleWeekdays')}
+          </Text>
+          <View className="flex-row gap-2 mb-6 flex-wrap">
+            {WEEKDAY_LABELS_DE.map((label, i) => {
+              const active = weekdays.includes(i);
+              return (
+                <TouchableOpacity
+                  key={i}
+                  onPress={() => toggleDay(i)}
+                  className="w-11 h-11 rounded-xl items-center justify-center"
+                  style={{
+                    backgroundColor: active ? '#FF6535' : c.bgCard,
+                    borderWidth: 1,
+                    borderColor: active ? '#FF6535' : c.bgBorder,
+                  }}
+                >
+                  <Text
+                    className="text-sm font-bold"
+                    style={{ color: active ? '#fff' : c.inkSecondary }}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Start date */}
+          <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-2">
+            {t('training.scheduleStartDate')}
+          </Text>
+          <View className="bg-bg-card rounded-xl flex-row items-center justify-between px-4 py-3 mb-8">
+            <TouchableOpacity onPress={() => setStartDate((d) => addDays(d, -1))}>
+              <Ionicons name="chevron-back" size={20} color={c.inkMuted} />
+            </TouchableOpacity>
+            <Text className="text-ink-primary font-semibold text-sm">
+              {startDate.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </Text>
+            <TouchableOpacity onPress={() => setStartDate((d) => addDays(d, 1))}>
+              <Ionicons name="chevron-forward" size={20} color={c.inkMuted} />
+            </TouchableOpacity>
+          </View>
+
+          {weekdays.length > 0 && (
+            <View className="bg-bg-card rounded-xl p-4 mb-6">
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-1">
+                {t('training.scheduleInfo')}
+              </Text>
+              <Text className="text-ink-secondary text-sm leading-5">
+                {WEEKDAY_LABELS_DE.filter((_, i) => weekdays.includes(i)).join(', ')} ·{' '}
+                {weekdays.length}× pro Woche
+              </Text>
+            </View>
+          )}
+        </ScrollView>
+
+        <View className="px-5 pb-10 pt-3">
+          <TouchableOpacity
+            onPress={handleConfirm}
+            disabled={scheduling || weekdays.length === 0}
+            className="rounded-2xl py-4 items-center"
+            style={{ backgroundColor: weekdays.length > 0 ? '#FF6535' : c.bgBorder }}
+          >
+            {scheduling
+              ? <ActivityIndicator color="#fff" />
+              : <Text className="text-white font-black tracking-wider text-base">
+                  {t('training.startPlan').toUpperCase()}
+                </Text>}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ── Main Screen ───────────────────────────────────────────────────────────────
+
 export default function TrainingScreen() {
   const { t } = useTranslation();
   const c = useTheme();
@@ -471,6 +643,7 @@ export default function TrainingScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showAssessment, setShowAssessment] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [scheduleModal, setScheduleModal] = useState<{ planId: string; userPlanId?: string } | null>(null);
 
   const loadData = async () => {
     await Promise.all([fetchPlans(), fetchActivePlan()]);
@@ -484,14 +657,7 @@ export default function TrainingScreen() {
   const onRefresh = async () => { setRefreshing(true); await loadData(); setRefreshing(false); };
 
   const handleStart = (planId: string) => {
-    Alert.alert(
-      t('training.confirmStart'),
-      activePlan ? t('training.confirmReplace') : t('training.confirmStartMsg'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('training.startPlan'), onPress: () => startPlan(planId) },
-      ],
-    );
+    setScheduleModal({ planId });
   };
 
   const tabLabels: Record<string, string> = {
@@ -508,17 +674,26 @@ export default function TrainingScreen() {
             <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-1">{t('training.sectionLabel')}</Text>
             <Text className="text-ink-primary text-3xl font-black">{t('training.title')}</Text>
           </View>
-          <TouchableOpacity
-            className="flex-row items-center gap-2 px-3 py-2 rounded-2xl"
-            style={{ backgroundColor: streak > 0 ? '#f9730320' : c.bgElevated }}
-            onPress={() => router.push('/challenges' as any)}
-          >
-            <Ionicons name={streak > 0 ? 'flame-outline' : 'golf-outline'} size={16} color={streak > 0 ? '#f97316' : '#444444'} />
-            <Text className="font-black text-sm" style={{ color: streak > 0 ? '#f97316' : '#444444' }}>
-              {streak > 0 ? `${streak}` : '0'}
-            </Text>
-            <Ionicons name="trophy-outline" size={14} color={streak > 0 ? '#f97316' : '#444444'} />
-          </TouchableOpacity>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              className="w-9 h-9 rounded-2xl items-center justify-center"
+              style={{ backgroundColor: c.bgElevated }}
+              onPress={() => router.push('/calendar' as any)}
+            >
+              <Ionicons name="calendar-outline" size={18} color={c.inkSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-row items-center gap-2 px-3 py-2 rounded-2xl"
+              style={{ backgroundColor: streak > 0 ? '#f9730320' : c.bgElevated }}
+              onPress={() => router.push('/challenges' as any)}
+            >
+              <Ionicons name={streak > 0 ? 'flame-outline' : 'golf-outline'} size={16} color={streak > 0 ? '#f97316' : '#444444'} />
+              <Text className="font-black text-sm" style={{ color: streak > 0 ? '#f97316' : '#444444' }}>
+                {streak > 0 ? `${streak}` : '0'}
+              </Text>
+              <Ionicons name="trophy-outline" size={14} color={streak > 0 ? '#f97316' : '#444444'} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View className="flex-row bg-bg-elevated rounded-2xl p-1">
           {(['active', 'plans', 'library'] as const).map((t_key) => (
@@ -616,11 +791,27 @@ export default function TrainingScreen() {
       {showAssessment && (
         <AssessmentModal
           onClose={() => setShowAssessment(false)}
-          onDone={async () => {
+          onDone={async (userPlanId) => {
             setShowAssessment(false);
             await loadData();
             setTab('active');
+            if (userPlanId) {
+              const plan = useTrainingStore.getState().activePlan;
+              setScheduleModal({ planId: plan?.plan.id ?? '', userPlanId });
+            }
           }}
+        />
+      )}
+
+      {scheduleModal && (
+        <PlanScheduleModal
+          visible={!!scheduleModal}
+          planId={scheduleModal.planId}
+          userPlanId={scheduleModal.userPlanId ?? (activePlan?.plan.id === scheduleModal.planId ? activePlan?.id : undefined)}
+          hasActivePlan={!!activePlan && activePlan.plan.id !== scheduleModal.planId && !scheduleModal.userPlanId}
+          onClose={() => setScheduleModal(null)}
+          onStarted={async () => { await loadData(); setTab('active'); }}
+          startPlan={startPlan}
         />
       )}
     </SafeAreaView>

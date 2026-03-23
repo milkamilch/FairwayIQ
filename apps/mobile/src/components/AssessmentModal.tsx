@@ -159,7 +159,7 @@ const STEP_LABELS: Record<Step, string> = {
 };
 
 // ── Ergebnis-Screen ──────────────────────────────────────────────────
-function ResultScreen({ result, onClose }: { result: any; onClose: () => void }) {
+function ResultScreen({ result, onClose, onSchedule }: { result: any; onClose: () => void; onSchedule: (userPlanId: string) => void }) {
   const { scores, weaknesses, strengths } = result.assessment;
 
   const categories = [
@@ -245,9 +245,9 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
         <TouchableOpacity
           className="rounded-xl py-4 items-center mt-5 mb-8"
           style={{ backgroundColor: '#FF6535' }}
-          onPress={onClose}
+          onPress={() => onSchedule(result.userPlan.id)}
         >
-          <Text className="text-bg-base font-bold tracking-wide">TRAINING STARTEN</Text>
+          <Text className="text-bg-base font-bold tracking-wide">TRAININGSTAGE FESTLEGEN</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -255,7 +255,7 @@ function ResultScreen({ result, onClose }: { result: any; onClose: () => void })
 }
 
 // ── Haupt-Modal ──────────────────────────────────────────────────────
-export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDone: (userPlanId: string) => void }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({ ...DEFAULT });
   const [loading, setLoading] = useState(false);
@@ -282,7 +282,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
       }
       setLoading(false);
     } else if (step === 'result') {
-      onDone();
+      onDone(result?.userPlan?.id ?? '');
       onClose();
     } else {
       setStepIndex(stepIndex + 1);
@@ -322,7 +322,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
 
         {/* Content */}
         {step === 'result' && result ? (
-          <ResultScreen result={result} onClose={() => { onDone(); onClose(); }} />
+          <ResultScreen result={result} onClose={onClose} onSchedule={(userPlanId) => { onDone(userPlanId); onClose(); }} />
         ) : (
           <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
             {step === 'general' && (

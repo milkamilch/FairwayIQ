@@ -11,7 +11,8 @@ import { useAuthStore } from '../src/store/authStore';
 import { useTheme } from '../src/lib/theme';
 import type { Course } from '@fairwayiq/shared';
 
-// ── Types ─────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
+
 interface HoleEntry {
   holeNumber: number;
   par: number;
@@ -24,11 +25,12 @@ interface HoleEntry {
   penalties: number;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
 function scoreColor(diff: number) {
   if (diff <= -2) return '#a855f7';
   if (diff === -1) return '#FF6535';
-  if (diff === 0)  return '#FFFFFF';
+  if (diff === 0)  return '#6ee7b7';
   if (diff === 1)  return '#f59e0b';
   return '#ef4444';
 }
@@ -50,65 +52,70 @@ function stablefordPoints(grossStrokes: number, holePar: number, extra: number):
   return Math.max(0, 2 - (net - holePar));
 }
 
-// ── Stepper ───────────────────────────────────────────────────────────
-function Stepper({ value, onDec, onInc, color, size = 'md' }: {
-  value: number; onDec: () => void; onInc: () => void;
-  color?: string; size?: 'sm' | 'md' | 'lg';
+// ── Mini Stepper ───────────────────────────────────────────────────────────────
+
+function MiniStepper({ value, onDec, onInc, min = 0 }: {
+  value: number; onDec: () => void; onInc: () => void; min?: number;
 }) {
   const c = useTheme();
-  const btnSize = size === 'lg' ? 'w-14 h-14' : size === 'sm' ? 'w-9 h-9' : 'w-11 h-11';
-  const textSize = size === 'lg' ? 40 : size === 'sm' ? 20 : 28;
-  const iconSize = size === 'lg' ? 28 : size === 'sm' ? 16 : 20;
   return (
-    <View className="flex-row items-center justify-center gap-4">
+    <View className="flex-row items-center gap-2">
       <TouchableOpacity
-        className={`${btnSize} rounded-full bg-bg-elevated border border-bg-border items-center justify-center`}
         onPress={onDec}
+        disabled={value <= min}
+        className="w-8 h-8 rounded-full items-center justify-center"
+        style={{ backgroundColor: c.bgElevated, opacity: value <= min ? 0.4 : 1 }}
       >
-        <Ionicons name="remove" size={iconSize} color="#8A8A8A" />
+        <Ionicons name="remove" size={16} color={c.inkSecondary} />
       </TouchableOpacity>
-      <Text style={{ fontSize: textSize, fontWeight: 'bold', color: color ?? c.inkPrimary, width: 52, textAlign: 'center' }}>
+      <Text className="font-bold text-xl text-ink-primary" style={{ minWidth: 24, textAlign: 'center' }}>
         {value}
       </Text>
       <TouchableOpacity
-        className={`${btnSize} rounded-full bg-bg-elevated border border-bg-border items-center justify-center`}
         onPress={onInc}
+        className="w-8 h-8 rounded-full items-center justify-center"
+        style={{ backgroundColor: c.bgElevated }}
       >
-        <Ionicons name="add" size={iconSize} color="#8A8A8A" />
+        <Ionicons name="add" size={16} color={c.inkSecondary} />
       </TouchableOpacity>
     </View>
   );
 }
 
-// ── YesNo Toggle ──────────────────────────────────────────────────────
-function YesNoToggle({ value, onTrue, onFalse }: {
-  value: boolean | null; onTrue: () => void; onFalse: () => void;
-}) {
-  const { t } = useTranslation();
+// ── Bool Toggle ────────────────────────────────────────────────────────────────
+
+function BoolToggle({ value, onChange }: { value: boolean | null; onChange: (v: boolean) => void }) {
   const c = useTheme();
   return (
-    <View className="flex-row gap-2">
-      {([true, false] as const).map((v) => (
-        <TouchableOpacity
-          key={String(v)}
-          className="flex-1 py-2.5 rounded-xl items-center"
-          style={{
-            backgroundColor: value === v ? (v ? '#FF653520' : '#ef444420') : c.bgElevated,
-            borderWidth: 1,
-            borderColor: value === v ? (v ? '#FF6535' : '#ef4444') : c.bgBorder,
-          }}
-          onPress={v ? onTrue : onFalse}
-        >
-          <Text className="font-bold text-sm" style={{ color: value === v ? (v ? '#FF6535' : '#ef4444') : c.inkMuted }}>
-            {v ? t('liveRound.yes') : t('liveRound.no')}
-          </Text>
-        </TouchableOpacity>
-      ))}
+    <View className="flex-row gap-1.5">
+      {([true, false] as const).map((v) => {
+        const active = value === v;
+        const color = v ? '#00e87a' : '#ef4444';
+        return (
+          <TouchableOpacity
+            key={String(v)}
+            onPress={() => onChange(v)}
+            className="w-10 h-8 rounded-lg items-center justify-center"
+            style={{
+              backgroundColor: active ? color + '25' : c.bgElevated,
+              borderWidth: 1,
+              borderColor: active ? color : 'transparent',
+            }}
+          >
+            <Ionicons
+              name={v ? 'checkmark' : 'close'}
+              size={16}
+              color={active ? color : c.inkMuted}
+            />
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 }
 
-// ── Round Summary Modal ───────────────────────────────────────────────
+// ── Round Summary Modal ────────────────────────────────────────────────────────
+
 interface SummaryData {
   gross: number;
   scoreToPar: number;
@@ -130,11 +137,9 @@ function RoundSummaryModal({ data, courseName, onDone }: {
     <Modal visible animationType="slide" presentationStyle="fullScreen">
       <SafeAreaView className="flex-1 bg-bg-base">
         <ScrollView className="flex-1" contentContainerStyle={{ padding: 20, paddingTop: 36, paddingBottom: 40 }}>
-          {/* Course name */}
           <Text style={{ fontSize: 12, color: c.inkMuted, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
             {courseName}
           </Text>
-          {/* Big score */}
           <Text style={{ fontSize: 72, fontWeight: '900', color: data.scoreToPar === 0 ? c.inkPrimary : scoreColor(data.scoreToPar), textAlign: 'center', lineHeight: 80 }}>
             {scoreDiff(data.scoreToPar)}
           </Text>
@@ -142,7 +147,6 @@ function RoundSummaryModal({ data, courseName, onDone }: {
             {data.gross} {t('liveRound.summary.gross')}
           </Text>
 
-          {/* Score breakdown */}
           <Text style={{ fontSize: 11, color: c.inkMuted, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
             {t('liveRound.summary.breakdown')}
           </Text>
@@ -155,7 +159,6 @@ function RoundSummaryModal({ data, courseName, onDone }: {
             ))}
           </View>
 
-          {/* Key stats */}
           <Text style={{ fontSize: 11, color: c.inkMuted, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
             {t('liveRound.summary.stats')}
           </Text>
@@ -174,7 +177,6 @@ function RoundSummaryModal({ data, courseName, onDone }: {
             ))}
           </View>
 
-          {/* Handicap info */}
           {data.courseHandicap != null && (
             <View style={{ backgroundColor: '#FF653515', borderRadius: 14, borderWidth: 1, borderColor: '#FF653540', padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 28 }}>
               <Ionicons name="golf-outline" size={24} color="#FF6535" />
@@ -186,7 +188,6 @@ function RoundSummaryModal({ data, courseName, onDone }: {
           )}
         </ScrollView>
 
-        {/* Done button */}
         <View style={{ padding: 20, paddingBottom: 32 }}>
           <TouchableOpacity
             style={{ backgroundColor: '#FF6535', borderRadius: 16, paddingVertical: 18, alignItems: 'center' }}
@@ -200,7 +201,54 @@ function RoundSummaryModal({ data, courseName, onDone }: {
   );
 }
 
-// ── Main Screen ───────────────────────────────────────────────────────
+// ── Hole Tab ───────────────────────────────────────────────────────────────────
+
+function HoleTab({ num, par, strokes, isActive, onPress }: {
+  num: number; par: number; strokes: number; isActive: boolean; onPress: () => void;
+}) {
+  const c = useTheme();
+  const diff = strokes - par;
+  const dotColor = scoreColor(diff);
+  const isDefault = strokes === par; // not yet changed from default
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      className="items-center py-2 px-1"
+      style={{ minWidth: 36 }}
+    >
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: isActive ? '800' : '500',
+          color: isActive ? '#FF6535' : c.inkSecondary,
+        }}
+      >
+        {num}
+      </Text>
+      {/* Score dot */}
+      <View
+        style={{
+          width: 6,
+          height: 6,
+          borderRadius: 3,
+          marginTop: 3,
+          backgroundColor: isDefault ? c.bgBorder : dotColor,
+          opacity: isActive ? 1 : 0.7,
+        }}
+      />
+      {/* Active underline */}
+      {isActive && (
+        <View
+          style={{ position: 'absolute', bottom: 0, left: 4, right: 4, height: 2, backgroundColor: '#FF6535', borderRadius: 1 }}
+        />
+      )}
+    </TouchableOpacity>
+  );
+}
+
+// ── Main Screen ────────────────────────────────────────────────────────────────
+
 export default function LiveRoundScreen() {
   const router = useRouter();
   const { t } = useTranslation();
@@ -238,7 +286,7 @@ export default function LiveRoundScreen() {
     setScores(holes.map((h) => ({
       holeNumber: h.number,
       par: h.par,
-      strokeIndex: h.strokeIndex ?? (h.number),
+      strokeIndex: h.strokeIndex ?? h.number,
       distanceMeters: h.distanceMeters ?? 150,
       strokes: h.par,
       putts: 2,
@@ -255,12 +303,13 @@ export default function LiveRoundScreen() {
   };
 
   const goToHole = (idx: number) => {
+    if (idx < 0 || idx >= scores.length) return;
     setActiveHole(idx);
-    holeTabsRef.current?.scrollTo({ x: Math.max(0, idx - 3) * 40, animated: true });
+    holeTabsRef.current?.scrollTo({ x: Math.max(0, (idx - 3) * 38), animated: true });
   };
 
   const grossTotal = scores.reduce((s, h) => s + h.strokes, 0);
-  const parTotal = scores.reduce((s, h) => s + h.par, 0);
+  const parTotal   = scores.reduce((s, h) => s + h.par, 0);
   const totalPutts = scores.reduce((s, h) => s + h.putts, 0);
   const totalStableford = scores.reduce((s, h) => {
     const extra = courseHandicap != null ? extraStrokes(courseHandicap, h.strokeIndex) : 0;
@@ -269,9 +318,10 @@ export default function LiveRoundScreen() {
   const netTotal = grossTotal - (courseHandicap ?? 0);
 
   const cur = scores[activeHole];
-  const curDiff = cur ? cur.strokes - cur.par : 0;
-  const curExtra = (courseHandicap != null && cur) ? extraStrokes(courseHandicap, cur.strokeIndex) : 0;
-  const curStableford = cur ? stablefordPoints(cur.strokes, cur.par, curExtra) : 0;
+  const curDiff     = cur ? cur.strokes - cur.par : 0;
+  const curExtra    = (courseHandicap != null && cur) ? extraStrokes(courseHandicap, cur.strokeIndex) : 0;
+  const curSbf      = cur ? stablefordPoints(cur.strokes, cur.par, curExtra) : 0;
+  const scoreDiffTotal = grossTotal - parTotal;
 
   const save = async () => {
     if (!selectedCourse) return;
@@ -291,13 +341,12 @@ export default function LiveRoundScreen() {
         })),
       });
 
-      // Build summary data
       const firHoles = scores.filter((s) => s.par !== 3).length;
-      const fir = scores.filter((s) => s.par !== 3 && s.fairwayHit === true).length;
-      const gir = scores.filter((s) => s.greenInRegulation).length;
-      const putts = scores.reduce((acc, s) => acc + s.putts, 0);
-      const gross = scores.reduce((acc, s) => acc + s.strokes, 0);
-      const par = scores.reduce((acc, s) => acc + s.par, 0);
+      const fir      = scores.filter((s) => s.par !== 3 && s.fairwayHit === true).length;
+      const gir      = scores.filter((s) => s.greenInRegulation).length;
+      const putts    = scores.reduce((acc, s) => acc + s.putts, 0);
+      const gross    = scores.reduce((acc, s) => acc + s.strokes, 0);
+      const par      = scores.reduce((acc, s) => acc + s.par, 0);
       const stableford = scores.reduce((acc, s) => {
         const extra = courseHandicap != null ? extraStrokes(courseHandicap, s.strokeIndex) : 0;
         return acc + stablefordPoints(s.strokes, s.par, extra);
@@ -307,11 +356,11 @@ export default function LiveRoundScreen() {
         scores.filter((s) => s.strokes - s.par >= min && s.strokes - s.par <= max).length;
 
       const breakdown = [
-        { label: t('liveRound.summary.eagle'), count: scores.filter((s) => s.strokes - s.par <= -2).length, color: '#a855f7' },
+        { label: t('liveRound.summary.eagle'),  count: scores.filter((s) => s.strokes - s.par <= -2).length, color: '#a855f7' },
         { label: t('liveRound.summary.birdie'), count: countDiff(-1, -1), color: '#FF6535' },
-        { label: t('liveRound.summary.par'), count: countDiff(0, 0), color: '#8A8A8A' },
-        { label: t('liveRound.summary.bogey'), count: countDiff(1, 1), color: '#f59e0b' },
-        { label: t('liveRound.summary.double'), count: countDiff(2, 2), color: '#ef4444' },
+        { label: t('liveRound.summary.par'),    count: countDiff(0, 0),   color: '#6ee7b7' },
+        { label: t('liveRound.summary.bogey'),  count: countDiff(1, 1),   color: '#f59e0b' },
+        { label: t('liveRound.summary.double'), count: countDiff(2, 2),   color: '#ef4444' },
         { label: t('liveRound.summary.triple'), count: scores.filter((s) => s.strokes - s.par >= 3).length, color: '#dc2626' },
       ];
 
@@ -325,7 +374,7 @@ export default function LiveRoundScreen() {
   const confirmFinish = () => {
     Alert.alert(
       t('liveRound.finishTitle'),
-      t('liveRound.finishMsg', { gross: grossTotal, diff: scoreDiff(grossTotal - parTotal) }),
+      t('liveRound.finishMsg', { gross: grossTotal, diff: scoreDiff(scoreDiffTotal) }),
       [
         { text: t('liveRound.abandon'), style: 'cancel' },
         { text: t('common.save'), onPress: save },
@@ -333,7 +382,7 @@ export default function LiveRoundScreen() {
     );
   };
 
-  // ── Course Selection ────────────────────────────────────────────────
+  // ── Course Selection ─────────────────────────────────────────────────────────
   if (step === 'select') {
     return (
       <SafeAreaView className="flex-1 bg-bg-base">
@@ -366,7 +415,7 @@ export default function LiveRoundScreen() {
                   <Text className="text-ink-muted text-xs mt-0.5">
                     {course.location} · Par {course.totalPar}
                     {course.rating ? ` · Rating ${course.rating}` : ''}
-                    {course.slope ? ` · Slope ${course.slope}` : ''}
+                    {course.slope  ? ` · Slope ${course.slope}`  : ''}
                   </Text>
                 </View>
                 <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
@@ -379,7 +428,7 @@ export default function LiveRoundScreen() {
     );
   }
 
-  // ── Playing View ────────────────────────────────────────────────────
+  // ── Playing View ─────────────────────────────────────────────────────────────
   if (!cur) return null;
 
   return (
@@ -391,216 +440,275 @@ export default function LiveRoundScreen() {
           onDone={() => router.back()}
         />
       )}
-      {/* Header */}
-      <View className="px-4 pt-3 pb-2 border-b border-bg-border">
-        <View className="flex-row items-center gap-3 mb-2">
-          <TouchableOpacity onPress={() => Alert.alert(t('liveRound.abandonTitle'), t('liveRound.abandonMsg'), [
+
+      {/* ── Header ── */}
+      <View
+        className="flex-row items-center px-4 py-3 gap-3"
+        style={{ borderBottomWidth: 1, borderBottomColor: c.bgBorder }}
+      >
+        <TouchableOpacity
+          onPress={() => Alert.alert(t('liveRound.abandonTitle'), t('liveRound.abandonMsg'), [
             { text: t('liveRound.keepPlaying'), style: 'cancel' },
             { text: t('liveRound.abandon'), style: 'destructive', onPress: () => router.back() },
-          ])}>
-            <Ionicons name="close" size={22} color={c.inkSecondary} />
-          </TouchableOpacity>
-          <View className="flex-1">
-            <Text className="text-ink-primary font-bold" numberOfLines={1}>{selectedCourse?.name}</Text>
-            <Text className="text-ink-muted text-xs">{selectedCourse?.location}</Text>
+          ])}
+        >
+          <Ionicons name="close" size={22} color={c.inkSecondary} />
+        </TouchableOpacity>
+        <View className="flex-1">
+          <Text className="text-ink-primary font-bold text-sm" numberOfLines={1}>
+            {selectedCourse?.name}
+          </Text>
+          <Text className="text-ink-muted text-xs">{selectedCourse?.location}</Text>
+        </View>
+        <TouchableOpacity
+          onPress={confirmFinish}
+          className="px-4 py-2 rounded-xl"
+          style={{ backgroundColor: '#FF6535' }}
+        >
+          <Text className="font-black text-sm" style={{ color: '#0A0A0A' }}>
+            {t('liveRound.done')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── Hole Tabs ── */}
+      <View style={{ borderBottomWidth: 1, borderBottomColor: c.bgBorder, backgroundColor: c.bgCard }}>
+        <ScrollView
+          ref={holeTabsRef}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 8 }}
+        >
+          {scores.map((s, i) => (
+            <HoleTab
+              key={i}
+              num={s.holeNumber}
+              par={s.par}
+              strokes={s.strokes}
+              isActive={i === activeHole}
+              onPress={() => goToHole(i)}
+            />
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* ── Active Hole ── */}
+      <View className="flex-1 px-4" style={{ paddingBottom: bottom > 0 ? bottom : 16 }}>
+
+        {/* Hole info strip */}
+        <View className="flex-row items-center justify-between py-4">
+          <View>
+            <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">
+              {t('liveRound.hole')} {cur.holeNumber}
+            </Text>
+            <View className="flex-row items-baseline gap-2 mt-0.5">
+              <Text className="text-ink-primary font-black text-3xl">Par {cur.par}</Text>
+              <Text className="text-ink-muted text-sm">{cur.distanceMeters} m</Text>
+            </View>
+            <Text className="text-ink-muted text-xs mt-0.5">
+              SI {cur.strokeIndex}
+              {courseHandicap != null && curExtra > 0 ? ` · +${curExtra} Vorgabe` : ''}
+            </Text>
           </View>
-          <TouchableOpacity
-            className="px-3 py-1.5 rounded-lg"
-            style={{ backgroundColor: '#FF653520', borderWidth: 1, borderColor: '#FF6535' }}
-            onPress={confirmFinish}
-          >
-            <Text className="text-neon-green text-xs font-bold">{t('liveRound.done')}</Text>
-          </TouchableOpacity>
+
+          {/* Score badge */}
+          <View className="items-center gap-1">
+            <View
+              className="w-20 h-20 rounded-2xl items-center justify-center"
+              style={{
+                backgroundColor: curDiff === 0 ? c.bgCard : scoreColor(curDiff) + '20',
+                borderWidth: 2,
+                borderColor: curDiff === 0 ? c.bgBorder : scoreColor(curDiff),
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 36,
+                  fontWeight: '900',
+                  color: curDiff === 0 ? c.inkPrimary : scoreColor(curDiff),
+                  lineHeight: 40,
+                }}
+              >
+                {cur.strokes}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '700',
+                  color: curDiff === 0 ? c.inkMuted : scoreColor(curDiff),
+                }}
+              >
+                {scoreDiff(curDiff)}
+              </Text>
+            </View>
+            {courseHandicap != null && (
+              <Text className="text-xs font-bold" style={{ color: '#FF6535' }}>
+                {curSbf} Pt.
+              </Text>
+            )}
+          </View>
         </View>
 
-        {/* Running Stats */}
-        <View className="flex-row gap-3">
+        {/* ── Strokes stepper ── */}
+        <View
+          className="rounded-2xl items-center justify-center mb-3"
+          style={{ backgroundColor: c.bgCard, flex: 1 }}
+        >
+          <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-5">
+            {t('liveRound.strokes')}
+          </Text>
+          <View className="flex-row items-center justify-between w-full px-8">
+            <TouchableOpacity
+              onPress={() => cur.strokes > 1 && update('strokes', cur.strokes - 1)}
+              disabled={cur.strokes <= 1}
+              className="w-16 h-16 rounded-full items-center justify-center"
+              style={{ backgroundColor: c.bgElevated, opacity: cur.strokes <= 1 ? 0.4 : 1 }}
+            >
+              <Ionicons name="remove" size={30} color={c.inkSecondary} />
+            </TouchableOpacity>
+
+            <Text
+              style={{
+                fontSize: 96,
+                fontWeight: '900',
+                color: curDiff === 0 ? c.inkPrimary : scoreColor(curDiff),
+                lineHeight: 104,
+              }}
+            >
+              {cur.strokes}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => update('strokes', cur.strokes + 1)}
+              className="w-16 h-16 rounded-full items-center justify-center"
+              style={{ backgroundColor: c.bgElevated }}
+            >
+              <Ionicons name="add" size={30} color={c.inkSecondary} />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* ── Stats grid ── */}
+        <View
+          className="rounded-2xl px-5 py-4 mb-3"
+          style={{ backgroundColor: c.bgCard }}
+        >
+          <View className="flex-row">
+            <View className="flex-1 items-center gap-2">
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-wider">
+                {t('liveRound.putts')}
+              </Text>
+              <MiniStepper
+                value={cur.putts}
+                onDec={() => cur.putts > 0 && update('putts', cur.putts - 1)}
+                onInc={() => update('putts', cur.putts + 1)}
+              />
+            </View>
+            <View style={{ width: 1, backgroundColor: c.bgBorder, marginVertical: 4 }} />
+            <View className="flex-1 items-center gap-2">
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-wider">
+                {t('liveRound.penalties')}
+              </Text>
+              <MiniStepper
+                value={cur.penalties}
+                onDec={() => cur.penalties > 0 && update('penalties', cur.penalties - 1)}
+                onInc={() => update('penalties', cur.penalties + 1)}
+              />
+            </View>
+          </View>
+
+          <View style={{ height: 1, backgroundColor: c.bgBorder, marginVertical: 14 }} />
+
+          <View className="flex-row">
+            {cur.par !== 3 ? (
+              <View className="flex-1 items-center gap-2">
+                <Text className="text-ink-muted text-xs font-bold uppercase tracking-wider">
+                  {t('liveRound.fairway')}
+                </Text>
+                <BoolToggle value={cur.fairwayHit} onChange={(v) => update('fairwayHit', v)} />
+              </View>
+            ) : (
+              <View className="flex-1 items-center gap-2">
+                <Text className="text-ink-muted text-xs font-bold uppercase tracking-wider">
+                  {t('liveRound.fairway')}
+                </Text>
+                <Text className="text-ink-muted text-xs">Par 3</Text>
+              </View>
+            )}
+            <View style={{ width: 1, backgroundColor: c.bgBorder, marginVertical: 4 }} />
+            <View className="flex-1 items-center gap-2">
+              <Text className="text-ink-muted text-xs font-bold uppercase tracking-wider">
+                {t('liveRound.gir')}
+              </Text>
+              <BoolToggle value={cur.greenInRegulation} onChange={(v) => update('greenInRegulation', v)} />
+            </View>
+          </View>
+        </View>
+
+        {/* ── Running totals ── */}
+        <View
+          className="rounded-2xl px-3 py-3 mb-3 flex-row"
+          style={{ backgroundColor: c.bgElevated }}
+        >
           {[
-            { label: t('liveRound.gross'), value: String(grossTotal), sub: scoreDiff(grossTotal - parTotal), subColor: scoreColor(grossTotal - parTotal) },
+            { label: t('liveRound.gross'), value: String(grossTotal), sub: scoreDiff(scoreDiffTotal), subColor: scoreDiffTotal === 0 ? c.inkMuted : scoreColor(scoreDiffTotal) },
             courseHandicap != null
               ? { label: t('liveRound.net'), value: String(netTotal), sub: `HCP ${courseHandicap}`, subColor: c.inkMuted }
               : null,
             { label: t('liveRound.stableford'), value: String(totalStableford), sub: t('liveRound.points'), subColor: c.inkMuted },
             { label: t('liveRound.putts'), value: String(totalPutts), sub: t('liveRound.total'), subColor: c.inkMuted },
           ].filter(Boolean).map((s) => s && (
-            <View key={s.label} className="flex-1 bg-bg-card rounded-lg px-2 py-1.5 items-center">
-              <Text style={{ fontSize: 9, color: c.inkMuted, fontWeight: '700', letterSpacing: 0.8 }}>{s.label}</Text>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', color: c.inkPrimary }}>{s.value}</Text>
-              <Text style={{ fontSize: 10, color: s.subColor }}>{s.sub}</Text>
+            <View key={s.label} className="flex-1 items-center">
+              <Text style={{ fontSize: 9, color: c.inkMuted, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                {s.label}
+              </Text>
+              <Text style={{ fontSize: 20, fontWeight: '800', color: c.inkPrimary }}>
+                {s.value}
+              </Text>
+              <Text style={{ fontSize: 10, color: s.subColor, fontWeight: '600' }}>
+                {s.sub}
+              </Text>
             </View>
           ))}
         </View>
-      </View>
 
-      {/* Vertical Scorecard */}
-      <ScrollView
-        style={{ maxHeight: 210, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}
-        showsVerticalScrollIndicator={false}
-        nestedScrollEnabled
-      >
-        {/* Header row */}
-        <View style={{ flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 5, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
-          <Text style={{ width: 28, fontSize: 9, fontWeight: '700', color: c.inkMuted, letterSpacing: 0.6 }}>#</Text>
-          <Text style={{ width: 36, fontSize: 9, fontWeight: '700', color: c.inkMuted, letterSpacing: 0.6 }}>PAR</Text>
-          <Text style={{ width: 36, fontSize: 9, fontWeight: '700', color: c.inkMuted, letterSpacing: 0.6 }}>SI</Text>
-          <Text style={{ flex: 1, fontSize: 9, fontWeight: '700', color: c.inkMuted, letterSpacing: 0.6, textAlign: 'center' }}>SCORE</Text>
-          <Text style={{ width: 40, fontSize: 9, fontWeight: '700', color: c.inkMuted, letterSpacing: 0.6, textAlign: 'center' }}>±</Text>
-          {courseHandicap != null && <Text style={{ width: 36, fontSize: 9, fontWeight: '700', color: c.inkMuted, letterSpacing: 0.6, textAlign: 'center' }}>SBF</Text>}
-        </View>
-        {/* Hole rows */}
-        {scores.map((s, i) => {
-          const d = s.strokes - s.par;
-          const isActive = i === activeHole;
-          const scoreCol = d === 0 ? c.inkPrimary : scoreColor(d);
-          const extra = courseHandicap != null ? extraStrokes(courseHandicap, s.strokeIndex) : 0;
-          const pts = courseHandicap != null ? stablefordPoints(s.strokes, s.par, extra) : null;
-          return (
-            <TouchableOpacity
-              key={i}
-              onPress={() => goToHole(i)}
-              style={{
-                flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 8,
-                backgroundColor: isActive ? '#FF653312' : 'transparent',
-                borderLeftWidth: 3,
-                borderLeftColor: isActive ? '#FF6535' : 'transparent',
-              }}
-            >
-              <Text style={{ width: 28, fontSize: 13, fontWeight: isActive ? '700' : '400', color: isActive ? '#FF6535' : c.inkMuted }}>{i + 1}</Text>
-              <Text style={{ width: 36, fontSize: 13, color: c.inkMuted }}>{s.par}</Text>
-              <Text style={{ width: 36, fontSize: 13, color: c.inkMuted }}>{s.strokeIndex}</Text>
-              <Text style={{ flex: 1, fontSize: 14, fontWeight: 'bold', color: scoreCol, textAlign: 'center' }}>{s.strokes}</Text>
-              <Text style={{ width: 40, fontSize: 13, color: scoreCol, textAlign: 'center' }}>{scoreDiff(d)}</Text>
-              {pts != null && (
-                <Text style={{ width: 36, fontSize: 13, color: pts >= 2 ? '#FF6535' : pts === 1 ? c.inkSecondary : c.inkMuted, textAlign: 'center' }}>{pts}</Text>
-              )}
-            </TouchableOpacity>
-          );
-        })}
-        {/* Total row */}
-        <View style={{ flexDirection: 'row', paddingHorizontal: 14, paddingVertical: 8, borderTopWidth: 1, borderTopColor: c.bgBorder }}>
-          <Text style={{ width: 28, fontSize: 12, fontWeight: '700', color: c.inkMuted }}>∑</Text>
-          <Text style={{ width: 36, fontSize: 12, fontWeight: '700', color: c.inkMuted }}>{parTotal}</Text>
-          <Text style={{ width: 36, fontSize: 12, color: c.inkMuted }}>—</Text>
-          <Text style={{ flex: 1, fontSize: 14, fontWeight: '900', color: (grossTotal - parTotal) === 0 ? c.inkPrimary : scoreColor(grossTotal - parTotal), textAlign: 'center' }}>{grossTotal}</Text>
-          <Text style={{ width: 40, fontSize: 13, fontWeight: '700', color: (grossTotal - parTotal) === 0 ? c.inkPrimary : scoreColor(grossTotal - parTotal), textAlign: 'center' }}>{scoreDiff(grossTotal - parTotal)}</Text>
-          {courseHandicap != null && <Text style={{ width: 36, fontSize: 13, fontWeight: '700', color: '#FF6535', textAlign: 'center' }}>{totalStableford}</Text>}
-        </View>
-      </ScrollView>
-
-      {/* Active Hole Entry */}
-      <View className="flex-1 px-4" style={{ justifyContent: 'space-between', paddingTop: 12, paddingBottom: bottom > 0 ? bottom : 16 }}>
-        {/* Hole Info */}
-        <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest">
-              {t('liveRound.hole')} {cur.holeNumber} · SI {cur.strokeIndex}
+        {/* ── Navigation ── */}
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            onPress={() => goToHole(activeHole - 1)}
+            disabled={activeHole === 0}
+            className="flex-1 py-4 rounded-xl items-center flex-row justify-center gap-2"
+            style={{ backgroundColor: c.bgCard, opacity: activeHole === 0 ? 0.4 : 1 }}
+          >
+            <Ionicons name="chevron-back" size={16} color={c.inkSecondary} />
+            <Text className="text-ink-secondary font-semibold text-sm">
+              {activeHole > 0 ? `${t('liveRound.hole')} ${activeHole}` : '—'}
             </Text>
-            <Text className="text-ink-primary font-bold text-xl">Par {cur.par}</Text>
-            <Text className="text-ink-muted text-xs">{cur.distanceMeters} m</Text>
-          </View>
-          <View className="items-center gap-1">
-            <View
-              className="w-16 h-16 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: (curDiff === 0 ? c.bgBorder : scoreColor(curDiff)) + '30', borderWidth: 1, borderColor: (curDiff === 0 ? c.bgBorder : scoreColor(curDiff)) + '80' }}
+          </TouchableOpacity>
+
+          {activeHole < scores.length - 1 ? (
+            <TouchableOpacity
+              onPress={() => goToHole(activeHole + 1)}
+              className="flex-1 py-4 rounded-xl items-center flex-row justify-center gap-2"
+              style={{ backgroundColor: '#FF6535' }}
             >
-              <Text style={{ fontSize: 28, fontWeight: 'bold', color: curDiff === 0 ? c.inkPrimary : scoreColor(curDiff) }}>{cur.strokes}</Text>
-            </View>
-            {courseHandicap != null && (
-              <Text className="text-xs font-bold" style={{ color: '#FF6535' }}>
-                {curExtra > 0 ? `+${curExtra} SI` : ''} {curStableford}pt
+              <Text style={{ color: '#0A0A0A', fontWeight: '800', fontSize: 14 }}>
+                {t('liveRound.hole')} {activeHole + 2}
               </Text>
-            )}
-          </View>
-        </View>
-
-        {/* Strokes */}
-        <View>
-          <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-2 text-center">{t('liveRound.strokes')}</Text>
-          <Stepper
-            value={cur.strokes}
-            onDec={() => cur.strokes > 1 && update('strokes', cur.strokes - 1)}
-            onInc={() => update('strokes', cur.strokes + 1)}
-            color={curDiff === 0 ? c.inkPrimary : scoreColor(curDiff)}
-            size="lg"
-          />
-        </View>
-
-        {/* Putts */}
-        <View>
-          <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-2 text-center">{t('liveRound.putts')}</Text>
-          <Stepper
-            value={cur.putts}
-            onDec={() => cur.putts > 0 && update('putts', cur.putts - 1)}
-            onInc={() => update('putts', cur.putts + 1)}
-            size="md"
-          />
-        </View>
-
-        {/* FIR / GIR */}
-        <View className="gap-2">
-          {cur.par !== 3 && (
-            <View>
-              <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-1.5">{t('liveRound.fairwayQuestion')}</Text>
-              <YesNoToggle
-                value={cur.fairwayHit}
-                onTrue={() => update('fairwayHit', true)}
-                onFalse={() => update('fairwayHit', false)}
-              />
-            </View>
+              <Ionicons name="chevron-forward" size={16} color="#0A0A0A" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={confirmFinish}
+              disabled={saving}
+              className="flex-1 py-4 rounded-xl items-center"
+              style={{ backgroundColor: '#FF6535' }}
+            >
+              {saving
+                ? <ActivityIndicator color="#0A0A0A" />
+                : <Text style={{ color: '#0A0A0A', fontWeight: '900', fontSize: 14 }}>{t('liveRound.finishRound')}</Text>}
+            </TouchableOpacity>
           )}
-          <View>
-            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest mb-1.5">{t('liveRound.girQuestion')}</Text>
-            <YesNoToggle
-              value={cur.greenInRegulation}
-              onTrue={() => update('greenInRegulation', true)}
-              onFalse={() => update('greenInRegulation', false)}
-            />
-          </View>
-        </View>
-
-        {/* Penalties + Navigation */}
-        <View className="gap-3">
-          <View className="flex-row items-center justify-between px-2">
-            <Text className="text-ink-secondary text-xs font-bold uppercase tracking-widest">{t('liveRound.penalties')}</Text>
-            <Stepper
-              value={cur.penalties}
-              onDec={() => cur.penalties > 0 && update('penalties', cur.penalties - 1)}
-              onInc={() => update('penalties', cur.penalties + 1)}
-              size="sm"
-            />
-          </View>
-          <View className="flex-row gap-3">
-            {activeHole > 0 && (
-              <TouchableOpacity
-                className="flex-1 py-3.5 rounded-xl items-center border border-bg-border"
-                onPress={() => goToHole(activeHole - 1)}
-              >
-                <Text className="text-ink-secondary font-semibold text-sm">{t('liveRound.prevHole', { n: activeHole })}</Text>
-              </TouchableOpacity>
-            )}
-            {activeHole < scores.length - 1 ? (
-              <TouchableOpacity
-                className="flex-1 py-3.5 rounded-xl items-center"
-                style={{ backgroundColor: '#FF6535' }}
-                onPress={() => goToHole(activeHole + 1)}
-              >
-                <Text style={{ color: '#0A0A0A', fontWeight: 'bold', fontSize: 14 }}>
-                  {t('liveRound.nextHole', { n: activeHole + 2 })}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                className="flex-1 py-3.5 rounded-xl items-center"
-                style={{ backgroundColor: '#FF6535' }}
-                onPress={confirmFinish}
-                disabled={saving}
-              >
-                <Text style={{ color: '#0A0A0A', fontWeight: 'bold', fontSize: 14 }}>
-                  {saving ? t('liveRound.saving') : t('liveRound.finishRound')}
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
         </View>
       </View>
     </SafeAreaView>
