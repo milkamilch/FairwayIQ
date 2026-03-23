@@ -43,6 +43,8 @@ const en = {
       register: 'Register',
       invalidCredentials: 'Email or password invalid',
       emailNotVerified: 'Please confirm your email address first.',
+      resendVerification: 'Resend email',
+      resendSent: 'New link sent. Please also check your spam folder.',
       fillAllFields: 'Please fill in all fields',
     },
     register: {

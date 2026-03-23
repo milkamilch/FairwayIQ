@@ -331,8 +331,7 @@ export default function CoursesScreen() {
                 }}
               >
                 <View style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  backgroundColor: '#FF653520', borderRadius: 16,
+                  width: 36, height: 36, borderRadius: 16,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
                   {saving === r.apiId

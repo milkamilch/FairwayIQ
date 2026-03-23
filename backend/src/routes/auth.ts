@@ -86,6 +86,29 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   res.status(201).json({ pending: true, email: user.email });
 });
 
+authRouter.post('/resend-verification', async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) { res.status(400).json({ error: 'E-Mail fehlt' }); return; }
+
+  const user = await prisma.user.findUnique({ where: { email: String(email).trim().toLowerCase() } });
+
+  // Wenn User nicht existiert oder bereits verifiziert: trotzdem 200 zurückgeben (kein Info-Leak)
+  if (user && !user.emailVerified) {
+    const token = crypto.randomBytes(32).toString('hex');
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerificationToken: token },
+    });
+    try {
+      await sendVerificationEmail(user.email, user.name, token);
+    } catch (err) {
+      console.error('Mail-Versand fehlgeschlagen:', err);
+    }
+  }
+
+  res.json({ ok: true });
+});
+
 authRouter.get('/verify-email', async (req: Request, res: Response) => {
   const token = req.query.token as string | undefined;
   if (!token) {

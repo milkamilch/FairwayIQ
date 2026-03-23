@@ -17,6 +17,9 @@
       "autoIncrement": true,
       "ios": {
         "credentialsSource": "remote"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.faiway-iq.com"
       }
     }
   },

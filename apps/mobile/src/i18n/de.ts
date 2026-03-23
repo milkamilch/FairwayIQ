@@ -43,6 +43,8 @@ const de = {
       register: 'Registrieren',
       invalidCredentials: 'E-Mail oder Passwort ungültig',
       emailNotVerified: 'Bitte bestätige zuerst deine E-Mail-Adresse.',
+      resendVerification: 'Mail erneut senden',
+      resendSent: 'Neuer Link gesendet. Bitte prüfe auch deinen Spam-Ordner.',
       fillAllFields: 'Bitte alle Felder ausfüllen',
     },
     register: {

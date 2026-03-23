@@ -1,8 +1,8 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = process.env.RESEND_FROM ?? 'noreply@fairway-iq.de';
-const APP_URL = process.env.APP_URL ?? 'https://api.fairway-iq.de';
+const FROM = process.env.RESEND_FROM ?? 'noreply@faiway-iq.com';
+const APP_URL = process.env.APP_URL ?? 'https://api.faiway-iq.com';
 
 export async function sendVerificationEmail(email: string, name: string, token: string) {
   const link = `${APP_URL}/auth/verify-email?token=${token}`;

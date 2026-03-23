@@ -2,7 +2,7 @@ import Expo, { ExpoPushMessage } from 'expo-server-sdk';
 
 const expo = new Expo();
 
-export async function sendPush(tokens: string[], title: string, body: string, data?: object) {
+export async function sendPush(tokens: string[], title: string, body: string, data?: Record<string, unknown>) {
   const messages: ExpoPushMessage[] = tokens
     .filter((t) => Expo.isExpoPushToken(t))
     .map((to) => ({ to, title, body, data, sound: 'default' }));
