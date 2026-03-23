@@ -8,7 +8,7 @@
     "start": "node dist/index.js",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:seed": "ts-node prisma/seed.ts",
+    "db:seed": "ts-node -r dotenv/config prisma/seed.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {

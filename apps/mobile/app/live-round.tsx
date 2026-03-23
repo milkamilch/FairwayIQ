@@ -437,7 +437,7 @@ export default function LiveRoundScreen() {
         <RoundSummaryModal
           data={summary}
           courseName={selectedCourse?.name ?? ''}
-          onDone={() => router.back()}
+          onDone={() => { setSummary(null); router.back(); }}
         />
       )}
 

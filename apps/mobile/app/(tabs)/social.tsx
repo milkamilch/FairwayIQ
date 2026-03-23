@@ -78,7 +78,7 @@ type TabKey = typeof TABS[number]['key'];
 // ── Avatar ─────────────────────────────────────────────────────────────
 function Avatar({ name, level, size = 40 }: { name: string; level: GolferLevel; size?: number }) {
   const c = useTheme();
-  const meta = LEVEL_META[level];
+  const meta = LEVEL_META[level] ?? LEVEL_META['BEGINNER'];
   const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <View style={{
@@ -296,7 +296,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                    <Ionicons name={LEVEL_META[entry.level].iconName as any} size={11} color={LEVEL_META[entry.level].color} />
+                    <Ionicons name={((LEVEL_META[entry.level] ?? LEVEL_META['BEGINNER']).iconName) as any} size={11} color={(LEVEL_META[entry.level] ?? LEVEL_META['BEGINNER']).color} />
                     <Text style={{ color: c.inkMuted, fontSize: 11 }}>{entry.rounds} {t('social.ranking.rounds')}</Text>
                   </View>
                 </View>
@@ -533,7 +533,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{friend.name}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                    <Ionicons name={LEVEL_META[friend.level].iconName as any} size={12} color={LEVEL_META[friend.level].color} />
+                    <Ionicons name={((LEVEL_META[friend.level] ?? LEVEL_META['BEGINNER']).iconName) as any} size={12} color={(LEVEL_META[friend.level] ?? LEVEL_META['BEGINNER']).color} />
                     <Text style={{ color: c.inkMuted, fontSize: 12 }}>
                       {friend.handicap != null ? `HCP ${friend.handicap}` : t('social.friends.noHcp')}
                       {friend.homeClub ? ` · ${friend.homeClub}` : ''}
