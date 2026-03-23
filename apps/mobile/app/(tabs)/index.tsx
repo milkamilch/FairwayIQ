@@ -111,7 +111,7 @@ export default function DashboardScreen() {
               className="bg-bg-card rounded-2xl p-5 items-center gap-3"
               onPress={() => router.push('/(tabs)/rounds')}
             >
-              <Ionicons name="stats-chart-outline" size={32} color="#444444" />
+              <Ionicons name="stats-chart-outline" size={32} color={c.inkMuted} />
               <Text className="text-ink-secondary text-sm">{t('dashboard.noRounds')}</Text>
               <Text className="text-neon-green text-sm font-bold">{t('dashboard.startRound')}</Text>
             </TouchableOpacity>
@@ -157,7 +157,7 @@ export default function DashboardScreen() {
                 className="bg-bg-card rounded-2xl p-5 items-center gap-3"
                 onPress={() => router.push('/(tabs)/training')}
               >
-                <Ionicons name="fitness-outline" size={32} color="#444444" />
+                <Ionicons name="fitness-outline" size={32} color={c.inkMuted} />
                 <Text className="text-neon-green text-sm font-bold">{t('dashboard.startTraining')}</Text>
               </TouchableOpacity>
             )}
@@ -186,7 +186,7 @@ export default function DashboardScreen() {
                     <Text className="text-ink-primary font-bold text-sm">{a.label}</Text>
                     <Text className="text-ink-muted text-xs mt-0.5">{a.sub}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={14} color="#444444" />
+                  <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
                 </TouchableOpacity>
               ))}
             </View>

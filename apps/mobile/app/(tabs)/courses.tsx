@@ -378,7 +378,7 @@ export default function CoursesScreen() {
       >
         {courses.length === 0 && searchQuery.length === 0 ? (
           <View className="items-center py-16 gap-3">
-            <Ionicons name="map-outline" size={48} color="#2E2E2E" />
+            <Ionicons name="map-outline" size={48} color={c.inkMuted} />
             <Text className="text-ink-secondary font-semibold">{t('courses.noCourses')}</Text>
             <Text className="text-ink-muted text-sm text-center">{t('courses.noCoursesHint')}</Text>
           </View>

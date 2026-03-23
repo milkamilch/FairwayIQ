@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/store/authStore';
@@ -50,7 +51,7 @@ export default function LoginScreen() {
         {/* Logo */}
         <View className="mb-14">
           <View className="w-14 h-14 rounded-2xl items-center justify-center mb-5" style={{ backgroundColor: '#FF653520' }}>
-            <Text style={{ fontSize: 28 }}>⛳</Text>
+            <Ionicons name="golf-outline" size={28} color="#FF6535" />
           </View>
           <Text className="text-ink-primary text-4xl font-black tracking-tight">FairwayIQ</Text>
           <Text className="text-ink-secondary text-base mt-2">{t('auth.login.tagline')}</Text>
