@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../src/lib/api';
+import { useTheme } from '../../src/lib/theme';
 import { Round } from '@fairwayiq/shared';
 
 function scoreColor(diff: number) {
@@ -21,6 +22,7 @@ export default function RoundsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
   const { t, i18n } = useTranslation();
+  const c = useTheme();
 
   const fetchRounds = async () => {
     try { const { data } = await api.get<Round[]>('/rounds'); setRounds(data); } catch {}
@@ -53,7 +55,7 @@ export default function RoundsScreen() {
       >
         {rounds.length === 0 ? (
           <View className="items-center py-16 gap-3">
-            <Ionicons name="stats-chart-outline" size={48} color="#2E2E2E" />
+            <Ionicons name="stats-chart-outline" size={48} color={c.bgBorder} />
             <Text className="text-ink-secondary font-semibold">{t('rounds.noRounds')}</Text>
             <Text className="text-ink-muted text-sm text-center">{t('rounds.noRoundsHint')}</Text>
             <TouchableOpacity className="mt-2 px-6 py-3 rounded-2xl" style={{ backgroundColor: '#FF653520' }} onPress={() => router.push('/live-round' as any)}>

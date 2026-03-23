@@ -257,7 +257,7 @@ export default function BagScreen() {
         </View>
       ) : clubs.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 32 }}>
-          <Text style={{ fontSize: 40 }}>🏌️</Text>
+          <Ionicons name="golf-outline" size={48} color={c.inkMuted} />
           <Text style={{ color: c.inkSecondary, fontWeight: '600', fontSize: 16 }}>{t('bag.empty')}</Text>
           <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>{t('bag.emptyHint')}</Text>
           <TouchableOpacity
