@@ -129,7 +129,7 @@ trainingRouter.post('/my-plan/complete-day', async (req: AuthRequest, res: Respo
   ]);
 
   // Alle Session-Logs für diesen Plan (inkl. des neuen)
-  const [allLogs, trainingDay] = await Promise.all([
+  const [allLogs, trainingDay, sessionDrillResults] = await Promise.all([
     prisma.trainingSessionLog.findMany({
       where: { userPlanId: userPlan.id },
       orderBy: { createdAt: 'asc' },
@@ -137,6 +137,11 @@ trainingRouter.post('/my-plan/complete-day', async (req: AuthRequest, res: Respo
     prisma.trainingDay.findFirst({
       where: { planId: userPlan.planId, dayNumber },
       include: { drills: true },
+    }),
+    prisma.drillResult.findMany({
+      where: { userPlanId: userPlan.id, dayNumber },
+      include: { drill: true },
+      orderBy: { createdAt: 'asc' },
     }),
   ]);
 
@@ -179,6 +184,11 @@ trainingRouter.post('/my-plan/complete-day', async (req: AuthRequest, res: Respo
         sessionNumber,
         prevAvgDifficulty,
         notes,
+        drillResults: sessionDrillResults.map((r) => ({
+          drillName: r.drill.name,
+          hits: r.hits,
+          attempts: r.attempts,
+        })),
       })
     : null;
 
