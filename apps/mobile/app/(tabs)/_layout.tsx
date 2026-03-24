@@ -1,13 +1,19 @@
-import { useColorScheme } from 'react-native';
+import { useColorScheme, useEffect, useState } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { fetchInboxCount } from '../../src/components/InboxModal';
 
 export default function TabsLayout() {
   const isDark = useColorScheme() === 'dark';
   const { t } = useTranslation();
   const { bottom } = useSafeAreaInsets();
+  const [socialBadge, setSocialBadge] = useState<number>(0);
+
+  useEffect(() => {
+    fetchInboxCount().then(setSocialBadge);
+  }, []);
 
   return (
     <Tabs
@@ -59,6 +65,8 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.social'),
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
+          tabBarBadge: socialBadge > 0 ? socialBadge : undefined,
+          tabBarBadgeStyle: { backgroundColor: '#FF6535', fontSize: 10 },
         }}
       />
       <Tabs.Screen

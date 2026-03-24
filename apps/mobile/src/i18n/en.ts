@@ -325,6 +325,15 @@ const en = {
     },
   },
 
+  // ── Inbox ───────────────────────────────────────────────────────────
+  inbox: {
+    sectionLabel: 'Notifications',
+    title: 'Inbox',
+    friendRequests: 'Friend Requests',
+    allClear: 'All clear',
+    noRequests: 'No pending requests.',
+  },
+
   // ── Social ──────────────────────────────────────────────────────────
   social: {
     sectionLabel: 'Community',
