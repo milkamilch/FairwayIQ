@@ -8,6 +8,24 @@ import { Ionicons } from '@expo/vector-icons';
 import { api } from '../lib/api';
 import { useTheme } from '../lib/theme';
 
+function TooltipButton({ text }: { text: string }) {
+  return (
+    <TouchableOpacity
+      onPress={() => Alert.alert('', text)}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      style={{ marginLeft: 7 }}
+    >
+      <View style={{
+        width: 18, height: 18, borderRadius: 9,
+        backgroundColor: '#FF653520', borderWidth: 1, borderColor: '#FF653555',
+        alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Text style={{ color: '#FF6535', fontSize: 11, fontWeight: '800', lineHeight: 16 }}>?</Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 // ── Typen ────────────────────────────────────────────────────────────
 interface Answers {
   weeklyHours: number;
@@ -50,14 +68,17 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
   );
 }
 
-function ScaleInput({ label, value, onChange, min = 1, max = 5, lowLabel, highLabel }: {
+function ScaleInput({ label, value, onChange, min = 1, max = 5, lowLabel, highLabel, tooltip }: {
   label: string; value: number; onChange: (v: number) => void;
-  min?: number; max?: number; lowLabel?: string; highLabel?: string;
+  min?: number; max?: number; lowLabel?: string; highLabel?: string; tooltip?: string;
 }) {
   const c = useTheme();
   return (
     <View className="mb-5">
-      <Text className="text-ink-secondary text-sm font-medium mb-3">{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <Text className="text-ink-secondary text-sm font-medium flex-1">{label}</Text>
+        {tooltip && <TooltipButton text={tooltip} />}
+      </View>
       <View className="flex-row gap-2">
         {Array.from({ length: max - min + 1 }, (_, i) => i + min).map((v) => (
           <TouchableOpacity
@@ -86,15 +107,19 @@ function ScaleInput({ label, value, onChange, min = 1, max = 5, lowLabel, highLa
   );
 }
 
-function ChoiceInput<T extends string>({ label, value, onChange, options }: {
+function ChoiceInput<T extends string>({ label, value, onChange, options, tooltip }: {
   label: string; value: T;
   onChange: (v: T) => void;
   options: { value: T; label: string }[];
+  tooltip?: string;
 }) {
   const c = useTheme();
   return (
     <View className="mb-5">
-      <Text className="text-ink-secondary text-sm font-medium mb-3">{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <Text className="text-ink-secondary text-sm font-medium flex-1">{label}</Text>
+        {tooltip && <TooltipButton text={tooltip} />}
+      </View>
       <View className="flex-row flex-wrap gap-2">
         {options.map((opt) => (
           <TouchableOpacity
@@ -120,13 +145,16 @@ function ChoiceInput<T extends string>({ label, value, onChange, options }: {
   );
 }
 
-function StepperInput({ label, value, onChange, min, max, unit, step = 1 }: {
+function StepperInput({ label, value, onChange, min, max, unit, step = 1, tooltip }: {
   label: string; value: number; onChange: (v: number) => void;
-  min: number; max: number; unit?: string; step?: number;
+  min: number; max: number; unit?: string; step?: number; tooltip?: string;
 }) {
   return (
     <View className="mb-5">
-      <Text className="text-ink-secondary text-sm font-medium mb-3">{label}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+        <Text className="text-ink-secondary text-sm font-medium flex-1">{label}</Text>
+        {tooltip && <TooltipButton text={tooltip} />}
+      </View>
       <View className="flex-row items-center gap-4">
         <TouchableOpacity
           className="w-11 h-11 rounded-full bg-bg-elevated border border-bg-border items-center justify-center"
@@ -362,12 +390,14 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                   value={answers.puttsPerRound}
                   onChange={(v) => set('puttsPerRound', v)}
                   min={18} max={50} unit="Putts/Runde"
+                  tooltip={"Ein Putt ist jeder Schlag auf dem Grün mit dem Putter.\n\nOrientierung:\n• Profi: ~28 Putts\n• Guter Amateur: 30–32\n• Einsteiger: 36–42\n\nZähle einfach alle Schläge, die du auf dem Grün machst."}
                 />
                 <ScaleInput
-                  label="Wie sicher bist du bei Putts unter 1.5 Meter?"
+                  label="Wie sicher bist du bei Putts unter 1,5 Meter?"
                   value={answers.shortPuttConfidence}
                   onChange={(v) => set('shortPuttConfidence', v)}
                   lowLabel="sehr unsicher" highLabel="sehr sicher"
+                  tooltip={"1,5 Meter entspricht etwa einer Armlänge vom Loch entfernt.\n\nDiese Putts sollten regelmäßig eingelocht werden – sie sind entscheidend fürs Score. Viele Anfänger kämpfen hier mit Nervosität oder falscher Technik."}
                 />
                 <ChoiceInput
                   label="Was ist dein häufigster Fehler beim Putten?"
@@ -379,6 +409,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                     { value: 'both', label: 'Beides' },
                     { value: 'none', label: 'Kein spez. Fehler' },
                   ]}
+                  tooltip={"Distanz: Der Ball rollt zu weit am Loch vorbei oder bleibt zu kurz.\n\nLinie: Der Putt startet in die falsche Richtung oder du hast die Steigung (Break) des Grüns falsch eingeschätzt."}
                 />
               </>
             )}
@@ -391,12 +422,14 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                   value={answers.upAndDownPercent}
                   onChange={(v) => set('upAndDownPercent', v)}
                   min={0} max={100} unit="% der Versuche" step={5}
+                  tooltip={"Up & Down bedeutet: Du liegst neben dem Grün und brauchst noch genau 2 Schläge für Par.\n\n1 Chip/Pitch ans Grün → 1 Putt ins Loch = Up & Down ✓\n\nBeispiel: Par 4, du liegst nach 2 Schlägen neben dem Grün → mit Chip + Putt noch Par retten.\n\nProfis schaffen das in ~60% der Fälle, Einsteiger oft unter 20%."}
                 />
                 <ScaleInput
                   label="Wie sicher fühlst du dich im Bunker?"
                   value={answers.bunkerConfidence}
                   onChange={(v) => set('bunkerConfidence', v)}
                   lowLabel="sehr unsicher" highLabel="sehr sicher"
+                  tooltip={"Bunker = Sandhindernis am Rand des Fairways oder Grüns.\n\nIm Bunker gilt eine besondere Technik: Du schlägst mit dem Wedge in den Sand hinter dem Ball – nicht direkt den Ball treffen! Der Ball wird durch den Sandstoß aus dem Bunker gehoben."}
                 />
                 <ChoiceInput
                   label="Was ist dein häufigster Fehler beim Chippen?"
@@ -408,6 +441,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                     { value: 'direction', label: 'Richtung falsch' },
                     { value: 'none', label: 'Kein spez. Fehler' },
                   ]}
+                  tooltip={"Chip: Kurzer, flacher Schlag vom Grünrand – der Ball rollt die meiste Distanz.\n\n• Dünn/Gebladed: Schläger trifft den Ball zu hoch an → Ball fliegt tief und zu weit\n• Fett: Schläger trifft zuerst den Boden → Ball kommt kaum von der Stelle\n• Richtung: Ball fliegt in die falsche Richtung"}
                 />
               </>
             )}
@@ -420,12 +454,14 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                   value={answers.girPercent}
                   onChange={(v) => set('girPercent', v)}
                   min={0} max={100} unit="% GIR" step={5}
+                  tooltip={"GIR (Green in Regulation): Du erreichst das Grün früh genug, um noch 2 Putts für Par zu haben.\n\nPar 3 → 1. Schlag aufs Grün\nPar 4 → spätestens 2. Schlag aufs Grün\nPar 5 → spätestens 3. Schlag aufs Grün\n\nProfi-Schnitt: ~60–70%\nAmateur (HCP 20): ~10–20%"}
                 />
                 <ScaleInput
                   label="Wie konsistent ist dein Eisenspiel?"
                   value={answers.ironConsistency}
                   onChange={(v) => set('ironConsistency', v)}
                   lowLabel="sehr inkonsistent" highLabel="sehr konsistent"
+                  tooltip={"Konsistenz bedeutet: Triffst du den Ball meistens ähnlich gut, oder variiert die Qualität stark von Schlag zu Schlag?\n\nEin konsistentes Eisenspiel = du weißt vor dem Schlag ungefähr, was passieren wird."}
                 />
                 <ChoiceInput
                   label="In welche Richtung verfehlt du das Ziel meistens?"
@@ -438,6 +474,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                     { value: 'long', label: 'Zu lang' },
                     { value: 'inconsistent', label: 'Unregelmäßig' },
                   ]}
+                  tooltip={"Gemeint ist: Wenn du mit dem Eisen auf die Fahne zielst, wo landet der Ball typischerweise?\n\nDiese Information hilft uns, deinen Schwungfehler besser einzuordnen und gezielt daran zu arbeiten."}
                 />
               </>
             )}
@@ -450,12 +487,14 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                   value={answers.firPercent}
                   onChange={(v) => set('firPercent', v)}
                   min={0} max={100} unit="% FIR" step={5}
+                  tooltip={"FIR (Fairway in Regulation): Dein Abschlag landet im kurz gemähten Fairway – dem 'Pfad' zwischen Abschlag und Grün.\n\nAus dem Fairway ist der nächste Schlag deutlich einfacher als aus dem langen Rough.\n\nProfi-Schnitt: ~60%\nAmateur (HCP 20): ~30–45%"}
                 />
                 <ScaleInput
                   label="Wie selbstsicher bist du mit dem Driver?"
                   value={answers.driverConfidence}
                   onChange={(v) => set('driverConfidence', v)}
                   lowLabel="sehr unsicher" highLabel="sehr sicher"
+                  tooltip={"Wie wohl fühlst du dich beim Abschlag mit dem Driver auf dem Tee?\n\nViele Anfänger haben Angst vor dem großen Schläger oder ziehen ihn deshalb gar nicht aus der Tasche."}
                 />
                 <ChoiceInput
                   label="Was ist dein häufigster Fehler mit dem Driver?"
@@ -469,6 +508,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                     { value: 'distance', label: 'Zu kurz' },
                     { value: 'none', label: 'Kein Fehler' },
                   ]}
+                  tooltip={"Slice: Ball dreht stark nach rechts weg (bei Rechtshändern). Der häufigste Anfängerfehler überhaupt.\n\nHook: Ball dreht nach links weg. Entsteht oft durch einen zu flachen Schwung oder zu starken Griff.\n\nLinks/Rechts (gerade): Ball fliegt gerade, aber in die falsche Richtung – meistens ein Ausrichtungsproblem."}
                 />
               </>
             )}
@@ -487,6 +527,7 @@ export function AssessmentModal({ onClose, onDone }: { onClose: () => void; onDo
                   value={answers.playsStrategically}
                   onChange={(v) => set('playsStrategically', v)}
                   lowLabel="selten" highLabel="immer"
+                  tooltip={"Strategisches Spiel = nicht immer auf Birdie spielen.\n\nLay-up: Absichtlich kürzer spielen, um ein Hindernis (Wasser, OB) sicher zu umgehen – statt zu riskieren.\n\nSichere Seite: Zur Seite des Grüns zielen, auf der ein Verfehlen weniger bestraft wird (z.B. keine Bunker)."}
                 />
                 <ScaleInput
                   label="Wie gut gehst du mit Drucksituationen um?"
