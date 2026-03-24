@@ -5,18 +5,35 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/store/authStore';
 
+function passwordStrength(pwd: string): 0 | 1 | 2 | 3 | 4 {
+  let s = 0;
+  if (pwd.length >= 8) s++;
+  if (/[A-Z]/.test(pwd)) s++;
+  if (/[0-9]/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd)) s++;
+  return s as 0 | 1 | 2 | 3 | 4;
+}
+
+const STRENGTH_COLOR = ['#333', '#ef4444', '#f59e0b', '#22c55e', '#00e87a'] as const;
+
 export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [handicap, setHandicap] = useState('');
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const { register, isLoading } = useAuthStore();
   const { t } = useTranslation();
 
+  const pwStrength = passwordStrength(password);
+
   const handleRegister = async () => {
     if (!name || !email || !password) { Alert.alert(t('common.error'), t('auth.register.requiredFields')); return; }
     if (password.length < 8) { Alert.alert(t('common.error'), t('auth.register.passwordTooShort')); return; }
+    if (password !== confirmPassword) { Alert.alert(t('common.error'), t('auth.register.passwordMismatch')); return; }
     try {
       const result = await register({ name: name.trim(), email: email.trim().toLowerCase(), password, handicap: handicap ? parseFloat(handicap) : undefined });
       setPendingEmail(result.email);
@@ -58,12 +75,8 @@ export default function RegisterScreen() {
     );
   }
 
-  const fields = [
-    { label: t('auth.register.nameLabel'), placeholder: t('auth.register.namePlaceholder'), value: name, setter: setName, secure: false, keyboard: 'default' as const },
-    { label: t('auth.register.emailLabel'), placeholder: t('auth.register.emailPlaceholder'), value: email, setter: setEmail, secure: false, keyboard: 'email-address' as const },
-    { label: t('auth.register.passwordLabel'), placeholder: '••••••••', value: password, setter: setPassword, secure: true, keyboard: 'default' as const },
-    { label: t('auth.register.handicapLabel'), placeholder: '18.0', value: handicap, setter: setHandicap, secure: false, keyboard: 'decimal-pad' as const },
-  ];
+  const inputStyle = "bg-bg-card text-ink-primary rounded-2xl px-4 py-4 text-base";
+  const labelStyle = "text-ink-muted text-xs font-bold uppercase tracking-widest mb-2";
 
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1 bg-bg-base">
@@ -77,21 +90,135 @@ export default function RegisterScreen() {
           </View>
 
           <View className="gap-4">
-            {fields.map((f) => (
-              <View key={f.label}>
-                <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-2">{f.label}</Text>
+            {/* Name */}
+            <View>
+              <Text className={labelStyle}>{t('auth.register.nameLabel')}</Text>
+              <TextInput
+                className={inputStyle}
+                placeholder={t('auth.register.namePlaceholder')}
+                placeholderTextColor="#444444"
+                autoCapitalize="words"
+                autoComplete="name"
+                textContentType="name"
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
+
+            {/* Email */}
+            <View>
+              <Text className={labelStyle}>{t('auth.register.emailLabel')}</Text>
+              <TextInput
+                className={inputStyle}
+                placeholder={t('auth.register.emailPlaceholder')}
+                placeholderTextColor="#444444"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                textContentType="emailAddress"
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
+
+            {/* Password */}
+            <View>
+              <Text className={labelStyle}>{t('auth.register.passwordLabel')}</Text>
+              <View style={{ position: 'relative' }}>
                 <TextInput
-                  className="bg-bg-card text-ink-primary rounded-2xl px-4 py-4 text-base"
-                  placeholder={f.placeholder}
+                  className={inputStyle}
+                  style={{ paddingRight: 48 }}
+                  placeholder="••••••••"
                   placeholderTextColor="#444444"
-                  keyboardType={f.keyboard}
                   autoCapitalize="none"
-                  secureTextEntry={f.secure}
-                  value={f.value}
-                  onChangeText={f.setter}
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  secureTextEntry={!showPw}
+                  value={password}
+                  onChangeText={setPassword}
                 />
+                <TouchableOpacity
+                  onPress={() => setShowPw((v) => !v)}
+                  style={{ position: 'absolute', right: 14, top: 0, bottom: 0, justifyContent: 'center' }}
+                >
+                  <Ionicons name={showPw ? 'eye-off-outline' : 'eye-outline'} size={20} color="#666" />
+                </TouchableOpacity>
               </View>
-            ))}
+              {/* Password strength bar */}
+              {password.length > 0 && (
+                <View style={{ marginTop: 8, gap: 6 }}>
+                  <View style={{ flexDirection: 'row', gap: 4 }}>
+                    {[1, 2, 3, 4].map((i) => (
+                      <View
+                        key={i}
+                        style={{
+                          flex: 1, height: 3, borderRadius: 2,
+                          backgroundColor: i <= pwStrength ? STRENGTH_COLOR[pwStrength] : '#333',
+                        }}
+                      />
+                    ))}
+                  </View>
+                  <Text style={{ fontSize: 11, color: STRENGTH_COLOR[pwStrength], fontWeight: '600' }}>
+                    {[
+                      t('auth.register.pwWeak'),
+                      t('auth.register.pwWeak'),
+                      t('auth.register.pwFair'),
+                      t('auth.register.pwGood'),
+                      t('auth.register.pwStrong'),
+                    ][pwStrength]}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Confirm Password */}
+            <View>
+              <Text className={labelStyle}>{t('auth.register.confirmPasswordLabel')}</Text>
+              <View style={{ position: 'relative' }}>
+                <TextInput
+                  className={inputStyle}
+                  style={{ paddingRight: 48, borderWidth: confirmPassword.length > 0 ? 1.5 : 0, borderColor: confirmPassword.length > 0 ? (confirmPassword === password ? '#22c55e' : '#ef4444') : 'transparent' }}
+                  placeholder="••••••••"
+                  placeholderTextColor="#444444"
+                  autoCapitalize="none"
+                  autoComplete="new-password"
+                  textContentType="newPassword"
+                  secureTextEntry={!showConfirmPw}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirmPw((v) => !v)}
+                  style={{ position: 'absolute', right: 14, top: 0, bottom: 0, justifyContent: 'center' }}
+                >
+                  <Ionicons name={showConfirmPw ? 'eye-off-outline' : 'eye-outline'} size={20} color="#666" />
+                </TouchableOpacity>
+                {confirmPassword.length > 0 && (
+                  <View style={{ position: 'absolute', right: 44, top: 0, bottom: 0, justifyContent: 'center' }}>
+                    <Ionicons
+                      name={confirmPassword === password ? 'checkmark-circle' : 'close-circle'}
+                      size={18}
+                      color={confirmPassword === password ? '#22c55e' : '#ef4444'}
+                    />
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {/* Handicap */}
+            <View>
+              <Text className={labelStyle}>{t('auth.register.handicapLabel')}</Text>
+              <TextInput
+                className={inputStyle}
+                placeholder="18.0"
+                placeholderTextColor="#444444"
+                keyboardType="decimal-pad"
+                autoComplete="off"
+                textContentType="none"
+                value={handicap}
+                onChangeText={setHandicap}
+              />
+            </View>
 
             {handicap === '' && (
               <View className="flex-row items-center gap-2 px-3 py-2.5 rounded-xl bg-bg-elevated">
