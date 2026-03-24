@@ -226,7 +226,7 @@ export default function CoursesScreen() {
         <View className="px-5 pt-4 pb-4 border-b border-bg-border">
           <View className="flex-row items-center gap-3">
             <TouchableOpacity onPress={() => setSelectedCourse(null)}>
-              <Ionicons name="arrow-back" size={22} color="#8A8A8A" />
+              <Ionicons name="arrow-back" size={22} color={c.inkSecondary} />
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-ink-primary font-bold text-lg">{selectedCourse.name}</Text>

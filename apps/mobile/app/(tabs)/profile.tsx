@@ -286,7 +286,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView className="flex-1 bg-bg-base">
       {/* Header */}
-      <View className="px-5 pt-6 pb-3 flex-row items-center justify-between">
+      <View className="px-5 pt-6 pb-4 flex-row items-center justify-between">
         <View>
           <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest">{t('profile.sectionLabel')}</Text>
           <Text className="text-ink-primary text-3xl font-black">{t('profile.title')}</Text>

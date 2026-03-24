@@ -11,7 +11,7 @@ import { Round } from '@fairwayiq/shared';
 function scoreColor(diff: number) {
   if (diff <= -2) return '#a855f7';
   if (diff === -1) return '#FF6535';
-  if (diff === 0) return '#FFFFFF';
+  if (diff === 0) return '#6ee7b7';
   if (diff === 1) return '#f59e0b';
   return '#ef4444';
 }

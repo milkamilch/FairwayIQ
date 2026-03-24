@@ -78,7 +78,7 @@ export default function DashboardScreen() {
               <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-1">{t('dashboard.sectionLabel')}</Text>
               <Text className="text-ink-primary text-3xl font-black">{user?.name}</Text>
             </View>
-            <View className="items-end gap-1.5" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
               <View className="items-end gap-1.5">
                 <View className="px-3 py-1.5 rounded-full" style={{ backgroundColor: '#FF653520' }}>
                   <Text className="text-neon-green text-xs font-bold tracking-wider">

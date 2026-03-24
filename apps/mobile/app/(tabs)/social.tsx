@@ -52,7 +52,7 @@ function scoreDiff(n: number) {
 
 function scoreColor(d: number) {
   if (d <= -1) return '#FF6535';
-  if (d === 0)  return '#FFFFFF';
+  if (d === 0)  return '#6ee7b7';
   if (d === 1)  return '#f59e0b';
   return '#ef4444';
 }
@@ -577,11 +577,11 @@ export default function SocialScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
       {/* Header */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 4 }}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 16 }}>
         <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>
           {t('social.sectionLabel')}
         </Text>
-        <Text style={{ color: c.inkPrimary, fontSize: 30, fontWeight: '900' }}>{t('social.title')}</Text>
+        <Text style={{ color: c.inkPrimary, fontSize: 30, fontWeight: '900', marginBottom: 4 }}>{t('social.title')}</Text>
       </View>
 
       {/* Internal Tab Bar */}

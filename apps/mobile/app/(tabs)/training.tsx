@@ -275,6 +275,7 @@ function LibraryTab() {
 
 function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: boolean; onStart: () => void }) {
   const { t } = useTranslation();
+  const c = useTheme();
   const levelColors: Record<string, string> = {
     BEGINNER: '#FF6535', INTERMEDIATE: '#f59e0b', ADVANCED: '#f97316', PRO: '#a855f7',
   };
@@ -291,11 +292,11 @@ function PlanCard({ plan, isActive, onStart }: { plan: TrainingPlan; isActive: b
         <Text className="text-ink-secondary text-sm leading-5">{plan.description}</Text>
         <View className="flex-row gap-4 mt-3">
           <View className="flex-row items-center gap-1.5">
-            <Ionicons name="calendar-outline" size={12} color="#8A8A8A" />
+            <Ionicons name="calendar-outline" size={12} color={c.inkMuted} />
             <Text className="text-ink-secondary text-xs">{plan.durationWeeks} {t('training.weeks')}</Text>
           </View>
           <View className="flex-row items-center gap-1.5">
-            <Ionicons name="layers-outline" size={12} color="#8A8A8A" />
+            <Ionicons name="layers-outline" size={12} color={c.inkMuted} />
             <Text className="text-ink-secondary text-xs">{plan.days.length} {t('training.trainingDays')}</Text>
           </View>
         </View>
