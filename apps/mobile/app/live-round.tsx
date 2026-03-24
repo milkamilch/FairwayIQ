@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../src/lib/api';
 import { useAuthStore } from '../src/store/authStore';
 import { useTheme } from '../src/lib/theme';
+import { LiveScorecardModal } from '../src/components/LiveScorecardModal';
 import type { Course } from '@fairwayiq/shared';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -23,6 +24,7 @@ interface HoleEntry {
   fairwayHit: boolean | null;
   greenInRegulation: boolean;
   penalties: number;
+  played: boolean;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -264,6 +266,7 @@ export default function LiveRoundScreen() {
   const [activeHole, setActiveHole] = useState(0);
   const [saving, setSaving] = useState(false);
   const [summary, setSummary] = useState<SummaryData | null>(null);
+  const [showScorecard, setShowScorecard] = useState(false);
   const holeTabsRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -293,17 +296,22 @@ export default function LiveRoundScreen() {
       fairwayHit: null,
       greenInRegulation: false,
       penalties: 0,
+      played: false,
     })));
     setActiveHole(0);
     setStep('playing');
   };
 
   const update = <K extends keyof HoleEntry>(field: K, value: HoleEntry[K]) => {
-    setScores((prev) => prev.map((s, i) => i === activeHole ? { ...s, [field]: value } : s));
+    setScores((prev) => prev.map((s, i) => i === activeHole ? { ...s, [field]: value, played: true } : s));
   };
 
   const goToHole = (idx: number) => {
     if (idx < 0 || idx >= scores.length) return;
+    // Mark current hole as played when navigating forward
+    if (idx > activeHole) {
+      setScores((prev) => prev.map((s, i) => i === activeHole ? { ...s, played: true } : s));
+    }
     setActiveHole(idx);
     holeTabsRef.current?.scrollTo({ x: Math.max(0, (idx - 3) * 38), animated: true });
   };
@@ -441,6 +449,13 @@ export default function LiveRoundScreen() {
         />
       )}
 
+      <LiveScorecardModal
+        visible={showScorecard}
+        scores={scores}
+        courseName={selectedCourse?.name ?? ''}
+        onClose={() => setShowScorecard(false)}
+      />
+
       {/* ── Header ── */}
       <View
         className="flex-row items-center px-4 py-3 gap-3"
@@ -460,6 +475,13 @@ export default function LiveRoundScreen() {
           </Text>
           <Text className="text-ink-muted text-xs">{selectedCourse?.location}</Text>
         </View>
+        <TouchableOpacity
+          onPress={() => setShowScorecard(true)}
+          className="w-9 h-9 rounded-xl items-center justify-center"
+          style={{ backgroundColor: c.bgElevated }}
+        >
+          <Ionicons name="list-outline" size={18} color={c.inkSecondary} />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={confirmFinish}
           className="px-4 py-2 rounded-xl"

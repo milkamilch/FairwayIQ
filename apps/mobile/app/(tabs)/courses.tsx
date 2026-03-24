@@ -53,6 +53,13 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
   );
 }
 
+type BagClub = { id: string; name: string; type: string; distanceM: number | null };
+
+const CLUB_TYPE_ORDER = ['DRIVER', 'FAIRWAY_WOOD', 'HYBRID', 'IRON', 'WEDGE'];
+const CLUB_TYPE_LABEL: Record<string, string> = {
+  DRIVER: 'Driver', FAIRWAY_WOOD: 'Holz', HYBRID: 'Hybrid', IRON: 'Eisen', WEDGE: 'Wedge',
+};
+
 function StrategyModal({ hole, courseId, onClose, onSaved }: {
   hole: any; courseId: string; onClose: () => void; onSaved: () => void;
 }) {
@@ -61,9 +68,17 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
   const [aimPoint, setAimPoint] = useState(hole.strategy?.aimPoint ?? '');
   const [avoidance, setAvoidance] = useState(hole.strategy?.avoidance ?? '');
   const [notes, setNotes] = useState(hole.strategy?.notes ?? '');
+  const [bagClubs, setBagClubs] = useState<BagClub[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const { t } = useTranslation();
   const c = useTheme();
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.get<BagClub[]>('/clubs').then(({ data }) => {
+      setBagClubs(data.filter((c) => c.type !== 'PUTTER'));
+    }).catch(() => {});
+  }, []);
 
   const save = async () => {
     if (!club || !aimPoint) { Alert.alert(t('common.error'), t('courses.strategyModal.requiredFields')); return; }
@@ -98,7 +113,71 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
           <View className="gap-5">
             <View>
               <Text className={labelStyle}>{t('courses.strategyModal.club')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor="#444444" value={club} onChangeText={setClub} />
+
+              {bagClubs.length > 0 ? (
+                <>
+                  {/* Trigger button */}
+                  <TouchableOpacity
+                    onPress={() => setPickerOpen((v) => !v)}
+                    className="flex-row items-center justify-between rounded-xl px-4 py-3 border border-bg-border"
+                    style={{ backgroundColor: c.bgElevated }}
+                  >
+                    <Text className="text-sm" style={{ color: club ? c.inkPrimary : '#444444' }}>
+                      {club || t('courses.strategyModal.clubPlaceholder')}
+                    </Text>
+                    <Ionicons name={pickerOpen ? 'chevron-up' : 'chevron-down'} size={14} color={c.inkMuted} />
+                  </TouchableOpacity>
+
+                  {/* Inline dropdown */}
+                  {pickerOpen && (
+                    <View
+                      className="rounded-xl border border-bg-border mt-1 overflow-hidden"
+                      style={{ backgroundColor: c.bgCard }}
+                    >
+                      {CLUB_TYPE_ORDER.filter((type) => bagClubs.some((b) => b.type === type)).map((type) => (
+                        <View key={type}>
+                          <View className="px-4 py-1.5" style={{ backgroundColor: c.bgElevated }}>
+                            <Text style={{ color: c.inkMuted, fontSize: 10, fontWeight: '700', letterSpacing: 0.8 }}>
+                              {CLUB_TYPE_LABEL[type].toUpperCase()}
+                            </Text>
+                          </View>
+                          {bagClubs.filter((b) => b.type === type).map((b) => (
+                            <TouchableOpacity
+                              key={b.id}
+                              onPress={() => { setClub(b.name); setPickerOpen(false); }}
+                              className="flex-row items-center justify-between px-4 py-3 border-t border-bg-border"
+                              style={{ backgroundColor: club === b.name ? c.neonGreen12 : 'transparent' }}
+                            >
+                              <View className="flex-row items-center gap-2">
+                                {club === b.name && (
+                                  <Ionicons name="checkmark" size={14} color="#FF6535" />
+                                )}
+                                <Text
+                                  className="text-sm font-semibold"
+                                  style={{ color: club === b.name ? '#FF6535' : c.inkPrimary }}
+                                >
+                                  {b.name}
+                                </Text>
+                              </View>
+                              {b.distanceM != null && (
+                                <Text style={{ color: c.inkMuted, fontSize: 12 }}>{b.distanceM} m</Text>
+                              )}
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </>
+              ) : (
+                <TextInput
+                  className={inputStyle}
+                  placeholder={t('courses.strategyModal.clubPlaceholder')}
+                  placeholderTextColor="#444444"
+                  value={club}
+                  onChangeText={setClub}
+                />
+              )}
             </View>
 
             <View>
