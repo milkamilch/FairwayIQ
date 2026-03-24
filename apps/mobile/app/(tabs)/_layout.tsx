@@ -1,4 +1,5 @@
-import { useColorScheme, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useColorScheme } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
