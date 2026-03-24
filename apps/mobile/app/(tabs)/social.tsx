@@ -61,10 +61,18 @@ function timeAgo(iso: string, lang: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3_600_000);
   const d = Math.floor(diff / 86_400_000);
-  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
-  if (h < 1) return rtf.format(-Math.floor(diff / 60_000), 'minute');
-  if (h < 24) return rtf.format(-h, 'hour');
-  if (d < 7) return rtf.format(-d, 'day');
+  const m = Math.floor(diff / 60_000);
+  try {
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
+    if (h < 1) return rtf.format(-m, 'minute');
+    if (h < 24) return rtf.format(-h, 'hour');
+    if (d < 7) return rtf.format(-d, 'day');
+  } catch {
+    const de = lang.startsWith('de');
+    if (h < 1) return de ? `vor ${m} Min.` : `${m}m ago`;
+    if (h < 24) return de ? `vor ${h} Std.` : `${h}h ago`;
+    if (d < 7) return de ? `vor ${d} T.` : `${d}d ago`;
+  }
   return new Date(iso).toLocaleDateString(lang, { day: 'numeric', month: 'short' });
 }
 
