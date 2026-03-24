@@ -127,7 +127,8 @@ authRouter.get('/verify-email', async (req: Request, res: Response) => {
     data: { emailVerified: true, emailVerificationToken: null },
   });
 
-  res.send(verifyPage('success', `Hallo ${user.name}, deine E-Mail wurde bestätigt. Du kannst die App jetzt öffnen und dich einloggen.`));
+  const firstName = user.name.trim().split(/\s+/)[0];
+  res.send(verifyPage('success', `Hallo ${firstName}, deine E-Mail wurde bestätigt. Du kannst die App jetzt öffnen und dich einloggen.`));
 });
 
 authRouter.post('/login', async (req: Request, res: Response) => {

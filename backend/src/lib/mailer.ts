@@ -5,6 +5,7 @@ const FROM = process.env.RESEND_FROM ?? 'noreply@faiway-iq.com';
 const APP_URL = process.env.APP_URL ?? 'https://api.faiway-iq.com';
 
 export async function sendVerificationEmail(email: string, name: string, token: string) {
+  const firstName = name.trim().split(/\s+/)[0];
   const link = `${APP_URL}/api/auth/verify-email?token=${token}`;
 
   const result = await resend.emails.send({
@@ -32,7 +33,7 @@ export async function sendVerificationEmail(email: string, name: string, token: 
             <span style="font-size:26px;line-height:52px;display:block;text-align:center">⛳</span>
           </div>
 
-          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0A0A0A;letter-spacing:-0.3px">Willkommen, ${name}!</h1>
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#0A0A0A;letter-spacing:-0.3px">Willkommen, ${firstName}!</h1>
           <p style="margin:0 0 32px;font-size:15px;line-height:1.6;color:#555555">
             Bestätige deine E-Mail-Adresse, um FairwayIQ vollständig nutzen zu können und dein Golfspiel auf das nächste Level zu bringen.
           </p>
