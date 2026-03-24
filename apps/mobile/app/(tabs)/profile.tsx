@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityIndicator, Modal, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, TextInput, ScrollView, ActivityIndicator, Modal, Image, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -179,6 +179,20 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [goals, setGoals] = useState<UserGoal[]>([]);
   const [showAddGoal, setShowAddGoal] = useState(false);
+
+  const [profileVisibility, setProfileVisibility] = useState<'PUBLIC' | 'FRIENDS' | 'PRIVATE'>(
+    (user?.profileVisibility as any) ?? 'FRIENDS',
+  );
+  const [showHandicap, setShowHandicap] = useState(user?.showHandicap ?? true);
+  const [showStats, setShowStats] = useState(user?.showStats ?? true);
+  const [showGoals, setShowGoals] = useState(user?.showGoals ?? false);
+
+  const savePrivacy = async (patch: Partial<{ profileVisibility: string; showHandicap: boolean; showStats: boolean; showGoals: boolean }>) => {
+    try {
+      const { data } = await api.put('/auth/me/privacy', patch);
+      updateUser(data);
+    } catch {}
+  };
 
   const loadGoals = async () => {
     try { const { data } = await api.get<UserGoal[]>('/goals'); setGoals(data); } catch {}
@@ -570,6 +584,66 @@ export default function ProfileScreen() {
               })}
             </View>
           )}
+        </View>
+
+        {/* ── Privacy ──────────────────────────────────────────────── */}
+        <View className="mb-4">
+          <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-3">{t('profile.privacy.title')}</Text>
+          <View className="bg-bg-card rounded-2xl overflow-hidden">
+            {/* Visibility selector */}
+            <View className="px-4 py-3 border-b border-bg-border">
+              <Text className="text-ink-muted text-xs mb-2">{t('profile.privacy.visibility')}</Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {(['PUBLIC', 'FRIENDS', 'PRIVATE'] as const).map((v) => (
+                  <TouchableOpacity
+                    key={v}
+                    onPress={() => {
+                      setProfileVisibility(v);
+                      savePrivacy({ profileVisibility: v });
+                    }}
+                    style={{
+                      flex: 1, paddingVertical: 7, borderRadius: 10, alignItems: 'center',
+                      backgroundColor: profileVisibility === v ? '#FF6535' : c.bgElevated,
+                    }}
+                  >
+                    <Text style={{
+                      fontSize: 11, fontWeight: '700',
+                      color: profileVisibility === v ? '#0A0A0A' : c.inkMuted,
+                    }}>
+                      {t(`profile.privacy.${v.toLowerCase()}`)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            {/* Toggle rows */}
+            {([
+              { key: 'showHandicap', label: t('profile.privacy.showHandicap'), value: showHandicap, setter: setShowHandicap },
+              { key: 'showStats',    label: t('profile.privacy.showStats'),    value: showStats,    setter: setShowStats },
+              { key: 'showGoals',    label: t('profile.privacy.showGoals'),    value: showGoals,    setter: setShowGoals },
+            ] as const).map(({ key, label, value, setter }, i, arr) => (
+              <View
+                key={key}
+                style={{
+                  flexDirection: 'row', alignItems: 'center',
+                  paddingHorizontal: 16, paddingVertical: 12,
+                  borderBottomWidth: i < arr.length - 1 ? 1 : 0,
+                  borderBottomColor: c.bgBorder,
+                }}
+              >
+                <Text style={{ flex: 1, color: c.inkPrimary, fontSize: 14 }}>{label}</Text>
+                <Switch
+                  value={value}
+                  onValueChange={(v) => {
+                    setter(v);
+                    savePrivacy({ [key]: v });
+                  }}
+                  trackColor={{ false: c.bgElevated, true: '#FF653560' }}
+                  thumbColor={value ? '#FF6535' : c.inkMuted}
+                />
+              </View>
+            ))}
+          </View>
         </View>
 
         {/* ── Links ────────────────────────────────────────────────── */}

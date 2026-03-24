@@ -282,6 +282,16 @@ const de = {
         CUSTOM: '',
       },
     },
+    privacy: {
+      title: 'Datenschutz',
+      visibility: 'Profil sichtbar für',
+      public: 'Alle',
+      friends: 'Freunde',
+      private: 'Nur ich',
+      showHandicap: 'Handicap anzeigen',
+      showStats: 'Statistiken anzeigen',
+      showGoals: 'Ziele anzeigen',
+    },
     links: {
       bag: 'Schläger Bag',
       bagSub: 'Clubs & Distanzen verwalten',
@@ -336,6 +346,12 @@ const de = {
 
   // ── Social ──────────────────────────────────────────────────────────
   social: {
+    userProfile: {
+      title: 'Profil',
+      noData: 'Profil konnte nicht geladen werden.',
+      private: 'Dieses Profil ist privat.',
+      removeFriend: 'Freundschaft beenden',
+    },
     sectionLabel: 'Community',
     title: 'Social',
     tabs: {

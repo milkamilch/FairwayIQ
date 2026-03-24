@@ -282,6 +282,16 @@ const en = {
         CUSTOM: '',
       },
     },
+    privacy: {
+      title: 'Privacy',
+      visibility: 'Profile visible to',
+      public: 'Everyone',
+      friends: 'Friends',
+      private: 'Only me',
+      showHandicap: 'Show handicap',
+      showStats: 'Show statistics',
+      showGoals: 'Show goals',
+    },
     links: {
       bag: 'Golf Bag',
       bagSub: 'Manage clubs & distances',
@@ -336,6 +346,12 @@ const en = {
 
   // ── Social ──────────────────────────────────────────────────────────
   social: {
+    userProfile: {
+      title: 'Profile',
+      noData: 'Profile could not be loaded.',
+      private: 'This profile is private.',
+      removeFriend: 'Remove friend',
+    },
     sectionLabel: 'Community',
     title: 'Social',
     tabs: {

@@ -163,6 +163,12 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   res.json({ token, user: userWithoutSecrets });
 });
 
+const ME_SELECT = {
+  id: true, email: true, name: true, handicap: true, level: true, homeClub: true,
+  avatarUrl: true, createdAt: true,
+  profileVisibility: true, showHandicap: true, showStats: true, showGoals: true,
+} as const;
+
 authRouter.post('/me/avatar', authMiddleware, upload.single('avatar'), async (req: AuthRequest, res: Response) => {
   if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return; }
 
@@ -176,22 +182,14 @@ authRouter.post('/me/avatar', authMiddleware, upload.single('avatar'), async (re
   const updated = await prisma.user.update({
     where: { id: req.userId },
     data: { avatarUrl },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
+    select: ME_SELECT,
   });
   res.json(updated);
 });
 
 authRouter.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.userId },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
-  });
-
-  if (!user) {
-    res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    return;
-  }
-
+  const user = await prisma.user.findUnique({ where: { id: req.userId }, select: ME_SELECT });
+  if (!user) { res.status(404).json({ error: 'Benutzer nicht gefunden' }); return; }
   res.json(user);
 });
 
@@ -203,21 +201,12 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
   });
 
   const parsed = updateSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: 'Ungültige Eingabe' });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: 'Ungültige Eingabe' }); return; }
 
   const { handicap, homeClub, ...rest } = parsed.data;
 
   const level = handicap !== undefined
-    ? handicap <= 5
-      ? 'PRO'
-      : handicap <= 12
-      ? 'ADVANCED'
-      : handicap <= 24
-      ? 'INTERMEDIATE'
-      : 'BEGINNER'
+    ? handicap <= 5 ? 'PRO' : handicap <= 12 ? 'ADVANCED' : handicap <= 24 ? 'INTERMEDIATE' : 'BEGINNER'
     : undefined;
 
   const user = await prisma.user.update({
@@ -228,9 +217,27 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
       ...(level && { level }),
       ...(homeClub !== undefined && { homeClub }),
     },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
+    select: ME_SELECT,
+  });
+  res.json(user);
+});
+
+authRouter.put('/me/privacy', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const schema = z.object({
+    profileVisibility: z.enum(['PUBLIC', 'FRIENDS', 'PRIVATE']).optional(),
+    showHandicap: z.boolean().optional(),
+    showStats: z.boolean().optional(),
+    showGoals: z.boolean().optional(),
   });
 
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Ungültige Eingabe' }); return; }
+
+  const user = await prisma.user.update({
+    where: { id: req.userId },
+    data: parsed.data,
+    select: ME_SELECT,
+  });
   res.json(user);
 });
 

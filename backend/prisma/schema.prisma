@@ -76,6 +76,10 @@ model User {
   emailVerificationToken String?     @unique
   avatarUrl              String?
   pushToken              String?
+  profileVisibility      String      @default("FRIENDS")
+  showHandicap           Boolean     @default(true)
+  showStats              Boolean     @default(true)
+  showGoals              Boolean     @default(false)
   notifTraining          Boolean     @default(true)
   notifStreak            Boolean     @default(true)
   notifWeather           Boolean     @default(false)

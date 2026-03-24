@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../src/lib/api';
 import { useTheme } from '../../src/lib/theme';
+import { UserProfileSheet } from '../../src/components/UserProfileSheet';
 
 // ── Types ─────────────────────────────────────────────────────────────
 type GolferLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'PRO';
@@ -338,6 +339,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedFriend, setSelectedFriend] = useState<FriendUser | null>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const load = useCallback(async () => {
@@ -401,6 +403,15 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   const showSearch = searchQuery.length >= 2;
 
   return (
+    <>
+    {selectedFriend && (
+      <UserProfileSheet
+        userId={selectedFriend.id}
+        friendshipId={selectedFriend.friendshipId}
+        onClose={() => setSelectedFriend(null)}
+        onFriendRemoved={() => { setSelectedFriend(null); load(); }}
+      />
+    )}
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={{ padding: 16, gap: 16 }}
@@ -531,12 +542,15 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
             </View>
           ) : (
             friends.map((friend) => (
-              <View key={friend.id} style={{
-                flexDirection: 'row', alignItems: 'center', gap: 12,
-                backgroundColor: c.bgCard, borderRadius: 14,
-                
-                padding: 12, marginBottom: 8,
-              }}>
+              <TouchableOpacity
+                key={friend.id}
+                onPress={() => setSelectedFriend(friend)}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 12,
+                  backgroundColor: c.bgCard, borderRadius: 14,
+                  padding: 12, marginBottom: 8,
+                }}
+              >
                 <Avatar name={friend.name} level={friend.level} size={42} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{friend.name}</Text>
@@ -548,10 +562,8 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                     </Text>
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => removeFriend(friend)} style={{ padding: 8 }}>
-                  <Ionicons name="person-remove-outline" size={18} color={c.inkMuted} />
-                </TouchableOpacity>
-              </View>
+                <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
+              </TouchableOpacity>
             ))
           )}
         </View>
@@ -559,6 +571,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
 
       <View style={{ height: 20 }} />
     </ScrollView>
+    </>
   );
 }
 

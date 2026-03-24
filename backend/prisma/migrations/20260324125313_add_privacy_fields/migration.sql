@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "profileVisibility" TEXT NOT NULL DEFAULT 'FRIENDS',
+ADD COLUMN     "showGoals" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "showHandicap" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showStats" BOOLEAN NOT NULL DEFAULT true;
