@@ -9,6 +9,10 @@ export interface User {
   homeClub: string | null;
   avatarUrl: string | null;
   createdAt: string;
+  profileVisibility?: string;
+  showHandicap?: boolean;
+  showStats?: boolean;
+  showGoals?: boolean;
 }
 
 export interface AuthResponse {

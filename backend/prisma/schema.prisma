@@ -76,6 +76,10 @@ model User {
   emailVerificationToken String?     @unique
   avatarUrl              String?
   pushToken              String?
+  profileVisibility      String      @default("FRIENDS")
+  showHandicap           Boolean     @default(true)
+  showStats              Boolean     @default(true)
+  showGoals              Boolean     @default(false)
   notifTraining          Boolean     @default(true)
   notifStreak            Boolean     @default(true)
   notifWeather           Boolean     @default(false)
@@ -328,6 +332,7 @@ model Course {
   totalPar      Int      @default(72)
   rating        Float?
   slope         Float?
+  isPublic      Boolean  @default(false)
   createdBy     String?  // null = API-importiert
   apiId         String?            // GolfCourseAPI ID
   holesImported Boolean  @default(false)
@@ -335,7 +340,22 @@ model Course {
 
   creator User?   @relation(fields: [createdBy], references: [id])
   holes   Hole[]
+  tees    Tee[]
   rounds  Round[]
+}
+
+model Tee {
+  id        String  @id @default(cuid())
+  courseId  String
+  name      String  // "Gelb", "Blau", "Rot", "Weiß"
+  color     String  // "yellow", "blue", "red", "white"
+  rating    Float?
+  slope     Float?
+  distances Json?   // { "1": 320, "2": 410, ... } – Lochnum. → Meter
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
 }
 
 model HoleScore {

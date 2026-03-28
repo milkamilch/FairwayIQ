@@ -86,6 +86,29 @@ authRouter.post('/register', async (req: Request, res: Response) => {
   res.status(201).json({ pending: true, email: user.email });
 });
 
+authRouter.post('/resend-verification', async (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email) { res.status(400).json({ error: 'E-Mail fehlt' }); return; }
+
+  const user = await prisma.user.findUnique({ where: { email: String(email).trim().toLowerCase() } });
+
+  // Wenn User nicht existiert oder bereits verifiziert: trotzdem 200 zurückgeben (kein Info-Leak)
+  if (user && !user.emailVerified) {
+    const token = crypto.randomBytes(32).toString('hex');
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerificationToken: token },
+    });
+    try {
+      await sendVerificationEmail(user.email, user.name, token);
+    } catch (err) {
+      console.error('Mail-Versand fehlgeschlagen:', err);
+    }
+  }
+
+  res.json({ ok: true });
+});
+
 authRouter.get('/verify-email', async (req: Request, res: Response) => {
   const token = req.query.token as string | undefined;
   if (!token) {
@@ -104,7 +127,8 @@ authRouter.get('/verify-email', async (req: Request, res: Response) => {
     data: { emailVerified: true, emailVerificationToken: null },
   });
 
-  res.send(verifyPage('success', `Hallo ${user.name}, deine E-Mail wurde bestätigt. Du kannst die App jetzt öffnen und dich einloggen.`));
+  const firstName = user.name.trim().split(/\s+/)[0];
+  res.send(verifyPage('success', `Hallo ${firstName}, deine E-Mail wurde bestätigt. Du kannst die App jetzt öffnen und dich einloggen.`));
 });
 
 authRouter.post('/login', async (req: Request, res: Response) => {
@@ -139,6 +163,12 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   res.json({ token, user: userWithoutSecrets });
 });
 
+const ME_SELECT = {
+  id: true, email: true, name: true, handicap: true, level: true, homeClub: true,
+  avatarUrl: true, createdAt: true,
+  profileVisibility: true, showHandicap: true, showStats: true, showGoals: true,
+} as const;
+
 authRouter.post('/me/avatar', authMiddleware, upload.single('avatar'), async (req: AuthRequest, res: Response) => {
   if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return; }
 
@@ -152,22 +182,14 @@ authRouter.post('/me/avatar', authMiddleware, upload.single('avatar'), async (re
   const updated = await prisma.user.update({
     where: { id: req.userId },
     data: { avatarUrl },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
+    select: ME_SELECT,
   });
   res.json(updated);
 });
 
 authRouter.get('/me', authMiddleware, async (req: AuthRequest, res: Response) => {
-  const user = await prisma.user.findUnique({
-    where: { id: req.userId },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
-  });
-
-  if (!user) {
-    res.status(404).json({ error: 'Benutzer nicht gefunden' });
-    return;
-  }
-
+  const user = await prisma.user.findUnique({ where: { id: req.userId }, select: ME_SELECT });
+  if (!user) { res.status(404).json({ error: 'Benutzer nicht gefunden' }); return; }
   res.json(user);
 });
 
@@ -179,21 +201,12 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
   });
 
   const parsed = updateSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: 'Ungültige Eingabe' });
-    return;
-  }
+  if (!parsed.success) { res.status(400).json({ error: 'Ungültige Eingabe' }); return; }
 
   const { handicap, homeClub, ...rest } = parsed.data;
 
   const level = handicap !== undefined
-    ? handicap <= 5
-      ? 'PRO'
-      : handicap <= 12
-      ? 'ADVANCED'
-      : handicap <= 24
-      ? 'INTERMEDIATE'
-      : 'BEGINNER'
+    ? handicap <= 5 ? 'PRO' : handicap <= 12 ? 'ADVANCED' : handicap <= 24 ? 'INTERMEDIATE' : 'BEGINNER'
     : undefined;
 
   const user = await prisma.user.update({
@@ -204,25 +217,60 @@ authRouter.put('/me', authMiddleware, async (req: AuthRequest, res: Response) =>
       ...(level && { level }),
       ...(homeClub !== undefined && { homeClub }),
     },
-    select: { id: true, email: true, name: true, handicap: true, level: true, homeClub: true, avatarUrl: true, createdAt: true },
+    select: ME_SELECT,
+  });
+  res.json(user);
+});
+
+authRouter.put('/me/privacy', authMiddleware, async (req: AuthRequest, res: Response) => {
+  const schema = z.object({
+    profileVisibility: z.enum(['PUBLIC', 'FRIENDS', 'PRIVATE']).optional(),
+    showHandicap: z.boolean().optional(),
+    showStats: z.boolean().optional(),
+    showGoals: z.boolean().optional(),
   });
 
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: 'Ungültige Eingabe' }); return; }
+
+  const user = await prisma.user.update({
+    where: { id: req.userId },
+    data: parsed.data,
+    select: ME_SELECT,
+  });
   res.json(user);
 });
 
 function verifyPage(type: 'success' | 'error', message: string) {
-  const color = type === 'success' ? '#00e87a' : '#ef4444';
-  const icon = type === 'success' ? '✓' : '✗';
+  const accentColor = type === 'success' ? '#FF6535' : '#EF4444';
+  const bgIcon = type === 'success' ? '#FF653520' : '#EF444420';
+  const icon = type === 'success' ? '⛳' : '✗';
+  const headline = type === 'success' ? 'E-Mail bestätigt!' : 'Fehler';
   return `<!DOCTYPE html>
 <html lang="de">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FairwayIQ – E-Mail Bestätigung</title>
-<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#07070f;font-family:sans-serif;color:#f0f0ff}
-.card{background:#0e0e1a;border:1px solid #1e1e2e;border-radius:16px;padding:40px 32px;max-width:400px;text-align:center}
-.icon{font-size:48px;color:${color};margin-bottom:16px}
-h1{margin:0 0 12px;font-size:22px;color:${color}}
-p{color:#8888aa;margin:0;line-height:1.6}</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FairwayIQ – E-Mail Bestätigung</title>
 </head>
-<body><div class="card"><div class="icon">${icon}</div><h1>FairwayIQ</h1><p>${message}</p></div></body>
+<body style="margin:0;padding:0;background:#F0F0F0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center">
+  <div style="width:100%;padding:40px 16px;box-sizing:border-box;display:flex;justify-content:center">
+    <div style="background:#FFFFFF;border-radius:16px;border:1px solid #E8E8E8;padding:40px 36px;max-width:440px;width:100%;text-align:center">
+
+      <div style="margin:0 auto 24px;width:64px;height:64px;background:${bgIcon};border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:32px;line-height:64px">
+        ${icon}
+      </div>
+
+      <div style="font-size:20px;font-weight:800;color:#0A0A0A;letter-spacing:-0.5px;margin-bottom:8px">
+        Fairway<span style="color:#FF6535">IQ</span>
+      </div>
+
+      <h1 style="margin:0 0 12px;font-size:22px;font-weight:700;color:${accentColor};letter-spacing:-0.3px">${headline}</h1>
+      <p style="margin:0 0 32px;font-size:15px;line-height:1.6;color:#555555">${message}</p>
+
+      <p style="margin:0;font-size:12px;color:#AAAAAA">© 2026 FairwayIQ · <a href="https://faiway-iq.com" style="color:#AAAAAA;text-decoration:none">faiway-iq.com</a></p>
+    </div>
+  </div>
+</body>
 </html>`;
 }

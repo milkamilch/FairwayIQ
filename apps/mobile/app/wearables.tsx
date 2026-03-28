@@ -94,7 +94,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../src/lib/theme';
 import { api } from '../src/lib/api';
 
-type Provider = 'APPLE_HEALTH' | 'GARMIN';
+type Provider = 'APPLE_HEALTH';
 
 interface SyncData {
   steps?: number;
@@ -148,12 +148,9 @@ interface DeviceCardProps {
 }
 
 function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loading, c, t, lang }: DeviceCardProps) {
-  const isApple = provider === 'APPLE_HEALTH';
   const isConnected = !!connection;
 
-  const meta = isApple
-    ? { name: 'Apple Health', iconName: 'heart-outline', color: '#ff3b30', desc: t('wearables.devices.appleDesc') }
-    : { name: 'Garmin Connect', iconName: 'watch-outline', color: '#007cc3', desc: t('wearables.devices.garminDesc') };
+  const meta = { name: 'Apple Health', iconName: 'heart-outline', color: '#ff3b30', desc: t('wearables.devices.appleDesc') };
 
   const formatDate = (iso: string | null) => {
     if (!iso) return t('wearables.never');
@@ -192,7 +189,7 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
                 <Text style={{ color: '#FF6535', fontSize: 10, fontWeight: '700' }}>{t('wearables.connected')}</Text>
               </View>
             )}
-            {isApple && Platform.OS !== 'ios' && (
+            {Platform.OS !== 'ios' && (
               <View style={{
                 paddingHorizontal: 7, paddingVertical: 2, borderRadius: 100,
                 backgroundColor: c.bgElevated, borderWidth: 1, borderColor: c.bgBorder,
@@ -239,10 +236,10 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
         {!isConnected ? (
           <TouchableOpacity
             onPress={() => onConnect(provider)}
-            disabled={loading || (isApple && Platform.OS !== 'ios')}
+            disabled={loading || Platform.OS !== 'ios'}
             style={{
               flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center',
-              backgroundColor: (isApple && Platform.OS !== 'ios') ? c.bgElevated : meta.color,
+              backgroundColor: Platform.OS !== 'ios' ? c.bgElevated : meta.color,
               opacity: loading ? 0.6 : 1,
             }}
           >
@@ -250,9 +247,9 @@ function DeviceCard({ provider, connection, onConnect, onDisconnect, onSync, loa
               ? <ActivityIndicator size="small" color="#fff" />
               : <Text style={{
                   fontWeight: '700', fontSize: 14,
-                  color: (isApple && Platform.OS !== 'ios') ? c.inkMuted : '#fff',
+                  color: Platform.OS !== 'ios' ? c.inkMuted : '#fff',
                 }}>
-                  {(isApple && Platform.OS !== 'ios') ? t('wearables.iphoneOnly') : t('wearables.connect')}
+                  {Platform.OS !== 'ios' ? t('wearables.iphoneOnly') : t('wearables.connect')}
                 </Text>
             }
           </TouchableOpacity>
@@ -333,7 +330,7 @@ export default function WearablesScreen() {
   };
 
   const handleDisconnect = (provider: Provider) => {
-    const name = provider === 'APPLE_HEALTH' ? 'Apple Health' : 'Garmin Connect';
+    const name = 'Apple Health';
     Alert.alert(
       t('wearables.disconnectTitle', { name }),
       t('wearables.disconnectMsg'),
@@ -357,12 +354,7 @@ export default function WearablesScreen() {
     try {
       let syncData: { steps?: number; heartRate?: number; calories?: number; activeMinutes?: number };
 
-      if (provider === 'APPLE_HEALTH') {
-        syncData = await readAppleHealthData();
-      } else {
-        // Garmin: Demo-Daten bis echte OAuth-Integration fertig ist
-        syncData = { steps: 10350, heartRate: 68, calories: 480, activeMinutes: 62 };
-      }
+      syncData = await readAppleHealthData();
 
       await api.post(`/wearables/${provider.toLowerCase()}/sync`, syncData);
       await loadConnections();
@@ -411,17 +403,6 @@ export default function WearablesScreen() {
           t={t}
           lang={i18n.language}
         />
-        <DeviceCard
-          provider="GARMIN"
-          connection={getConnection('GARMIN')}
-          onConnect={handleConnect}
-          onDisconnect={handleDisconnect}
-          onSync={handleSync}
-          loading={loadingProvider === 'GARMIN'}
-          c={c}
-          t={t}
-          lang={i18n.language}
-        />
 
         {/* What gets synced */}
         <View style={{
@@ -440,22 +421,6 @@ export default function WearablesScreen() {
               </View>
             </View>
           ))}
-        </View>
-
-        {/* Watch note */}
-        <View style={{
-          marginTop: 12, backgroundColor: '#007cc315', borderRadius: 14,
-          borderWidth: 1, borderColor: '#007cc330', padding: 14, flexDirection: 'row', gap: 10,
-        }}>
-          <Ionicons name="watch-outline" size={18} color="#007cc3" style={{ marginTop: 1 }} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: '#007cc3', fontWeight: '700', fontSize: 13, marginBottom: 4 }}>
-              {t('wearables.watchNote')}
-            </Text>
-            <Text style={{ color: c.inkSecondary, fontSize: 12, lineHeight: 18 }}>
-              {t('wearables.watchNoteDesc')}
-            </Text>
-          </View>
         </View>
 
         <View style={{ height: 32 }} />

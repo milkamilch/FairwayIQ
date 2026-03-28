@@ -7,6 +7,12 @@ export interface WorkoutSummary {
   mood: 'excellent' | 'good' | 'okay' | 'tough';
 }
 
+export interface DrillPerformance {
+  drillName: string;
+  hits: number;
+  attempts: number;
+}
+
 interface SessionContext {
   feeling: number;       // 1–5
   difficulty: number;    // 1–5
@@ -15,6 +21,7 @@ interface SessionContext {
   sessionNumber: number; // Wie viele Sessions insgesamt
   prevAvgDifficulty: number | null;
   notes?: string;
+  drillResults?: DrillPerformance[];
 }
 
 // ── Kategorie-spezifische Inhalte ──────────────────────────────────────
@@ -137,7 +144,7 @@ const CATEGORY_TIPS: Record<TrainingCategory, string[]> = {
 
 // ── Hauptfunktion ──────────────────────────────────────────────────────
 export function generateWorkoutSummary(ctx: SessionContext): WorkoutSummary {
-  const { feeling, difficulty, focus, drillCount, sessionNumber, prevAvgDifficulty } = ctx;
+  const { feeling, difficulty, focus, drillCount, sessionNumber, prevAvgDifficulty, drillResults } = ctx;
 
   // Mood
   const mood: WorkoutSummary['mood'] =
@@ -147,6 +154,20 @@ export function generateWorkoutSummary(ctx: SessionContext): WorkoutSummary {
 
   const highlights: string[] = [];
   const focusPoints: string[] = [];
+
+  // ── Drill-Performance auswerten ────────────────────────────────────
+  const trackedDrills = (drillResults ?? []).filter((r) => r.attempts > 0);
+  const drillRates = trackedDrills.map((r) => ({ ...r, rate: r.hits / r.attempts }));
+
+  let bestDrill: (typeof drillRates)[0] | null = null;
+  let worstDrill: (typeof drillRates)[0] | null = null;
+  let avgRate: number | null = null;
+
+  if (drillRates.length > 0) {
+    bestDrill = drillRates.reduce((a, b) => (a.rate >= b.rate ? a : b));
+    worstDrill = drillRates.reduce((a, b) => (a.rate <= b.rate ? a : b));
+    avgRate = drillRates.reduce((s, r) => s + r.rate, 0) / drillRates.length;
+  }
 
   // ── Highlights ─────────────────────────────────────────────────────
   // 1. Feeling-basiert
@@ -160,8 +181,15 @@ export function generateWorkoutSummary(ctx: SessionContext): WorkoutSummary {
     highlights.push('Dass du trotz schwierigem Tag durchgezogen hast, zeigt mentale Stärke — das ist echtes Training');
   }
 
-  // 2. Difficulty-basiert
-  if (difficulty >= 4) {
+  // 2. Drill-Performance (wenn vorhanden) oder Difficulty-basiert
+  if (bestDrill && bestDrill.rate >= 0.7) {
+    const pct = Math.round(bestDrill.rate * 100);
+    highlights.push(`Beim „${bestDrill.drillName}" hast du ${bestDrill.hits}/${bestDrill.attempts} Treffer erzielt (${pct}%) — starke Leistung!`);
+  } else if (avgRate !== null) {
+    const pct = Math.round(avgRate * 100);
+    const trackedCount = drillRates.length;
+    highlights.push(`Durchschnittliche Trefferquote: ${pct}% über ${trackedCount} getrackte${trackedCount === 1 ? '' : 'n'} Übung${trackedCount === 1 ? '' : 'en'}`);
+  } else if (difficulty >= 4) {
     highlights.push(`Du hast dich heute wirklich gefordert — anspruchsvolles Training mit ${drillCount} Übungen schafft die größten Fortschritte`);
   } else if (difficulty === 3) {
     highlights.push(`Das Niveau war heute genau im optimalen Bereich — du hast alle ${drillCount} Übungen im idealen Lernfenster absolviert`);
@@ -177,8 +205,11 @@ export function generateWorkoutSummary(ctx: SessionContext): WorkoutSummary {
   // ── Fokuspunkte ────────────────────────────────────────────────────
   const catFocus = CATEGORY_FOCUS[focus];
 
-  // 1. Schwierigkeits-Feedback
-  if (difficulty >= 4) {
+  // 1. Drill mit niedrigster Quote hervorheben (wenn vorhanden und unter 50%)
+  if (worstDrill && worstDrill.rate < 0.5 && worstDrill.attempts >= 3) {
+    const pct = Math.round(worstDrill.rate * 100);
+    focusPoints.push(`„${worstDrill.drillName}" lag bei ${worstDrill.hits}/${worstDrill.attempts} Treffern (${pct}%) — beim nächsten Mal gezielt daran ansetzen`);
+  } else if (difficulty >= 4) {
     focusPoints.push('Tempo vor Präzision: wenn etwas zu schwer fühlt, gehe kurz einen Schritt zurück und baue Konsistenz auf');
   } else if (difficulty <= 2) {
     focusPoints.push('Die Übungen lagen heute in deiner Komfortzone — beim nächsten Mal gerne mit mehr Fokus auf Präzision oder Druckbedingungen üben');
@@ -189,7 +220,7 @@ export function generateWorkoutSummary(ctx: SessionContext): WorkoutSummary {
   focusPoints.push(catFocus[focusIndex]);
 
   // 3. Pattern-Erkennung: Vergleich mit Durchschnitt
-  if (prevAvgDifficulty !== null) {
+  if (prevAvgDifficulty !== null && focusPoints.length < 2) {
     if (difficulty > prevAvgDifficulty + 1) {
       focusPoints.push('Diese Einheit war spürbar anspruchsvoller als dein Durchschnitt — achte auf ausreichende Erholung');
     } else if (difficulty < prevAvgDifficulty - 1) {
@@ -201,8 +232,14 @@ export function generateWorkoutSummary(ctx: SessionContext): WorkoutSummary {
   const finalFocusPoints = focusPoints.slice(0, 2);
 
   // ── Nächster Tipp ──────────────────────────────────────────────────
-  const tipPool = CATEGORY_TIPS[focus];
-  const nextTip = tipPool[sessionNumber % tipPool.length];
+  // Wenn eine konkrete Übung schwächelt, direkt darauf hinweisen
+  let nextTip: string;
+  if (worstDrill && worstDrill.rate < 0.5 && worstDrill.attempts >= 3) {
+    nextTip = `Starte die nächste Einheit mit „${worstDrill.drillName}" — wiederholtes Üben der schwächsten Übung bringt den größten Fortschritt`;
+  } else {
+    const tipPool = CATEGORY_TIPS[focus];
+    nextTip = tipPool[sessionNumber % tipPool.length];
+  }
 
   return { highlights, focusPoints: finalFocusPoints, nextTip, mood };
 }

@@ -218,6 +218,84 @@ socialRouter.get('/leaderboard', async (req: AuthRequest, res: Response) => {
   res.json(ranked);
 });
 
+// ── View user profile (respects privacy) ─────────────────────────────
+socialRouter.get('/users/:userId', async (req: AuthRequest, res: Response) => {
+  const targetId = req.params.userId;
+  const requesterId = req.userId!;
+
+  const PROFILE_SELECT = {
+    id: true, name: true, level: true, homeClub: true, handicap: true,
+    profileVisibility: true, showHandicap: true, showStats: true, showGoals: true,
+  } as const;
+
+  const target = await prisma.user.findUnique({ where: { id: targetId }, select: PROFILE_SELECT });
+  if (!target) { res.status(404).json({ error: 'User not found' }); return; }
+
+  const isSelf = targetId === requesterId;
+
+  if (!isSelf && target.profileVisibility !== 'PUBLIC') {
+    if (target.profileVisibility === 'PRIVATE') {
+      res.json({ id: target.id, name: target.name, level: target.level, homeClub: null, isPrivate: true });
+      return;
+    }
+    // FRIENDS
+    const friendship = await prisma.friendship.findFirst({
+      where: {
+        status: 'ACCEPTED',
+        OR: [
+          { requesterId, addresseeId: targetId },
+          { requesterId: targetId, addresseeId: requesterId },
+        ],
+      },
+    });
+    if (!friendship) {
+      res.json({ id: target.id, name: target.name, level: target.level, homeClub: null, isPrivate: true });
+      return;
+    }
+  }
+
+  const response: Record<string, unknown> = {
+    id: target.id,
+    name: target.name,
+    level: target.level,
+    homeClub: target.homeClub,
+    isPrivate: false,
+  };
+
+  if (isSelf || target.showHandicap) response.handicap = target.handicap;
+
+  if (isSelf || target.showStats) {
+    const rounds = await prisma.round.findMany({
+      where: { userId: targetId },
+      include: { scores: { select: { strokes: true, par: true } } },
+      orderBy: { date: 'desc' },
+      take: 20,
+    });
+    const diffs = rounds
+      .map((r) => {
+        const gross = r.scores.reduce((s, h) => s + h.strokes, 0);
+        const par = r.scores.reduce((s, h) => s + h.par, 0);
+        return gross - par;
+      })
+      .filter((d) => isFinite(d));
+    response.stats = {
+      rounds: rounds.length,
+      bestScore: diffs.length > 0 ? Math.min(...diffs) : null,
+      avgScore: diffs.length > 0 ? Math.round((diffs.reduce((a, b) => a + b, 0) / diffs.length) * 10) / 10 : null,
+    };
+  }
+
+  if (isSelf || target.showGoals) {
+    response.goals = await prisma.userGoal.findMany({
+      where: { userId: targetId, isCompleted: false },
+      select: { id: true, type: true, title: true, targetValue: true, deadline: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  res.json(response);
+});
+
 // ── Friends' activity feed ────────────────────────────────────────────
 socialRouter.get('/feed', async (req: AuthRequest, res: Response) => {
   const friendships = await prisma.friendship.findMany({

@@ -20,11 +20,11 @@
         "NSCameraUsageDescription": "FairwayIQ uses the camera to set your profile picture.",
         "NSPhotoLibraryUsageDescription": "FairwayIQ needs access to your photo library to set your profile picture.",
         "NSHealthShareUsageDescription": "FairwayIQ reads fitness and activity data to enrich your golf rounds.",
-        "NSHealthUpdateUsageDescription": "FairwayIQ does not write health data."
+        "NSHealthUpdateUsageDescription": "FairwayIQ does not write health data.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "entitlements": {
-        "com.apple.developer.healthkit": true,
-        "com.apple.developer.healthkit.background-delivery": true
+        "com.apple.developer.healthkit": true
       }
     },
     "android": {
@@ -32,7 +32,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#07070f"
       },
-      "package": "com.fairwayiq.app"
+      "package": "com.fairwayiq.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CALENDAR",
+        "android.permission.WRITE_CALENDAR",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro"
@@ -58,10 +65,24 @@
         {
           "locationWhenInUsePermission": "FairwayIQ needs your location for current weather data and play recommendations."
         }
+      ],
+      [
+        "react-native-health",
+        {
+          "healthSharePermission": "FairwayIQ reads fitness and activity data to enrich your golf rounds.",
+          "healthUpdatePermission": "FairwayIQ does not write health data."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8157063d-874e-4a06-9e69-261157519cdb"
+      }
+    },
+    "owner": "milkamilch"
   }
 }

@@ -284,15 +284,16 @@ export function WeatherWidget() {
             )}
           </View>
 
-          {/* Play rating badge */}
+          {/* Play rating badge — weather icon only, coloured by rec */}
           <View
-            className="px-3 py-2 rounded-xl items-center"
-            style={{ backgroundColor: rec.color + '20' }}
+            style={{
+              width: 44, height: 44, borderRadius: 12,
+              backgroundColor: rec.color + '20',
+              borderWidth: 1, borderColor: rec.color + '50',
+              alignItems: 'center', justifyContent: 'center',
+            }}
           >
-            <Ionicons name={rec.iconName as any} size={18} color={rec.color} />
-            <Text className="text-xs font-bold mt-0.5" style={{ color: rec.color }} numberOfLines={2}>
-              {t(`weather.ratings.${rec.rating}`)}
-            </Text>
+            <Ionicons name={wmoIcon as any} size={22} color={rec.color} />
           </View>
         </View>
       </View>

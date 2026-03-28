@@ -44,6 +44,8 @@ const en = {
       register: 'Register',
       invalidCredentials: 'Email or password invalid',
       emailNotVerified: 'Please confirm your email address first.',
+      resendVerification: 'Resend email',
+      resendSent: 'New link sent. Please also check your spam folder.',
       fillAllFields: 'Please fill in all fields',
     },
     register: {
@@ -62,6 +64,12 @@ const en = {
       loginLink: 'Sign In',
       requiredFields: 'Name, email and password are required',
       passwordTooShort: 'Password must be at least 8 characters',
+      passwordMismatch: 'Passwords do not match',
+      confirmPasswordLabel: 'CONFIRM PASSWORD',
+      pwWeak: 'Weak',
+      pwFair: 'Fair',
+      pwGood: 'Good',
+      pwStrong: 'Strong',
       emailTaken: 'This email is already registered.',
       failed: 'Registration failed.',
       pendingTitle: 'Confirm your email',
@@ -282,6 +290,16 @@ const en = {
         CUSTOM: '',
       },
     },
+    privacy: {
+      title: 'Privacy',
+      visibility: 'Profile visible to',
+      public: 'Everyone',
+      friends: 'Friends',
+      private: 'Only me',
+      showHandicap: 'Show handicap',
+      showStats: 'Show statistics',
+      showGoals: 'Show goals',
+    },
     links: {
       bag: 'Golf Bag',
       bagSub: 'Manage clubs & distances',
@@ -325,8 +343,23 @@ const en = {
     },
   },
 
+  // ── Inbox ───────────────────────────────────────────────────────────
+  inbox: {
+    sectionLabel: 'Notifications',
+    title: 'Inbox',
+    friendRequests: 'Friend Requests',
+    allClear: 'All clear',
+    noRequests: 'No pending requests.',
+  },
+
   // ── Social ──────────────────────────────────────────────────────────
   social: {
+    userProfile: {
+      title: 'Profile',
+      noData: 'Profile could not be loaded.',
+      private: 'This profile is private.',
+      removeFriend: 'Remove friend',
+    },
     sectionLabel: 'Community',
     title: 'Social',
     tabs: {

@@ -7,5 +7,5 @@
       "@fairwayiq/shared": ["../packages/shared/src"]
     }
   },
-  "include": ["src", "prisma"]
+  "include": ["src"]
 }

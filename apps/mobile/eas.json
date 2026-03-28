@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 14.0.0"
+    "version": ">= 14.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -17,15 +18,18 @@
       "autoIncrement": true,
       "ios": {
         "credentialsSource": "remote"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.faiway-iq.com"
       }
     }
   },
   "submit": {
     "production": {
       "ios": {
-        "appleId": "DEINE_APPLE_ID@example.com",
-        "ascAppId": "DEINE_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "DEIN_TEAM_ID"
+        "appleId": "larswenner00@gmail.com",
+        "ascAppId": "6761027138",
+        "appleTeamId": "5MSX88KAN8"
       }
     }
   }

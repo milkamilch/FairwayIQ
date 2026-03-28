@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../src/lib/api';
 import { useTheme } from '../../src/lib/theme';
+import { UserProfileSheet } from '../../src/components/UserProfileSheet';
 
 // ── Types ─────────────────────────────────────────────────────────────
 type GolferLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'PRO';
@@ -52,7 +53,7 @@ function scoreDiff(n: number) {
 
 function scoreColor(d: number) {
   if (d <= -1) return '#FF6535';
-  if (d === 0)  return '#FFFFFF';
+  if (d === 0)  return '#6ee7b7';
   if (d === 1)  return '#f59e0b';
   return '#ef4444';
 }
@@ -61,10 +62,18 @@ function timeAgo(iso: string, lang: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const h = Math.floor(diff / 3_600_000);
   const d = Math.floor(diff / 86_400_000);
-  const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
-  if (h < 1) return rtf.format(-Math.floor(diff / 60_000), 'minute');
-  if (h < 24) return rtf.format(-h, 'hour');
-  if (d < 7) return rtf.format(-d, 'day');
+  const m = Math.floor(diff / 60_000);
+  try {
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: 'auto' });
+    if (h < 1) return rtf.format(-m, 'minute');
+    if (h < 24) return rtf.format(-h, 'hour');
+    if (d < 7) return rtf.format(-d, 'day');
+  } catch {
+    const de = lang.startsWith('de');
+    if (h < 1) return de ? `vor ${m} Min.` : `${m}m ago`;
+    if (h < 24) return de ? `vor ${h} Std.` : `${h}h ago`;
+    if (d < 7) return de ? `vor ${d} T.` : `${d}d ago`;
+  }
   return new Date(iso).toLocaleDateString(lang, { day: 'numeric', month: 'short' });
 }
 
@@ -78,7 +87,7 @@ type TabKey = typeof TABS[number]['key'];
 // ── Avatar ─────────────────────────────────────────────────────────────
 function Avatar({ name, level, size = 40 }: { name: string; level: GolferLevel; size?: number }) {
   const c = useTheme();
-  const meta = LEVEL_META[level];
+  const meta = LEVEL_META[level] ?? LEVEL_META['BEGINNER'];
   const initials = name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <View style={{
@@ -296,7 +305,7 @@ function RankingTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
                     )}
                   </View>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                    <Ionicons name={LEVEL_META[entry.level].iconName as any} size={11} color={LEVEL_META[entry.level].color} />
+                    <Ionicons name={((LEVEL_META[entry.level] ?? LEVEL_META['BEGINNER']).iconName) as any} size={11} color={(LEVEL_META[entry.level] ?? LEVEL_META['BEGINNER']).color} />
                     <Text style={{ color: c.inkMuted, fontSize: 11 }}>{entry.rounds} {t('social.ranking.rounds')}</Text>
                   </View>
                 </View>
@@ -330,6 +339,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedFriend, setSelectedFriend] = useState<FriendUser | null>(null);
   const searchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const load = useCallback(async () => {
@@ -393,6 +403,15 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
   const showSearch = searchQuery.length >= 2;
 
   return (
+    <>
+    {selectedFriend && (
+      <UserProfileSheet
+        userId={selectedFriend.id}
+        friendshipId={selectedFriend.friendshipId}
+        onClose={() => setSelectedFriend(null)}
+        onFriendRemoved={() => { setSelectedFriend(null); load(); }}
+      />
+    )}
     <ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={{ padding: 16, gap: 16 }}
@@ -523,27 +542,28 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
             </View>
           ) : (
             friends.map((friend) => (
-              <View key={friend.id} style={{
-                flexDirection: 'row', alignItems: 'center', gap: 12,
-                backgroundColor: c.bgCard, borderRadius: 14,
-                
-                padding: 12, marginBottom: 8,
-              }}>
+              <TouchableOpacity
+                key={friend.id}
+                onPress={() => setSelectedFriend(friend)}
+                style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 12,
+                  backgroundColor: c.bgCard, borderRadius: 14,
+                  padding: 12, marginBottom: 8,
+                }}
+              >
                 <Avatar name={friend.name} level={friend.level} size={42} />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{friend.name}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                    <Ionicons name={LEVEL_META[friend.level].iconName as any} size={12} color={LEVEL_META[friend.level].color} />
+                    <Ionicons name={((LEVEL_META[friend.level] ?? LEVEL_META['BEGINNER']).iconName) as any} size={12} color={(LEVEL_META[friend.level] ?? LEVEL_META['BEGINNER']).color} />
                     <Text style={{ color: c.inkMuted, fontSize: 12 }}>
                       {friend.handicap != null ? `HCP ${friend.handicap}` : t('social.friends.noHcp')}
                       {friend.homeClub ? ` · ${friend.homeClub}` : ''}
                     </Text>
                   </View>
                 </View>
-                <TouchableOpacity onPress={() => removeFriend(friend)} style={{ padding: 8 }}>
-                  <Ionicons name="person-remove-outline" size={18} color={c.inkMuted} />
-                </TouchableOpacity>
-              </View>
+                <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
+              </TouchableOpacity>
             ))
           )}
         </View>
@@ -551,6 +571,7 @@ function FriendsTab({ refreshing, onRefresh }: { refreshing: boolean; onRefresh:
 
       <View style={{ height: 20 }} />
     </ScrollView>
+    </>
   );
 }
 
@@ -569,11 +590,11 @@ export default function SocialScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
       {/* Header */}
-      <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 4 }}>
+      <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 16 }}>
         <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>
           {t('social.sectionLabel')}
         </Text>
-        <Text style={{ color: c.inkPrimary, fontSize: 30, fontWeight: '900' }}>{t('social.title')}</Text>
+        <Text style={{ color: c.inkPrimary, fontSize: 30, fontWeight: '900', marginBottom: 4 }}>{t('social.title')}</Text>
       </View>
 
       {/* Internal Tab Bar */}

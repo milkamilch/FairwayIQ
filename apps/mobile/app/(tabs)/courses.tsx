@@ -54,6 +54,13 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
   );
 }
 
+type BagClub = { id: string; name: string; type: string; distanceM: number | null };
+
+const CLUB_TYPE_ORDER = ['DRIVER', 'FAIRWAY_WOOD', 'HYBRID', 'IRON', 'WEDGE'];
+const CLUB_TYPE_LABEL: Record<string, string> = {
+  DRIVER: 'Driver', FAIRWAY_WOOD: 'Holz', HYBRID: 'Hybrid', IRON: 'Eisen', WEDGE: 'Wedge',
+};
+
 interface ShotData {
   label: string;
   club: string;
@@ -62,15 +69,61 @@ interface ShotData {
   notes: string;
 }
 
-function ShotForm({ shot, onChange, c, t, inputStyle, labelStyle }: {
+function ShotForm({ shot, onChange, c, t, inputStyle, labelStyle, bagClubs }: {
   shot: ShotData; onChange: (s: ShotData) => void;
   c: ReturnType<typeof useTheme>; t: any; inputStyle: string; labelStyle: string;
+  bagClubs: BagClub[];
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
   return (
     <View className="gap-5">
       <View>
         <Text className={labelStyle}>{t('courses.strategyModal.club')}</Text>
-        <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor={c.inkMuted} value={shot.club} onChangeText={(v) => onChange({ ...shot, club: v })} />
+        {bagClubs.length > 0 ? (
+          <>
+            <TouchableOpacity
+              onPress={() => setPickerOpen((v) => !v)}
+              className="flex-row items-center justify-between rounded-xl px-4 py-3 border border-bg-border"
+              style={{ backgroundColor: c.bgElevated }}
+            >
+              <Text className="text-sm" style={{ color: shot.club ? c.inkPrimary : c.inkMuted }}>
+                {shot.club || t('courses.strategyModal.clubPlaceholder')}
+              </Text>
+              <Ionicons name={pickerOpen ? 'chevron-up' : 'chevron-down'} size={14} color={c.inkMuted} />
+            </TouchableOpacity>
+            {pickerOpen && (
+              <View className="rounded-xl border border-bg-border mt-1 overflow-hidden" style={{ backgroundColor: c.bgCard }}>
+                {CLUB_TYPE_ORDER.filter((type) => bagClubs.some((b) => b.type === type)).map((type) => (
+                  <View key={type}>
+                    <View className="px-4 py-1.5" style={{ backgroundColor: c.bgElevated }}>
+                      <Text style={{ color: c.inkMuted, fontSize: 10, fontWeight: '700', letterSpacing: 0.8 }}>
+                        {CLUB_TYPE_LABEL[type].toUpperCase()}
+                      </Text>
+                    </View>
+                    {bagClubs.filter((b) => b.type === type).map((b) => (
+                      <TouchableOpacity
+                        key={b.id}
+                        onPress={() => { onChange({ ...shot, club: b.name }); setPickerOpen(false); }}
+                        className="flex-row items-center justify-between px-4 py-3 border-t border-bg-border"
+                        style={{ backgroundColor: shot.club === b.name ? c.neonGreen12 : 'transparent' }}
+                      >
+                        <View className="flex-row items-center gap-2">
+                          {shot.club === b.name && <Ionicons name="checkmark" size={14} color="#FF6535" />}
+                          <Text className="text-sm font-semibold" style={{ color: shot.club === b.name ? '#FF6535' : c.inkPrimary }}>{b.name}</Text>
+                        </View>
+                        {b.distanceM != null && (
+                          <Text style={{ color: c.inkMuted, fontSize: 12 }}>{b.distanceM} m</Text>
+                        )}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ))}
+              </View>
+            )}
+          </>
+        ) : (
+          <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor={c.inkMuted} value={shot.club} onChangeText={(v) => onChange({ ...shot, club: v })} />
+        )}
       </View>
       <View>
         <Text className={labelStyle}>{t('courses.strategyModal.trajectory')}</Text>
@@ -121,6 +174,7 @@ function buildShots(par: number, existing: ShotData[]): ShotData[] {
 function StrategyModal({ hole, courseId, onClose, onSaved }: {
   hole: any; courseId: string; onClose: () => void; onSaved: () => void;
 }) {
+  const [bagClubs, setBagClubs] = useState<BagClub[]>([]);
   const { t } = useTranslation();
   const c = useTheme();
   const [saving, setSaving] = useState(false);
@@ -136,6 +190,12 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
   const [shots, setShots] = useState<ShotData[]>(() => buildShots(hole.par, existingShots));
 
   const updateShot = (i: number, s: ShotData) => setShots((prev) => prev.map((x, j) => j === i ? s : x));
+
+  useEffect(() => {
+    api.get<BagClub[]>('/clubs').then(({ data }) => {
+      setBagClubs(data.filter((c) => c.type !== 'PUTTER'));
+    }).catch(() => {});
+  }, []);
 
   const save = async () => {
     const [tee, ...rest] = shots;
@@ -197,7 +257,7 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
 
         <ScrollView className="flex-1 px-5 pt-5">
           <View className="gap-5">
-            <ShotForm shot={shots[activeShot]} onChange={(s) => updateShot(activeShot, s)} c={c} t={t} inputStyle={inputStyle} labelStyle={labelStyle} />
+            <ShotForm shot={shots[activeShot]} onChange={(s) => updateShot(activeShot, s)} c={c} t={t} inputStyle={inputStyle} labelStyle={labelStyle} bagClubs={bagClubs} />
 
             {/* Avoidance is global for the hole, shown for tee shot tab */}
             {activeShot === 0 && (
@@ -289,7 +349,7 @@ export default function CoursesScreen() {
         <View className="px-5 pt-4 pb-4 border-b border-bg-border">
           <View className="flex-row items-center gap-3 mb-3">
             <TouchableOpacity onPress={() => setSelectedCourse(null)}>
-              <Ionicons name="arrow-back" size={22} color="#8A8A8A" />
+              <Ionicons name="arrow-back" size={22} color={c.inkSecondary} />
             </TouchableOpacity>
             <View className="flex-1">
               <Text className="text-ink-primary font-bold text-lg">{selectedCourse.name}</Text>
@@ -398,8 +458,7 @@ export default function CoursesScreen() {
                 }}
               >
                 <View style={{
-                  width: 36, height: 36, borderRadius: 10,
-                  backgroundColor: '#FF653520', borderRadius: 16,
+                  width: 36, height: 36, borderRadius: 16,
                   alignItems: 'center', justifyContent: 'center',
                 }}>
                   {saving === r.apiId

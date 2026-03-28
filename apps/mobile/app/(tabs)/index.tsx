@@ -8,6 +8,8 @@ import { useAuthStore } from '../../src/store/authStore';
 import { useTrainingStore } from '../../src/store/trainingStore';
 import { api } from '../../src/lib/api';
 import { WeatherWidget } from '../../src/components/WeatherWidget';
+import { useTheme } from '../../src/lib/theme';
+import { InboxModal, fetchInboxCount } from '../../src/components/InboxModal';
 
 interface Stats {
   rounds: number;
@@ -39,8 +41,11 @@ export default function DashboardScreen() {
   const { activePlan, fetchActivePlan } = useTrainingStore();
   const [stats, setStats] = useState<Stats | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [inboxOpen, setInboxOpen] = useState(false);
+  const [inboxCount, setInboxCount] = useState(0);
   const router = useRouter();
   const { t } = useTranslation();
+  const c = useTheme();
 
   const loadData = async () => {
     await fetchActivePlan();
@@ -48,6 +53,7 @@ export default function DashboardScreen() {
       const { data } = await api.get<Stats>('/rounds/stats/overview');
       setStats(data);
     } catch {}
+    setInboxCount(await fetchInboxCount());
   };
 
   useEffect(() => { loadData(); }, []);
@@ -56,6 +62,11 @@ export default function DashboardScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-bg-base">
+      <InboxModal
+        visible={inboxOpen}
+        onClose={() => setInboxOpen(false)}
+        onCountChange={setInboxCount}
+      />
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FF6535" />}
@@ -67,15 +78,37 @@ export default function DashboardScreen() {
               <Text className="text-ink-muted text-xs font-bold uppercase tracking-widest mb-1">{t('dashboard.sectionLabel')}</Text>
               <Text className="text-ink-primary text-3xl font-black">{user?.name}</Text>
             </View>
-            <View className="items-end gap-1.5">
-              <View className="px-3 py-1.5 rounded-full" style={{ backgroundColor: '#FF653520' }}>
-                <Text className="text-neon-green text-xs font-bold tracking-wider">
-                  {t(`dashboard.level.${user?.level ?? 'BEGINNER'}`)}
-                </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View className="items-end gap-1.5">
+                <View className="px-3 py-1.5 rounded-full" style={{ backgroundColor: '#FF653520' }}>
+                  <Text className="text-neon-green text-xs font-bold tracking-wider">
+                    {t(`dashboard.level.${user?.level ?? 'BEGINNER'}`)}
+                  </Text>
+                </View>
+                {user?.handicap !== null && user?.handicap !== undefined && (
+                  <Text className="text-ink-secondary text-sm font-semibold">HCP {user.handicap}</Text>
+                )}
               </View>
-              {user?.handicap !== null && user?.handicap !== undefined && (
-                <Text className="text-ink-secondary text-sm font-semibold">HCP {user.handicap}</Text>
-              )}
+              {/* Inbox Bell */}
+              <TouchableOpacity
+                onPress={() => setInboxOpen(true)}
+                style={{ position: 'relative', padding: 6 }}
+              >
+                <Ionicons name="notifications-outline" size={24} color={c.inkSecondary} />
+                {inboxCount > 0 && (
+                  <View style={{
+                    position: 'absolute', top: 2, right: 2,
+                    minWidth: 16, height: 16, borderRadius: 8,
+                    backgroundColor: '#FF6535',
+                    alignItems: 'center', justifyContent: 'center',
+                    paddingHorizontal: 3,
+                  }}>
+                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '800', lineHeight: 14 }}>
+                      {inboxCount > 9 ? '9+' : inboxCount}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>

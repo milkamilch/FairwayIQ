@@ -4,26 +4,41 @@ import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../src/store/authStore';
+import { api } from '../../src/lib/api';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [unverified, setUnverified] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const { login, isLoading } = useAuthStore();
   const { t } = useTranslation();
 
   const handleLogin = async () => {
     if (!email || !password) { Alert.alert(t('common.error'), t('auth.login.fillAllFields')); return; }
+    setUnverified(false);
     try {
       await login({ email: email.trim().toLowerCase(), password });
     } catch (err: any) {
       if (!err?.response) {
         Alert.alert(t('common.connectionError'), t('common.backendUnreachable', { url: process.env.EXPO_PUBLIC_API_URL }));
       } else if (err?.response?.data?.error === 'EMAIL_NOT_VERIFIED') {
-        Alert.alert(t('common.error'), t('auth.login.emailNotVerified'));
+        setUnverified(true);
       } else {
         Alert.alert(t('common.error'), t('auth.login.invalidCredentials'));
       }
     }
+  };
+
+  const handleResend = async () => {
+    setResendLoading(true);
+    try {
+      await api.post('/auth/resend-verification', { email: email.trim().toLowerCase() });
+      Alert.alert(t('common.ok'), t('auth.login.resendSent'));
+    } catch {
+      Alert.alert(t('common.error'), t('common.backendUnreachable', { url: '' }));
+    }
+    setResendLoading(false);
   };
 
   return (
@@ -52,6 +67,8 @@ export default function LoginScreen() {
               placeholderTextColor="#444444"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
+              textContentType="emailAddress"
               value={email}
               onChangeText={setEmail}
             />
@@ -64,10 +81,32 @@ export default function LoginScreen() {
               placeholder="••••••••"
               placeholderTextColor="#444444"
               secureTextEntry
+              autoComplete="current-password"
+              textContentType="password"
               value={password}
               onChangeText={setPassword}
             />
           </View>
+
+          {unverified && (
+            <View style={{
+              backgroundColor: '#FF653515', borderRadius: 14,
+              borderWidth: 1, borderColor: '#FF653540', padding: 14, gap: 10,
+            }}>
+              <Text style={{ color: '#FF6535', fontSize: 13, lineHeight: 18 }}>
+                {t('auth.login.emailNotVerified')}
+              </Text>
+              <TouchableOpacity
+                onPress={handleResend}
+                disabled={resendLoading}
+                style={{ alignSelf: 'flex-start', opacity: resendLoading ? 0.5 : 1 }}
+              >
+                <Text style={{ color: '#FF6535', fontWeight: '700', fontSize: 13, textDecorationLine: 'underline' }}>
+                  {resendLoading ? '...' : t('auth.login.resendVerification')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
 
           <TouchableOpacity
             className="rounded-2xl py-4 items-center mt-2"

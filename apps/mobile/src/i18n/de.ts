@@ -44,6 +44,8 @@ const de = {
       register: 'Registrieren',
       invalidCredentials: 'E-Mail oder Passwort ungültig',
       emailNotVerified: 'Bitte bestätige zuerst deine E-Mail-Adresse.',
+      resendVerification: 'Mail erneut senden',
+      resendSent: 'Neuer Link gesendet. Bitte prüfe auch deinen Spam-Ordner.',
       fillAllFields: 'Bitte alle Felder ausfüllen',
     },
     register: {
@@ -62,6 +64,12 @@ const de = {
       loginLink: 'Anmelden',
       requiredFields: 'Name, E-Mail und Passwort sind Pflichtfelder',
       passwordTooShort: 'Passwort muss mindestens 8 Zeichen haben',
+      passwordMismatch: 'Passwörter stimmen nicht überein',
+      confirmPasswordLabel: 'PASSWORT BESTÄTIGEN',
+      pwWeak: 'Schwach',
+      pwFair: 'Mäßig',
+      pwGood: 'Gut',
+      pwStrong: 'Stark',
       emailTaken: 'Diese E-Mail ist bereits registriert.',
       failed: 'Registrierung fehlgeschlagen.',
       pendingTitle: 'E-Mail bestätigen',
@@ -282,6 +290,16 @@ const de = {
         CUSTOM: '',
       },
     },
+    privacy: {
+      title: 'Datenschutz',
+      visibility: 'Profil sichtbar für',
+      public: 'Alle',
+      friends: 'Freunde',
+      private: 'Nur ich',
+      showHandicap: 'Handicap anzeigen',
+      showStats: 'Statistiken anzeigen',
+      showGoals: 'Ziele anzeigen',
+    },
     links: {
       bag: 'Schläger Bag',
       bagSub: 'Clubs & Distanzen verwalten',
@@ -325,8 +343,23 @@ const de = {
     },
   },
 
+  // ── Inbox ───────────────────────────────────────────────────────────
+  inbox: {
+    sectionLabel: 'Benachrichtigungen',
+    title: 'Posteingang',
+    friendRequests: 'Freundschaftsanfragen',
+    allClear: 'Alles erledigt',
+    noRequests: 'Keine offenen Anfragen.',
+  },
+
   // ── Social ──────────────────────────────────────────────────────────
   social: {
+    userProfile: {
+      title: 'Profil',
+      noData: 'Profil konnte nicht geladen werden.',
+      private: 'Dieses Profil ist privat.',
+      removeFriend: 'Freundschaft beenden',
+    },
     sectionLabel: 'Community',
     title: 'Social',
     tabs: {
