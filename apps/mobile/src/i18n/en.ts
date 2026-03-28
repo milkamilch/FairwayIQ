@@ -94,6 +94,8 @@ const en = {
       communitySub: 'Friends & Leaderboard',
       progress: 'Progress',
       progressSub: 'Skill radar & HCP history',
+      rules: 'Golf Rules & Green Card',
+      rulesSub: 'Chapters & Quiz',
     },
     level: {
       BEGINNER: 'BEGINNER',

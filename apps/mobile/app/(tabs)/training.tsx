@@ -695,6 +695,21 @@ export default function TrainingScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {/* Rules & Platzreife banner */}
+        <TouchableOpacity
+          onPress={() => router.push('/rules' as any)}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#3b82f615', borderRadius: 14, borderWidth: 1, borderColor: '#3b82f630', padding: 12, marginBottom: 12 }}
+        >
+          <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: '#3b82f620', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="book-outline" size={18} color="#3b82f6" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: c.inkPrimary, fontWeight: '800', fontSize: 14 }}>Regelkunde & Platzreife</Text>
+            <Text style={{ color: c.inkMuted, fontSize: 12 }}>6 Kapitel · Quiz · Prüfungsvorbereitung</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
+        </TouchableOpacity>
+
         <View className="flex-row bg-bg-elevated rounded-2xl p-1">
           {(['active', 'plans', 'library'] as const).map((t_key) => (
             <TouchableOpacity

@@ -94,6 +94,8 @@ const de = {
       communitySub: 'Freunde & Rangliste',
       progress: 'Fortschritt',
       progressSub: 'Skill-Radar & HCP-Verlauf',
+      rules: 'Regeln & Platzreife',
+      rulesSub: 'Kapitel & Quiz',
     },
     level: {
       BEGINNER: 'ANFÄNGER',
