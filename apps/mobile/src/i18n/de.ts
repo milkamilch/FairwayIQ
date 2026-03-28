@@ -27,6 +27,7 @@ const de = {
     courses: 'PLÄTZE',
     rounds: 'RUNDEN',
     social: 'COMMUNITY',
+    games: 'SPIELE',
     profile: 'PROFIL',
   },
 
@@ -102,6 +103,8 @@ const de = {
       communitySub: 'Freunde & Rangliste',
       progress: 'Fortschritt',
       progressSub: 'Skill-Radar & HCP-Verlauf',
+      rules: 'Regeln & Platzreife',
+      rulesSub: 'Kapitel & Quiz',
     },
     level: {
       BEGINNER: 'ANFÄNGER',
@@ -211,6 +214,11 @@ const de = {
         STRAIGHT: 'GERADE',
         FADE: 'FADE',
         DRAW: 'DRAW',
+      },
+      shots: {
+        tee: 'Abschlag',
+        approach: 'Annäherung',
+        layup: 'Layup',
       },
     },
     table: {
@@ -729,6 +737,11 @@ const de = {
       bogey: 'Bogey',
       double: 'Doppelbogey',
       triple: 'Triple+',
+      nineSplit: 'Neun-Split',
+      front9: 'Vorderneun',
+      back9: 'Hinterneun',
+      bestHole: 'Bestes Loch',
+      holeNum: 'Loch {{n}}',
     },
   },
 

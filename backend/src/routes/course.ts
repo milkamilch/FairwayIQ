@@ -239,12 +239,20 @@ courseRouter.post('/', async (req: AuthRequest, res: Response) => {
 
 // PUT Strategie für ein Loch speichern
 courseRouter.put('/:courseId/holes/:holeNumber/strategy', async (req: AuthRequest, res: Response) => {
+  const shotSchema = z.object({
+    label: z.string(),
+    club: z.string(),
+    shotShape: z.enum(['STRAIGHT', 'FADE', 'DRAW']),
+    aimPoint: z.string(),
+    notes: z.string().optional().default(''),
+  });
   const strategySchema = z.object({
     recommendedClub: z.string(),
     shotShape: z.enum(['STRAIGHT', 'FADE', 'DRAW']),
     aimPoint: z.string(),
     avoidance: z.string(),
     notes: z.string(),
+    shots: z.array(shotSchema).optional().default([]),
   });
 
   const parsed = strategySchema.safeParse(req.body);

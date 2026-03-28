@@ -27,6 +27,7 @@ const en = {
     courses: 'COURSES',
     rounds: 'ROUNDS',
     social: 'COMMUNITY',
+    games: 'GAMES',
     profile: 'PROFILE',
   },
 
@@ -102,6 +103,8 @@ const en = {
       communitySub: 'Friends & Leaderboard',
       progress: 'Progress',
       progressSub: 'Skill radar & HCP history',
+      rules: 'Golf Rules & Green Card',
+      rulesSub: 'Chapters & Quiz',
     },
     level: {
       BEGINNER: 'BEGINNER',
@@ -211,6 +214,11 @@ const en = {
         STRAIGHT: 'STRAIGHT',
         FADE: 'FADE',
         DRAW: 'DRAW',
+      },
+      shots: {
+        tee: 'Tee Shot',
+        approach: 'Approach',
+        layup: 'Lay-up',
       },
     },
     table: {
@@ -729,6 +737,11 @@ const en = {
       bogey: 'Bogey',
       double: 'Double',
       triple: 'Triple+',
+      nineSplit: 'Nine Split',
+      front9: 'Front 9',
+      back9: 'Back 9',
+      bestHole: 'Best Hole',
+      holeNum: 'Hole {{n}}',
     },
   },
 

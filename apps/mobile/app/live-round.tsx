@@ -128,6 +128,11 @@ interface SummaryData {
   stableford: number;
   courseHandicap: number | null;
   breakdown: { label: string; count: number; color: string }[];
+  frontNine: number | null;
+  backNine: number | null;
+  frontNinePar: number | null;
+  backNinePar: number | null;
+  bestHole: { number: number; strokes: number; par: number } | null;
 }
 
 function RoundSummaryModal({ data, courseName, onDone }: {
@@ -160,6 +165,35 @@ function RoundSummaryModal({ data, courseName, onDone }: {
               </View>
             ))}
           </View>
+
+          {(data.frontNine != null || data.backNine != null || data.bestHole != null) && (<>
+            <Text style={{ fontSize: 11, color: c.inkMuted, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
+              {t('liveRound.summary.nineSplit')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 24 }}>
+              {data.frontNine != null && (
+                <View style={{ flex: 1, backgroundColor: c.bgCard, borderRadius: 14, padding: 12, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 9, color: c.inkMuted, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>{t('liveRound.summary.front9')}</Text>
+                  <Text style={{ fontSize: 26, fontWeight: '900', color: c.inkPrimary, marginTop: 2 }}>{data.frontNine}</Text>
+                  <Text style={{ fontSize: 10, color: c.inkMuted, marginTop: 1 }}>{scoreDiff(data.frontNine - (data.frontNinePar ?? 36))}</Text>
+                </View>
+              )}
+              {data.backNine != null && (
+                <View style={{ flex: 1, backgroundColor: c.bgCard, borderRadius: 14, padding: 12, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 9, color: c.inkMuted, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>{t('liveRound.summary.back9')}</Text>
+                  <Text style={{ fontSize: 26, fontWeight: '900', color: c.inkPrimary, marginTop: 2 }}>{data.backNine}</Text>
+                  <Text style={{ fontSize: 10, color: c.inkMuted, marginTop: 1 }}>{scoreDiff(data.backNine - (data.backNinePar ?? 36))}</Text>
+                </View>
+              )}
+              {data.bestHole != null && (
+                <View style={{ flex: 1, backgroundColor: c.bgCard, borderRadius: 14, padding: 12, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 9, color: c.inkMuted, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' }}>{t('liveRound.summary.bestHole')}</Text>
+                  <Text style={{ fontSize: 26, fontWeight: '900', color: '#FF6535', marginTop: 2 }}>{t('liveRound.summary.holeNum', { n: data.bestHole.number })}</Text>
+                  <Text style={{ fontSize: 10, color: c.inkMuted, marginTop: 1 }}>{scoreDiff(data.bestHole.strokes - data.bestHole.par)}</Text>
+                </View>
+              )}
+            </View>
+          </>)}
 
           <Text style={{ fontSize: 11, color: c.inkMuted, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
             {t('liveRound.summary.stats')}
@@ -372,7 +406,18 @@ export default function LiveRoundScreen() {
         { label: t('liveRound.summary.triple'), count: scores.filter((s) => s.strokes - s.par >= 3).length, color: '#dc2626' },
       ];
 
-      setSummary({ gross, scoreToPar: gross - par, putts, gir, fir, firHoles, stableford, courseHandicap, breakdown });
+      const front = scores.filter((s) => s.holeNumber <= 9);
+      const back  = scores.filter((s) => s.holeNumber >= 10);
+      const frontNine     = front.length === 9 ? front.reduce((a, s) => a + s.strokes, 0) : null;
+      const backNine      = back.length  === 9 ? back.reduce((a, s)  => a + s.strokes, 0) : null;
+      const frontNinePar  = front.length === 9 ? front.reduce((a, s) => a + s.par, 0) : null;
+      const backNinePar   = back.length  === 9 ? back.reduce((a, s)  => a + s.par, 0) : null;
+      const played = scores.filter((s) => s.strokes > 0);
+      const bestHole = played.length > 0
+        ? played.reduce((best, s) => (s.strokes - s.par < best.strokes - best.par ? s : best))
+        : null;
+
+      setSummary({ gross, scoreToPar: gross - par, putts, gir, fir, firHoles, stableford, courseHandicap, breakdown, frontNine, backNine, frontNinePar, backNinePar, bestHole: bestHole ? { number: bestHole.holeNumber, strokes: bestHole.strokes, par: bestHole.par } : null });
     } catch {
       Alert.alert(t('common.error'), t('liveRound.cannotSave'));
     }

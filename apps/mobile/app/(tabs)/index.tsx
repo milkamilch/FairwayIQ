@@ -206,6 +206,7 @@ export default function DashboardScreen() {
                 { label: t('dashboard.quickActions.trainingToday'), sub: activePlan ? activePlan.plan.days.find(d => d.dayNumber === activePlan.currentDay)?.title ?? '—' : t('dashboard.noActivePlan'), icon: 'fitness-outline', route: '/(tabs)/training' },
                 { label: t('dashboard.quickActions.community'), sub: t('dashboard.quickActions.communitySub'), icon: 'people-outline', route: '/(tabs)/social' },
                 { label: t('dashboard.quickActions.progress'), sub: t('dashboard.quickActions.progressSub'), icon: 'analytics-outline', route: '/progress' },
+                { label: t('dashboard.quickActions.rules'), sub: t('dashboard.quickActions.rulesSub'), icon: 'book-outline', route: '/rules' },
               ].map((a) => (
                 <TouchableOpacity
                   key={a.label}

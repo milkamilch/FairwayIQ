@@ -306,6 +306,7 @@ model HoleStrategy {
   aimPoint       String
   avoidance      String
   notes          String
+  shots          Json      @default("[]")
   holeId         String    @unique
 
   hole Hole @relation(fields: [holeId], references: [id], onDelete: Cascade)
