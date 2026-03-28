@@ -696,6 +696,11 @@ const de = {
       bogey: 'Bogey',
       double: 'Doppelbogey',
       triple: 'Triple+',
+      nineSplit: 'Neun-Split',
+      front9: 'Vorderneun',
+      back9: 'Hinterneun',
+      bestHole: 'Bestes Loch',
+      holeNum: 'Loch {{n}}',
     },
   },
 
