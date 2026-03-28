@@ -35,10 +35,27 @@ services:
       GARMIN_CONSUMER_KEY: ${GARMIN_CONSUMER_KEY:-}
       GARMIN_CONSUMER_SECRET: ${GARMIN_CONSUMER_SECRET:-}
       GARMIN_CALLBACK_URL: ${GARMIN_CALLBACK_URL:-fairwayiq://wearables/garmin/callback}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY}
+      R2_BUCKET_NAME: ${R2_BUCKET_NAME}
+      R2_PUBLIC_URL: ${R2_PUBLIC_URL}
+      ML_SERVICE_URL: http://swing-ml:8000
+      ML_WEBHOOK_SECRET: ${ML_WEBHOOK_SECRET}
     volumes:
       - uploads:/app/uploads
     ports:
       - "127.0.0.1:3001:3000"
+
+  swing-ml:
+    build:
+      context: .
+      dockerfile: services/swing-ml/Dockerfile
+    restart: unless-stopped
+    environment:
+      ML_WEBHOOK_SECRET: ${ML_WEBHOOK_SECRET}
+    ports:
+      - "127.0.0.1:8001:8000"
 
 volumes:
   postgres_data:

@@ -72,7 +72,8 @@
           "healthSharePermission": "FairwayIQ reads fitness and activity data to enrich your golf rounds.",
           "healthUpdatePermission": "FairwayIQ does not write health data."
         }
-      ]
+      ],
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

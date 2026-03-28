@@ -697,6 +697,21 @@ export default function TrainingScreen() {
           </View>
         </View>
         {/* Rules & Platzreife banner */}
+        {/* Swing Analyse banner */}
+        <TouchableOpacity
+          onPress={() => router.push('/swing-analysis' as any)}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FF653515', borderRadius: 14, borderWidth: 1, borderColor: '#FF653330', padding: 12, marginBottom: 10 }}
+        >
+          <View style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: '#FF653520', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="videocam-outline" size={18} color="#FF6535" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: c.inkPrimary, fontWeight: '800', fontSize: 14 }}>KI Swing Analyse</Text>
+            <Text style={{ color: c.inkMuted, fontSize: 12 }}>Lade dein Video hoch · MediaPipe Pose · Sofort-Feedback</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={14} color={c.inkMuted} />
+        </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() => router.push('/rules' as any)}
           style={{ flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#3b82f615', borderRadius: 14, borderWidth: 1, borderColor: '#3b82f630', padding: 12, marginBottom: 12 }}

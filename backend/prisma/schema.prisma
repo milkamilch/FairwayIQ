@@ -64,6 +64,13 @@ enum ShotShape {
   DRAW
 }
 
+enum SwingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 model User {
   id                     String      @id @default(cuid())
   email                  String      @unique
@@ -103,6 +110,7 @@ model User {
   wearables           WearableConnection[]
   drillSets           DrillSet[]
   scheduledTrainings  ScheduledTraining[]
+  swingAnalyses       SwingAnalysis[]
 }
 
 model Friendship {
@@ -438,6 +446,38 @@ model ScheduledTraining {
   drillSet DrillSet? @relation(fields: [drillSetId], references: [id], onDelete: SetNull)
 
   @@index([userId, date])
+}
+
+model SwingAnalysis {
+  id           String      @id @default(cuid())
+  userId       String
+  videoUrl     String
+  thumbnailUrl String?
+  status       SwingStatus @default(PENDING)
+  overallScore Int?
+  phases       Json?
+  metrics      Json?
+  createdAt    DateTime    @default(now())
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feedback SwingFeedback[]
+
+  @@index([userId])
+}
+
+model SwingFeedback {
+  id       String  @id @default(cuid())
+  swingId  String
+  category String
+  type     String
+  message  String
+  metric   String?
+  actual   Float?
+  target   Float?
+
+  swing SwingAnalysis @relation(fields: [swingId], references: [id], onDelete: Cascade)
+
+  @@index([swingId])
 }
 
 model Round {

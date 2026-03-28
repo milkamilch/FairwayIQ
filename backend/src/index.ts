@@ -14,6 +14,7 @@ import { socialRouter } from './routes/social';
 import { wearablesRouter } from './routes/wearables';
 import { notificationsRouter } from './routes/notifications';
 import calendarRouter from './routes/calendar';
+import { swingsRouter } from './routes/swings';
 import { startNotificationCron } from './lib/notificationCron';
 
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/social', socialRouter);
 app.use('/api/wearables', wearablesRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/calendar', calendarRouter);
+app.use('/api/swings', swingsRouter);
 
 app.listen(PORT, () => {
   console.log(`FairwayIQ Backend running on port ${PORT}`);
