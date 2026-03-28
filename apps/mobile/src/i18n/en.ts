@@ -27,6 +27,7 @@ const en = {
     courses: 'COURSES',
     rounds: 'ROUNDS',
     social: 'COMMUNITY',
+    games: 'GAMES',
     profile: 'PROFILE',
   },
 

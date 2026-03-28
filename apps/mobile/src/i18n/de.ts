@@ -27,6 +27,7 @@ const de = {
     courses: 'PLÄTZE',
     rounds: 'RUNDEN',
     social: 'COMMUNITY',
+    games: 'SPIELE',
     profile: 'PROFIL',
   },
 
