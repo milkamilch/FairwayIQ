@@ -12,7 +12,7 @@ import { useTheme } from '../../src/lib/theme';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Player { id: string; name: string; color: string; }
-type GameView = 'home' | 'wheel' | 'bingo' | 'closest' | 'survivor';
+type GameView = 'home' | 'wheel' | 'bingo' | 'closest' | 'survivor' | 'dart' | 'par' | 'longdrive' | 'speed';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -598,13 +598,579 @@ function SurvivorGame({ players, clubs, targets, onBack }: { players: Player[]; 
   );
 }
 
+// ── Game: Ziel-Dart ───────────────────────────────────────────────────────────
+// Dartboard-style scoring: each player rates their shot 0–3 points per round
+
+const DART_ZONES = [
+  { label: 'Bullseye', sub: 'Perfekter Treffer', pts: 3, color: '#22c55e', icon: 'radio-button-on-outline' },
+  { label: 'Getroffen', sub: 'Sauber auf dem Ziel', pts: 2, color: '#3b82f6', icon: 'radio-button-off-outline' },
+  { label: 'Nah dran', sub: 'Fast dabei', pts: 1, color: '#f59e0b', icon: 'ellipse-outline' },
+  { label: 'Daneben', sub: 'Kein Treffer', pts: 0, color: '#ef4444', icon: 'close-circle-outline' },
+];
+
+function DartGame({ players, clubs, targets, onBack }: { players: Player[]; clubs: string[]; targets: string[]; onBack: () => void }) {
+  const c = useTheme();
+  const effectivePlayers = players.length >= 1 ? players : [{ id: 'p1', name: 'Du', color: PLAYER_COLORS[0] }];
+  const ROUNDS = 5;
+
+  const [round, setRound]   = useState(1);
+  const [pIdx, setPIdx]     = useState(0); // current player index
+  const [challenge, setCh]  = useState(() => `${pick(clubs)} → ${pick(targets)}`);
+  const [scores, setScores] = useState<Record<string, number>>(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+  const [roundScores, setRS] = useState<Record<string, number>>({}); // current round
+  const [phase, setPhase]   = useState<'playing' | 'roundEnd' | 'gameEnd'>('playing');
+
+  const currentPlayer = effectivePlayers[pIdx];
+
+  const rate = (pts: number) => {
+    const next = { ...roundScores, [currentPlayer.id]: pts };
+    setRS(next);
+    if (pIdx + 1 < effectivePlayers.length) {
+      setPIdx(pIdx + 1);
+    } else {
+      // All players rated — end of round
+      const nextScores = { ...scores };
+      Object.entries(next).forEach(([id, p]) => { nextScores[id] = (nextScores[id] ?? 0) + p; });
+      setScores(nextScores);
+      setPhase(round >= ROUNDS ? 'gameEnd' : 'roundEnd');
+    }
+  };
+
+  const nextRound = () => {
+    setRound(r => r + 1);
+    setPIdx(0);
+    setRS({});
+    setCh(`${pick(clubs)} → ${pick(targets)}`);
+    setPhase('playing');
+  };
+
+  const reset = () => {
+    setRound(1); setPIdx(0); setRS({});
+    setCh(`${pick(clubs)} → ${pick(targets)}`);
+    setScores(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+    setPhase('playing');
+  };
+
+  const sorted = [...effectivePlayers].sort((a, b) => scores[b.id] - scores[a.id]);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+        <TouchableOpacity onPress={onBack}><Ionicons name="arrow-back" size={22} color={c.inkSecondary} /></TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 18 }}>Ziel-Dart</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 12 }}>Runde {Math.min(round, ROUNDS)} / {ROUNDS} · {phase === 'playing' ? currentPlayer.name + ' ist dran' : 'Rundenende'}</Text>
+        </View>
+        <TouchableOpacity onPress={reset} style={{ backgroundColor: c.bgCard, borderRadius: 10, padding: 8 }}><Ionicons name="refresh-outline" size={18} color="#FF6535" /></TouchableOpacity>
+      </View>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+        {/* Challenge */}
+        <View style={{ backgroundColor: '#FF653515', borderRadius: 16, borderWidth: 1, borderColor: '#FF653530', padding: 16, alignItems: 'center' }}>
+          <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Aufgabe</Text>
+          <Text style={{ color: '#FF6535', fontSize: 20, fontWeight: '900', textAlign: 'center' }}>{challenge}</Text>
+        </View>
+
+        {phase === 'playing' && (
+          <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: currentPlayer.color + '25', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: currentPlayer.color, fontWeight: '900', fontSize: 15 }}>{currentPlayer.name[0]}</Text>
+              </View>
+              <Text style={{ color: c.inkPrimary, fontWeight: '800', fontSize: 16 }}>{currentPlayer.name} — wie war der Schlag?</Text>
+            </View>
+            {DART_ZONES.map(z => (
+              <TouchableOpacity key={z.pts} onPress={() => rate(z.pts)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+                <Ionicons name={z.icon as any} size={26} color={z.color} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: c.inkPrimary, fontWeight: '700', fontSize: 15 }}>{z.label}</Text>
+                  <Text style={{ color: c.inkMuted, fontSize: 12 }}>{z.sub}</Text>
+                </View>
+                <View style={{ backgroundColor: z.color + '20', borderRadius: 10, width: 36, height: 36, alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: z.color, fontWeight: '900', fontSize: 16 }}>{z.pts}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {(phase === 'roundEnd' || phase === 'gameEnd') && (
+          <>
+            <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+              <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Diese Runde</Text>
+              {effectivePlayers.map(p => (
+                <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+                  <Text style={{ flex: 1, color: c.inkPrimary, fontSize: 14 }}>{p.name}</Text>
+                  <Text style={{ color: DART_ZONES.find(z => z.pts === roundScores[p.id])?.color ?? c.inkMuted, fontWeight: '800', fontSize: 16 }}>+{roundScores[p.id] ?? 0}</Text>
+                </View>
+              ))}
+            </View>
+            {phase === 'gameEnd' ? (
+              <View style={{ backgroundColor: '#22c55e15', borderRadius: 16, borderWidth: 1, borderColor: '#22c55e40', padding: 16, alignItems: 'center', gap: 6 }}>
+                <Ionicons name="trophy-outline" size={32} color="#22c55e" />
+                <Text style={{ color: '#22c55e', fontWeight: '900', fontSize: 20 }}>{sorted[0].name} gewinnt!</Text>
+                <Text style={{ color: c.inkMuted, fontSize: 14 }}>{scores[sorted[0].id]} Punkte gesamt</Text>
+                <TouchableOpacity onPress={reset} style={{ marginTop: 8, backgroundColor: '#22c55e', borderRadius: 12, paddingHorizontal: 28, paddingVertical: 10 }}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Neu</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={nextRound} style={{ backgroundColor: '#FF6535', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={{ color: '#0A0A0A', fontWeight: '900', fontSize: 16 }}>Nächste Runde</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+
+        {/* Scoreboard */}
+        <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+          <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Gesamtpunkte</Text>
+          {sorted.map((p, i) => (
+            <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+              <Text style={{ color: c.inkMuted, fontWeight: '700', fontSize: 13, width: 20 }}>#{i + 1}</Text>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+              <Text style={{ flex: 1, color: c.inkPrimary, fontWeight: '700', fontSize: 14 }}>{p.name}</Text>
+              <Text style={{ color: p.color, fontWeight: '900', fontSize: 18 }}>{scores[p.id]}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ── Game: Par Challenge ───────────────────────────────────────────────────────
+// Random target with a "par" (shots expected). Count actual shots → Stableford points.
+
+const PAR_POINTS = [
+  { diff: -2, label: 'Eagle', pts: 4, color: '#a855f7' },
+  { diff: -1, label: 'Birdie', pts: 3, color: '#FF6535' },
+  { diff:  0, label: 'Par',    pts: 2, color: '#22c55e' },
+  { diff:  1, label: 'Bogey',  pts: 1, color: '#f59e0b' },
+  { diff:  2, label: 'Double', pts: 0, color: '#ef4444' },
+];
+
+function ParGame({ players, clubs, targets, onBack }: { players: Player[]; clubs: string[]; targets: string[]; onBack: () => void }) {
+  const c = useTheme();
+  const effectivePlayers = players.length >= 1 ? players : [{ id: 'p1', name: 'Du', color: PLAYER_COLORS[0] }];
+  const ROUNDS = 5;
+
+  const newChallenge = () => ({
+    club: pick(clubs),
+    target: pick(targets),
+    par: Math.floor(Math.random() * 3) + 1, // par 1, 2, or 3
+  });
+
+  const [round, setRound]     = useState(1);
+  const [pIdx, setPIdx]       = useState(0);
+  const [ch, setCh]           = useState(newChallenge);
+  const [scores, setScores]   = useState<Record<string, number>>(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+  const [phase, setPhase]     = useState<'playing' | 'roundEnd' | 'gameEnd'>('playing');
+  const [roundPts, setRoundPts] = useState<Record<string, { shots: number; pts: number }>>({});
+
+  const currentPlayer = effectivePlayers[pIdx];
+
+  const recordShots = (shots: number) => {
+    const diff = shots - ch.par;
+    const clamped = Math.max(-2, Math.min(2, diff));
+    const entry = PAR_POINTS.find(p => p.diff === clamped)!;
+    const next = { ...roundPts, [currentPlayer.id]: { shots, pts: entry.pts } };
+    setRoundPts(next);
+    if (pIdx + 1 < effectivePlayers.length) {
+      setPIdx(pIdx + 1);
+    } else {
+      const nextScores = { ...scores };
+      Object.entries(next).forEach(([id, v]) => { nextScores[id] = (nextScores[id] ?? 0) + v.pts; });
+      setScores(nextScores);
+      setPhase(round >= ROUNDS ? 'gameEnd' : 'roundEnd');
+    }
+  };
+
+  const nextRound = () => {
+    setRound(r => r + 1); setPIdx(0); setRoundPts({}); setCh(newChallenge()); setPhase('playing');
+  };
+
+  const reset = () => {
+    setRound(1); setPIdx(0); setRoundPts({}); setCh(newChallenge());
+    setScores(Object.fromEntries(effectivePlayers.map(p => [p.id, 0]))); setPhase('playing');
+  };
+
+  const sorted = [...effectivePlayers].sort((a, b) => scores[b.id] - scores[a.id]);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+        <TouchableOpacity onPress={onBack}><Ionicons name="arrow-back" size={22} color={c.inkSecondary} /></TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 18 }}>Par Challenge</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 12 }}>Runde {Math.min(round, ROUNDS)} / {ROUNDS}{phase === 'playing' ? ` · ${currentPlayer.name}` : ''}</Text>
+        </View>
+        <TouchableOpacity onPress={reset} style={{ backgroundColor: c.bgCard, borderRadius: 10, padding: 8 }}><Ionicons name="refresh-outline" size={18} color="#FF6535" /></TouchableOpacity>
+      </View>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+        {/* Challenge with par */}
+        <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase' }}>Aufgabe</Text>
+            <View style={{ backgroundColor: '#22c55e20', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 4 }}>
+              <Text style={{ color: '#22c55e', fontWeight: '900', fontSize: 14 }}>PAR {ch.par}</Text>
+            </View>
+          </View>
+          <Text style={{ color: c.inkPrimary, fontSize: 20, fontWeight: '900' }}>{ch.club}</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 14, marginTop: 2 }}>Ziel: {ch.target}</Text>
+        </View>
+
+        {phase === 'playing' && (
+          <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: currentPlayer.color + '25', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: currentPlayer.color, fontWeight: '900', fontSize: 15 }}>{currentPlayer.name[0]}</Text>
+              </View>
+              <Text style={{ color: c.inkPrimary, fontWeight: '800', fontSize: 15 }}>{currentPlayer.name} — wie viele Schläge?</Text>
+            </View>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+              {[1, 2, 3, 4, 5].map(n => {
+                const diff = n - ch.par;
+                const entry = PAR_POINTS.find(p => p.diff === Math.max(-2, Math.min(2, diff)));
+                return (
+                  <TouchableOpacity key={n} onPress={() => recordShots(n)} style={{ flex: 1, minWidth: 54, backgroundColor: c.bgElevated, borderRadius: 14, paddingVertical: 14, alignItems: 'center', gap: 2, borderWidth: 1, borderColor: c.bgBorder }}>
+                    <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 22 }}>{n}</Text>
+                    {entry && <Text style={{ color: entry.color, fontSize: 9, fontWeight: '800' }}>{n <= ch.par + 2 ? entry.label : 'Triple+'}</Text>}
+                  </TouchableOpacity>
+                );
+              })}
+              <TouchableOpacity onPress={() => recordShots(ch.par + 3)} style={{ flex: 1, minWidth: 54, backgroundColor: '#ef444415', borderRadius: 14, paddingVertical: 14, alignItems: 'center', gap: 2, borderWidth: 1, borderColor: '#ef444430' }}>
+                <Text style={{ color: '#ef4444', fontWeight: '900', fontSize: 22 }}>6+</Text>
+                <Text style={{ color: '#ef4444', fontSize: 9, fontWeight: '800' }}>0 Pkt</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {(phase === 'roundEnd' || phase === 'gameEnd') && (
+          <>
+            <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+              <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Runden-Ergebnis</Text>
+              {effectivePlayers.map(p => {
+                const rv = roundPts[p.id];
+                const label = rv ? PAR_POINTS.find(pp => pp.pts === rv.pts)?.label : '—';
+                const color = rv ? PAR_POINTS.find(pp => pp.pts === rv.pts)?.color : c.inkMuted;
+                return (
+                  <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+                    <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+                    <Text style={{ flex: 1, color: c.inkPrimary, fontSize: 14 }}>{p.name}</Text>
+                    <Text style={{ color: color ?? c.inkMuted, fontSize: 12, fontWeight: '700', marginRight: 6 }}>{rv ? `${rv.shots} Schlag${rv.shots !== 1 ? 'e' : ''} · ${label}` : '—'}</Text>
+                    <Text style={{ color: color ?? c.inkMuted, fontWeight: '900', fontSize: 16 }}>+{rv?.pts ?? 0}</Text>
+                  </View>
+                );
+              })}
+            </View>
+            {phase === 'gameEnd' ? (
+              <View style={{ backgroundColor: '#22c55e15', borderRadius: 16, borderWidth: 1, borderColor: '#22c55e40', padding: 16, alignItems: 'center', gap: 6 }}>
+                <Ionicons name="trophy-outline" size={32} color="#22c55e" />
+                <Text style={{ color: '#22c55e', fontWeight: '900', fontSize: 20 }}>{sorted[0].name} gewinnt!</Text>
+                <Text style={{ color: c.inkMuted, fontSize: 14 }}>{scores[sorted[0].id]} Stableford-Punkte</Text>
+                <TouchableOpacity onPress={reset} style={{ marginTop: 8, backgroundColor: '#22c55e', borderRadius: 12, paddingHorizontal: 28, paddingVertical: 10 }}>
+                  <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Neu</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={nextRound} style={{ backgroundColor: '#FF6535', borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={{ color: '#0A0A0A', fontWeight: '900', fontSize: 16 }}>Nächste Runde</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+
+        <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+          <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Stableford-Stand</Text>
+          {sorted.map((p, i) => (
+            <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+              <Text style={{ color: c.inkMuted, fontWeight: '700', fontSize: 13, width: 20 }}>#{i + 1}</Text>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+              <Text style={{ flex: 1, color: c.inkPrimary, fontWeight: '700', fontSize: 14 }}>{p.name}</Text>
+              <Text style={{ color: p.color, fontWeight: '900', fontSize: 18 }}>{scores[p.id]}</Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ── Game: Long Drive ──────────────────────────────────────────────────────────
+// Random club, vote who drove furthest each round, 5 rounds
+
+function LongDriveGame({ players, clubs, onBack }: { players: Player[]; clubs: string[]; onBack: () => void }) {
+  const c = useTheme();
+  const effectivePlayers = players.length >= 2 ? players : [
+    { id: 'p1', name: 'Spieler 1', color: PLAYER_COLORS[0] },
+    { id: 'p2', name: 'Spieler 2', color: PLAYER_COLORS[1] },
+  ];
+  const ROUNDS = 5;
+  const [round, setRound]   = useState(1);
+  const [club, setClub]     = useState(() => pick(clubs));
+  const [scores, setScores] = useState<Record<string, number>>(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+  const [winner, setWinner] = useState<string | null>(null);
+  const [done, setDone]     = useState(false);
+
+  const award = (id: string) => {
+    const next = { ...scores, [id]: scores[id] + 1 };
+    setScores(next);
+    setWinner(id);
+  };
+
+  const nextRound = () => {
+    if (round >= ROUNDS) { setDone(true); return; }
+    setRound(r => r + 1);
+    setClub(pick(clubs));
+    setWinner(null);
+  };
+
+  const reset = () => {
+    setRound(1); setClub(pick(clubs)); setWinner(null); setDone(false);
+    setScores(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+  };
+
+  const sorted = [...effectivePlayers].sort((a, b) => scores[b.id] - scores[a.id]);
+  const champion = done ? sorted[0] : null;
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+        <TouchableOpacity onPress={onBack}><Ionicons name="arrow-back" size={22} color={c.inkSecondary} /></TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 18 }}>Long Drive</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 12 }}>Runde {Math.min(round, ROUNDS)} / {ROUNDS} · Wer kommt am weitesten?</Text>
+        </View>
+        <TouchableOpacity onPress={reset} style={{ backgroundColor: c.bgCard, borderRadius: 10, padding: 8 }}><Ionicons name="refresh-outline" size={18} color="#FF6535" /></TouchableOpacity>
+      </View>
+      <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+        {/* Club */}
+        <View style={{ backgroundColor: '#3b82f615', borderRadius: 16, borderWidth: 1, borderColor: '#3b82f630', padding: 16, alignItems: 'center' }}>
+          <Text style={{ color: '#3b82f6', fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 4 }}>Schläger</Text>
+          <Text style={{ color: c.inkPrimary, fontSize: 26, fontWeight: '900' }}>{club}</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 12, marginTop: 4 }}>Alle spielen den gleichen Schläger</Text>
+        </View>
+
+        {champion ? (
+          <View style={{ backgroundColor: '#22c55e15', borderRadius: 16, borderWidth: 1, borderColor: '#22c55e40', padding: 20, alignItems: 'center', gap: 8 }}>
+            <Ionicons name="trophy-outline" size={40} color="#22c55e" />
+            <Text style={{ color: '#22c55e', fontWeight: '900', fontSize: 24 }}>{champion.name}</Text>
+            <Text style={{ color: c.inkMuted, fontSize: 14 }}>{scores[champion.id]} Runden gewonnen</Text>
+            <TouchableOpacity onPress={reset} style={{ marginTop: 8, backgroundColor: '#22c55e', borderRadius: 12, paddingHorizontal: 28, paddingVertical: 10 }}>
+              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Neu</Text>
+            </TouchableOpacity>
+          </View>
+        ) : !winner ? (
+          <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+            <Text style={{ color: c.inkPrimary, fontWeight: '800', fontSize: 15, marginBottom: 12 }}>Wer hat am weitesten geschlagen?</Text>
+            {effectivePlayers.map(p => (
+              <TouchableOpacity key={p.id} onPress={() => award(p.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+                <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: p.color + '20', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ color: p.color, fontWeight: '900', fontSize: 14 }}>{p.name[0]}</Text>
+                </View>
+                <Text style={{ flex: 1, color: c.inkPrimary, fontWeight: '700', fontSize: 16 }}>{p.name}</Text>
+                <Ionicons name="arrow-forward-circle-outline" size={24} color={p.color} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : (
+          <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16, alignItems: 'center', gap: 8 }}>
+            <Ionicons name="rocket-outline" size={32} color="#3b82f6" />
+            <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 18 }}>{effectivePlayers.find(p => p.id === winner)?.name} gewinnt die Runde!</Text>
+            <TouchableOpacity onPress={nextRound} style={{ marginTop: 8, backgroundColor: '#FF6535', borderRadius: 12, paddingHorizontal: 32, paddingVertical: 12 }}>
+              <Text style={{ color: '#0A0A0A', fontWeight: '900', fontSize: 15 }}>{round < ROUNDS ? 'Nächste Runde' : 'Endergebnis'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+          <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Siege</Text>
+          {sorted.map((p, i) => (
+            <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}>
+              <Text style={{ color: c.inkMuted, fontWeight: '700', fontSize: 13, width: 20 }}>#{i + 1}</Text>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+              <Text style={{ flex: 1, color: c.inkPrimary, fontWeight: '700', fontSize: 14 }}>{p.name}</Text>
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                {Array.from({ length: scores[p.id] }).map((_, j) => (
+                  <Ionicons key={j} name="star" size={14} color="#f59e0b" />
+                ))}
+                {Array.from({ length: ROUNDS - scores[p.id] }).map((_, j) => (
+                  <Ionicons key={`e${j}`} name="star-outline" size={14} color={c.bgBorder} />
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ── Game: Speed Challenge ─────────────────────────────────────────────────────
+// 10 rapid-fire club+target challenges per player, tap Hit or Miss, score = hits
+
+function SpeedGame({ players, clubs, targets, onBack }: { players: Player[]; clubs: string[]; targets: string[]; onBack: () => void }) {
+  const c = useTheme();
+  const effectivePlayers = players.length >= 1 ? players : [{ id: 'p1', name: 'Du', color: PLAYER_COLORS[0] }];
+  const TOTAL = 10;
+
+  const makeChallenge = () => `${pick(clubs)} → ${pick(targets)}`;
+
+  const [pIdx, setPIdx]       = useState(0);
+  const [qi, setQi]           = useState(0);
+  const [challenge, setCh]    = useState(makeChallenge);
+  const [scores, setScores]   = useState<Record<string, number>>(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+  const [phase, setPhase]     = useState<'intro' | 'playing' | 'playerDone' | 'gameEnd'>('intro');
+  const flashAnim             = useRef(new Animated.Value(1)).current;
+
+  const flash = (color: string) => {
+    flashAnim.setValue(0);
+    Animated.timing(flashAnim, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+  };
+
+  const answer = (hit: boolean) => {
+    if (hit) {
+      flash('#22c55e');
+      setScores(s => ({ ...s, [effectivePlayers[pIdx].id]: s[effectivePlayers[pIdx].id] + 1 }));
+    } else {
+      flash('#ef4444');
+    }
+    if (qi + 1 >= TOTAL) {
+      if (pIdx + 1 < effectivePlayers.length) {
+        setPhase('playerDone');
+      } else {
+        setPhase('gameEnd');
+      }
+    } else {
+      setQi(q => q + 1);
+      setCh(makeChallenge());
+    }
+  };
+
+  const nextPlayer = () => {
+    setPIdx(p => p + 1);
+    setQi(0);
+    setCh(makeChallenge());
+    setPhase('intro');
+  };
+
+  const reset = () => {
+    setPIdx(0); setQi(0); setCh(makeChallenge()); setPhase('intro');
+    setScores(Object.fromEntries(effectivePlayers.map(p => [p.id, 0])));
+  };
+
+  const currentPlayer = effectivePlayers[pIdx];
+  const sorted = [...effectivePlayers].sort((a, b) => scores[b.id] - scores[a.id]);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+        <TouchableOpacity onPress={onBack}><Ionicons name="arrow-back" size={22} color={c.inkSecondary} /></TouchableOpacity>
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 18 }}>Speed Challenge</Text>
+          <Text style={{ color: c.inkMuted, fontSize: 12 }}>
+            {phase === 'playing' ? `${currentPlayer.name} · ${qi + 1} / ${TOTAL}` : phase === 'gameEnd' ? 'Spiel beendet' : currentPlayer.name + ' ist dran'}
+          </Text>
+        </View>
+        <TouchableOpacity onPress={reset} style={{ backgroundColor: c.bgCard, borderRadius: 10, padding: 8 }}><Ionicons name="refresh-outline" size={18} color="#FF6535" /></TouchableOpacity>
+      </View>
+
+      <View style={{ flex: 1, padding: 20, gap: 16 }}>
+        {phase === 'intro' && (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+            <View style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: currentPlayer.color + '25', alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ color: currentPlayer.color, fontWeight: '900', fontSize: 28 }}>{currentPlayer.name[0]}</Text>
+            </View>
+            <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 24 }}>{currentPlayer.name}</Text>
+            <Text style={{ color: c.inkMuted, fontSize: 14, textAlign: 'center' }}>
+              {TOTAL} Challenges nacheinander.{'\n'}Schlag ausführen → Treffer oder Verfehlt tippen.
+            </Text>
+            <TouchableOpacity onPress={() => setPhase('playing')} style={{ backgroundColor: '#FF6535', borderRadius: 16, paddingVertical: 18, paddingHorizontal: 48 }}>
+              <Text style={{ color: '#0A0A0A', fontWeight: '900', fontSize: 18 }}>LOS!</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {phase === 'playing' && (
+          <>
+            {/* Progress bar */}
+            <View style={{ height: 5, backgroundColor: c.bgBorder, borderRadius: 3, overflow: 'hidden' }}>
+              <View style={{ height: 5, width: `${(qi / TOTAL) * 100}%` as any, backgroundColor: '#FF6535', borderRadius: 3 }} />
+            </View>
+
+            {/* Challenge card */}
+            <Animated.View style={{ flex: 1, backgroundColor: c.bgCard, borderRadius: 20, padding: 24, alignItems: 'center', justifyContent: 'center', opacity: flashAnim }}>
+              <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>Challenge {qi + 1}</Text>
+              <Text style={{ color: c.inkPrimary, fontSize: 26, fontWeight: '900', textAlign: 'center', lineHeight: 34 }}>{challenge}</Text>
+              <Text style={{ color: c.inkMuted, fontSize: 13, marginTop: 12 }}>Führe den Schlag aus, dann tippe:</Text>
+            </Animated.View>
+
+            {/* Hit / Miss buttons */}
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity onPress={() => answer(false)} style={{ flex: 1, backgroundColor: '#ef444415', borderRadius: 18, paddingVertical: 22, alignItems: 'center', borderWidth: 2, borderColor: '#ef444440' }}>
+                <Ionicons name="close" size={32} color="#ef4444" />
+                <Text style={{ color: '#ef4444', fontWeight: '900', fontSize: 16, marginTop: 4 }}>Verfehlt</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => answer(true)} style={{ flex: 1, backgroundColor: '#22c55e15', borderRadius: 18, paddingVertical: 22, alignItems: 'center', borderWidth: 2, borderColor: '#22c55e40' }}>
+                <Ionicons name="checkmark" size={32} color="#22c55e" />
+                <Text style={{ color: '#22c55e', fontWeight: '900', fontSize: 16, marginTop: 4 }}>Treffer!</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {phase === 'playerDone' && (
+          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+            <Text style={{ color: c.inkPrimary, fontWeight: '900', fontSize: 20 }}>{currentPlayer.name} fertig!</Text>
+            <Text style={{ color: '#FF6535', fontSize: 40, fontWeight: '900' }}>{scores[currentPlayer.id]} / {TOTAL}</Text>
+            <Text style={{ color: c.inkMuted, fontSize: 14 }}>Treffer</Text>
+            <TouchableOpacity onPress={nextPlayer} style={{ marginTop: 12, backgroundColor: '#FF6535', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 40 }}>
+              <Text style={{ color: '#0A0A0A', fontWeight: '900', fontSize: 16 }}>Nächster Spieler</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {phase === 'gameEnd' && (
+          <ScrollView>
+            <View style={{ backgroundColor: '#22c55e15', borderRadius: 16, borderWidth: 1, borderColor: '#22c55e40', padding: 20, alignItems: 'center', gap: 6, marginBottom: 14 }}>
+              <Ionicons name="trophy-outline" size={36} color="#22c55e" />
+              <Text style={{ color: '#22c55e', fontWeight: '900', fontSize: 22 }}>{sorted[0].name} gewinnt!</Text>
+              <Text style={{ color: c.inkMuted, fontSize: 14 }}>{scores[sorted[0].id]} / {TOTAL} Treffer</Text>
+              <TouchableOpacity onPress={reset} style={{ marginTop: 8, backgroundColor: '#22c55e', borderRadius: 12, paddingHorizontal: 28, paddingVertical: 10 }}>
+                <Text style={{ color: '#fff', fontWeight: '900', fontSize: 14 }}>Nochmal</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{ backgroundColor: c.bgCard, borderRadius: 16, padding: 16 }}>
+              <Text style={{ color: c.inkMuted, fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>Ergebnis</Text>
+              {sorted.map((p, i) => (
+                <View key={p.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+                  <Text style={{ color: c.inkMuted, fontWeight: '700', fontSize: 13, width: 20 }}>#{i + 1}</Text>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: p.color }} />
+                  <Text style={{ flex: 1, color: c.inkPrimary, fontWeight: '700', fontSize: 14 }}>{p.name}</Text>
+                  <Text style={{ color: p.color, fontWeight: '900', fontSize: 16 }}>{scores[p.id]}/{TOTAL}</Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}
+
 // ── Home Screen ───────────────────────────────────────────────────────────────
 
 const GAME_CARDS = [
-  { id: 'wheel'    as GameView, icon: 'dice-outline',   color: '#FF6535', title: 'Glücksrad',        desc: 'Jeder bekommt einen zufälligen Schläger, ein gemeinsames Ziel' },
-  { id: 'bingo'    as GameView, icon: 'grid-outline',   color: '#3b82f6', title: 'Shot Bingo',       desc: '3×3 Karte mit Schlag-Challenges, erste Linie gewinnt' },
-  { id: 'closest'  as GameView, icon: 'flag-outline',   color: '#22c55e', title: 'Closest to Pin',   desc: '5 Runden, wer kommt dem Ziel am nächsten? Punkte sammeln' },
-  { id: 'survivor' as GameView, icon: 'flame-outline',  color: '#ef4444', title: 'Survivor',         desc: 'Zufällige Challenge, wer trifft bleibt — wer verfehlt scheidet aus' },
+  { id: 'wheel'     as GameView, icon: 'dice-outline',        color: '#FF6535', title: 'Glücksrad',       desc: 'Jeder bekommt einen anderen Schläger, gemeinsames Ziel' },
+  { id: 'bingo'     as GameView, icon: 'grid-outline',        color: '#3b82f6', title: 'Shot Bingo',      desc: '3×3 Karte mit Schlag-Challenges, erste Linie gewinnt' },
+  { id: 'closest'   as GameView, icon: 'flag-outline',        color: '#22c55e', title: 'Closest to Pin',  desc: '5 Runden, wer kommt dem Ziel am nächsten? Punkte sammeln' },
+  { id: 'survivor'  as GameView, icon: 'flame-outline',       color: '#ef4444', title: 'Survivor',        desc: 'Challenge, wer trifft bleibt — wer verfehlt scheidet aus' },
+  { id: 'dart'      as GameView, icon: 'radio-button-on-outline', color: '#a855f7', title: 'Ziel-Dart',   desc: 'Schläge bewerten: Bullseye, Treffer, Nah dran, Daneben — Punkte sammeln' },
+  { id: 'par'       as GameView, icon: 'golf-outline',        color: '#14b8a6', title: 'Par Challenge',   desc: 'Zufälliges Ziel mit Par — Stableford-Punkte für Schläge bis zum Treffer' },
+  { id: 'longdrive' as GameView, icon: 'rocket-outline',      color: '#6366f1', title: 'Long Drive',      desc: 'Zufälliger Schläger, alle schlagen — wer am weitesten kommt gewinnt die Runde' },
+  { id: 'speed'     as GameView, icon: 'flash-outline',       color: '#f59e0b', title: 'Speed Challenge', desc: '10 zufällige Aufgaben pro Spieler — schnell ausführen und werten' },
 ];
 
 export default function GamesScreen() {
@@ -631,6 +1197,10 @@ export default function GamesScreen() {
   if (view === 'bingo')    return <BingoGame    clubs={clubs}   targets={targets} onBack={()=>setView('home')} />;
   if (view === 'closest')  return <ClosestGame  players={players} targets={targets} onBack={()=>setView('home')} />;
   if (view === 'survivor') return <SurvivorGame players={players} clubs={clubs} targets={targets} onBack={()=>setView('home')} />;
+  if (view === 'dart')      return <DartGame      players={players} clubs={clubs} targets={targets} onBack={()=>setView('home')} />;
+  if (view === 'par')       return <ParGame       players={players} clubs={clubs} targets={targets} onBack={()=>setView('home')} />;
+  if (view === 'longdrive') return <LongDriveGame players={players} clubs={clubs} onBack={()=>setView('home')} />;
+  if (view === 'speed')     return <SpeedGame     players={players} clubs={clubs} targets={targets} onBack={()=>setView('home')} />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: c.bgBase }}>
