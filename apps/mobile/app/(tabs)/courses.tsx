@@ -43,6 +43,7 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
         {hole.strategy ? (
           <Text className="text-neon-dim text-xs mt-0.5" numberOfLines={1}>
             {hole.strategy.recommendedClub} · {hole.strategy.aimPoint}
+            {(hole.strategy.shots as any[])?.length > 0 && ` +${(hole.strategy.shots as any[]).length}`}
           </Text>
         ) : (
           <Text className="text-ink-muted text-xs">{t('courses.addStrategy')}</Text>
@@ -53,23 +54,102 @@ function HoleRow({ hole, onPress }: { hole: any; onPress: () => void }) {
   );
 }
 
+interface ShotData {
+  label: string;
+  club: string;
+  shotShape: 'STRAIGHT' | 'FADE' | 'DRAW';
+  aimPoint: string;
+  notes: string;
+}
+
+function ShotForm({ shot, onChange, c, t, inputStyle, labelStyle }: {
+  shot: ShotData; onChange: (s: ShotData) => void;
+  c: ReturnType<typeof useTheme>; t: any; inputStyle: string; labelStyle: string;
+}) {
+  return (
+    <View className="gap-5">
+      <View>
+        <Text className={labelStyle}>{t('courses.strategyModal.club')}</Text>
+        <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor={c.inkMuted} value={shot.club} onChangeText={(v) => onChange({ ...shot, club: v })} />
+      </View>
+      <View>
+        <Text className={labelStyle}>{t('courses.strategyModal.trajectory')}</Text>
+        <View className="flex-row gap-2">
+          {(['STRAIGHT', 'FADE', 'DRAW'] as const).map((s) => (
+            <TouchableOpacity
+              key={s}
+              className="flex-1 py-3 rounded-xl items-center"
+              style={{ backgroundColor: shot.shotShape === s ? '#FF6535' : c.bgElevated, borderWidth: 1, borderColor: shot.shotShape === s ? '#FF6535' : c.bgBorder }}
+              onPress={() => onChange({ ...shot, shotShape: s })}
+            >
+              <Text className="text-xs font-bold" style={{ color: shot.shotShape === s ? '#0A0A0A' : '#8A8A8A' }}>
+                {t(`courses.strategyModal.shotShape.${s}`)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+      <View>
+        <Text className={labelStyle}>{t('courses.strategyModal.aimPoint')}</Text>
+        <TextInput className={inputStyle} placeholder={t('courses.strategyModal.aimPlaceholder')} placeholderTextColor={c.inkMuted} value={shot.aimPoint} onChangeText={(v) => onChange({ ...shot, aimPoint: v })} />
+      </View>
+      <View>
+        <Text className={labelStyle}>{t('courses.strategyModal.notes')}</Text>
+        <TextInput
+          className={`${inputStyle} min-h-20`}
+          placeholder={t('courses.strategyModal.notesPlaceholder')}
+          placeholderTextColor={c.inkMuted}
+          value={shot.notes}
+          onChangeText={(v) => onChange({ ...shot, notes: v })}
+          multiline
+          numberOfLines={3}
+        />
+      </View>
+    </View>
+  );
+}
+
+function buildShots(par: number, existing: ShotData[]): ShotData[] {
+  const labels = par === 3
+    ? ['tee']
+    : par === 4
+    ? ['tee', 'approach']
+    : ['tee', 'layup', 'approach'];
+  return labels.map((label, i) => existing[i] ?? { label, club: '', shotShape: 'STRAIGHT' as const, aimPoint: '', notes: '' });
+}
+
 function StrategyModal({ hole, courseId, onClose, onSaved }: {
   hole: any; courseId: string; onClose: () => void; onSaved: () => void;
 }) {
-  const [club, setClub] = useState(hole.strategy?.recommendedClub ?? '');
-  const [shotShape, setShotShape] = useState<'STRAIGHT' | 'FADE' | 'DRAW'>(hole.strategy?.shotShape ?? 'STRAIGHT');
-  const [aimPoint, setAimPoint] = useState(hole.strategy?.aimPoint ?? '');
-  const [avoidance, setAvoidance] = useState(hole.strategy?.avoidance ?? '');
-  const [notes, setNotes] = useState(hole.strategy?.notes ?? '');
   const { t } = useTranslation();
   const c = useTheme();
   const [saving, setSaving] = useState(false);
+  const [activeShot, setActiveShot] = useState(0);
+  const [avoidance, setAvoidance] = useState(hole.strategy?.avoidance ?? '');
+
+  const existingShots: ShotData[] = hole.strategy
+    ? [
+        { label: 'tee', club: hole.strategy.recommendedClub, shotShape: hole.strategy.shotShape, aimPoint: hole.strategy.aimPoint, notes: hole.strategy.notes },
+        ...((hole.strategy.shots as ShotData[] | undefined) ?? []),
+      ]
+    : [];
+  const [shots, setShots] = useState<ShotData[]>(() => buildShots(hole.par, existingShots));
+
+  const updateShot = (i: number, s: ShotData) => setShots((prev) => prev.map((x, j) => j === i ? s : x));
 
   const save = async () => {
-    if (!club || !aimPoint) { Alert.alert(t('common.error'), t('courses.strategyModal.requiredFields')); return; }
+    const [tee, ...rest] = shots;
+    if (!tee.club || !tee.aimPoint) { Alert.alert(t('common.error'), t('courses.strategyModal.requiredFields')); return; }
     setSaving(true);
     try {
-      await api.put(`/courses/${courseId}/holes/${hole.number}/strategy`, { recommendedClub: club, shotShape, aimPoint, avoidance, notes });
+      await api.put(`/courses/${courseId}/holes/${hole.number}/strategy`, {
+        recommendedClub: tee.club,
+        shotShape: tee.shotShape,
+        aimPoint: tee.aimPoint,
+        avoidance,
+        notes: tee.notes,
+        shots: rest,
+      });
       onSaved(); onClose();
     } catch { Alert.alert(t('common.error'), t('courses.strategyModal.cannotSave')); }
     setSaving(false);
@@ -94,57 +174,38 @@ function StrategyModal({ hole, courseId, onClose, onSaved }: {
           </TouchableOpacity>
         </View>
 
+        {/* Shot tabs — only for Par 4+ */}
+        {shots.length > 1 && (
+          <View style={{ flexDirection: 'row', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+            {shots.map((s, i) => (
+              <TouchableOpacity
+                key={i}
+                onPress={() => setActiveShot(i)}
+                style={{
+                  flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center',
+                  backgroundColor: activeShot === i ? '#FF6535' : c.bgElevated,
+                  borderWidth: 1, borderColor: activeShot === i ? '#FF6535' : c.bgBorder,
+                }}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '700', color: activeShot === i ? '#0A0A0A' : c.inkMuted }}>
+                  {t(`courses.strategyModal.shots.${s.label}`)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         <ScrollView className="flex-1 px-5 pt-5">
           <View className="gap-5">
-            <View>
-              <Text className={labelStyle}>{t('courses.strategyModal.club')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.clubPlaceholder')} placeholderTextColor="#444444" value={club} onChangeText={setClub} />
-            </View>
+            <ShotForm shot={shots[activeShot]} onChange={(s) => updateShot(activeShot, s)} c={c} t={t} inputStyle={inputStyle} labelStyle={labelStyle} />
 
-            <View>
-              <Text className={labelStyle}>{t('courses.strategyModal.trajectory')}</Text>
-              <View className="flex-row gap-2">
-                {(['STRAIGHT', 'FADE', 'DRAW'] as const).map((s) => (
-                  <TouchableOpacity
-                    key={s}
-                    className="flex-1 py-3 rounded-xl items-center"
-                    style={{
-                      backgroundColor: shotShape === s ? '#FF6535' : c.bgElevated,
-                      borderWidth: 1,
-                      borderColor: shotShape === s ? '#FF6535' : c.bgBorder,
-                    }}
-                    onPress={() => setShotShape(s)}
-                  >
-                    <Text className="text-xs font-bold" style={{ color: shotShape === s ? '#0A0A0A' : '#8A8A8A' }}>
-                      {t(`courses.strategyModal.shotShape.${s}`)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+            {/* Avoidance is global for the hole, shown for tee shot tab */}
+            {activeShot === 0 && (
+              <View>
+                <Text className={labelStyle}>{t('courses.strategyModal.avoidance')}</Text>
+                <TextInput className={inputStyle} placeholder={t('courses.strategyModal.avoidPlaceholder')} placeholderTextColor={c.inkMuted} value={avoidance} onChangeText={setAvoidance} multiline />
               </View>
-            </View>
-
-            <View>
-              <Text className={labelStyle}>{t('courses.strategyModal.aimPoint')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.aimPlaceholder')} placeholderTextColor="#444444" value={aimPoint} onChangeText={setAimPoint} />
-            </View>
-
-            <View>
-              <Text className={labelStyle}>{t('courses.strategyModal.avoidance')}</Text>
-              <TextInput className={inputStyle} placeholder={t('courses.strategyModal.avoidPlaceholder')} placeholderTextColor="#444444" value={avoidance} onChangeText={setAvoidance} multiline />
-            </View>
-
-            <View>
-              <Text className={labelStyle}>{t('courses.strategyModal.notes')}</Text>
-              <TextInput
-                className={`${inputStyle} min-h-20`}
-                placeholder={t('courses.strategyModal.notesPlaceholder')}
-                placeholderTextColor="#444444"
-                value={notes}
-                onChangeText={setNotes}
-                multiline
-                numberOfLines={3}
-              />
-            </View>
+            )}
           </View>
           <View className="h-8" />
         </ScrollView>
@@ -220,11 +281,13 @@ export default function CoursesScreen() {
   };
 
   if (selectedCourse) {
+    const totalHoles = selectedCourse.holes?.length ?? 18;
     const strategyCoverage = selectedCourse.holes?.filter((h: any) => h.strategy).length ?? 0;
+    const coveragePct = totalHoles > 0 ? strategyCoverage / totalHoles : 0;
     return (
       <SafeAreaView className="flex-1 bg-bg-base">
         <View className="px-5 pt-4 pb-4 border-b border-bg-border">
-          <View className="flex-row items-center gap-3">
+          <View className="flex-row items-center gap-3 mb-3">
             <TouchableOpacity onPress={() => setSelectedCourse(null)}>
               <Ionicons name="arrow-back" size={22} color="#8A8A8A" />
             </TouchableOpacity>
@@ -233,9 +296,13 @@ export default function CoursesScreen() {
               <Text className="text-ink-secondary text-xs">{selectedCourse.location}</Text>
             </View>
             <View className="items-end">
-              <Text className="text-neon-green text-xs font-bold">{strategyCoverage}/18</Text>
+              <Text className="text-neon-green text-xs font-bold">{strategyCoverage}/{totalHoles}</Text>
               <Text className="text-ink-muted text-xs">{t('courses.strategies')}</Text>
             </View>
+          </View>
+          {/* Progress bar */}
+          <View style={{ height: 4, backgroundColor: c.bgBorder, borderRadius: 2, overflow: 'hidden' }}>
+            <View style={{ height: 4, width: `${coveragePct * 100}%` as any, backgroundColor: coveragePct === 1 ? '#22c55e' : '#FF6535', borderRadius: 2 }} />
           </View>
         </View>
 
@@ -416,7 +483,7 @@ export default function CoursesScreen() {
                       <View className="bg-bg-elevated rounded-full h-1 overflow-hidden">
                         <View
                           className="h-1 rounded-full"
-                          style={{ width: `${(strategies / 18) * 100}%`, backgroundColor: strategies === 18 ? '#FF6535' : '#444444' }}
+                          style={{ width: `${(strategies / 18) * 100}%` as any, backgroundColor: strategies === 18 ? '#22c55e' : '#FF6535' }}
                         />
                       </View>
                     </View>

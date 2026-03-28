@@ -204,6 +204,11 @@ const de = {
         FADE: 'FADE',
         DRAW: 'DRAW',
       },
+      shots: {
+        tee: 'Abschlag',
+        approach: 'Annäherung',
+        layup: 'Layup',
+      },
     },
     table: {
       nr: 'NR',

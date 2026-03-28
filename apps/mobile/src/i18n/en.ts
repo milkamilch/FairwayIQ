@@ -204,6 +204,11 @@ const en = {
         FADE: 'FADE',
         DRAW: 'DRAW',
       },
+      shots: {
+        tee: 'Tee Shot',
+        approach: 'Approach',
+        layup: 'Lay-up',
+      },
     },
     table: {
       nr: 'NO',
