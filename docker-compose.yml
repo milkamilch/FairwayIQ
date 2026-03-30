@@ -49,8 +49,8 @@ services:
 
   swing-ml:
     build:
-      context: .
-      dockerfile: services/swing-ml/Dockerfile
+      context: ./services/swing-ml
+      dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       ML_WEBHOOK_SECRET: ${ML_WEBHOOK_SECRET}
