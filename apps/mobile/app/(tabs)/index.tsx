@@ -10,6 +10,7 @@ import { api } from '../../src/lib/api';
 import { WeatherWidget } from '../../src/components/WeatherWidget';
 import { useTheme } from '../../src/lib/theme';
 import { InboxModal, fetchInboxCount } from '../../src/components/InboxModal';
+import { ScoreTrendChart } from '../../src/components/ScoreTrendChart';
 
 interface Stats {
   rounds: number;
@@ -148,6 +149,11 @@ export default function DashboardScreen() {
               <Text className="text-ink-secondary text-sm">{t('dashboard.noRounds')}</Text>
               <Text className="text-neon-green text-sm font-bold">{t('dashboard.startRound')}</Text>
             </TouchableOpacity>
+          )}
+
+          {/* Score-Trend Chart */}
+          {stats && stats.rounds >= 2 && (
+            <ScoreTrendChart />
           )}
 
           {/* Aktiver Trainingsplan */}

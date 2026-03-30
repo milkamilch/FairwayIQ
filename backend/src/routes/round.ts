@@ -179,6 +179,48 @@ roundRouter.get('/stats/overview', async (req: AuthRequest, res: Response) => {
   });
 });
 
+// GET Score-Trend (letzte 20 Runden + Handicap-Verlauf)
+roundRouter.get('/stats/trend', async (req: AuthRequest, res: Response) => {
+  const [rounds, handicapEntries] = await Promise.all([
+    prisma.round.findMany({
+      where:   { userId: req.userId! },
+      include: { scores: true, course: { select: { name: true } } },
+      orderBy: { date: 'asc' },
+      take:    20,
+    }),
+    prisma.handicapEntry.findMany({
+      where:   { userId: req.userId! },
+      orderBy: { createdAt: 'asc' },
+      take:    20,
+    }),
+  ]);
+
+  const roundPoints = rounds.map((r) => {
+    const totalStrokes = r.scores.reduce((s, h) => s + h.strokes, 0);
+    const totalPar     = r.scores.reduce((s, h) => s + h.par,     0);
+    return {
+      date:                r.date,
+      scoreToPar:          totalStrokes - totalPar,
+      totalStrokes,
+      totalPar,
+      courseName:          r.course?.name ?? '',
+      handicapDifferential: r.handicapDifferential,
+    };
+  });
+
+  // 5-round moving average for trend line
+  const movingAvg = roundPoints.map((_, i) => {
+    const window = roundPoints.slice(Math.max(0, i - 2), i + 3);
+    return Math.round((window.reduce((s, r) => s + r.scoreToPar, 0) / window.length) * 10) / 10;
+  });
+
+  res.json({
+    rounds:      roundPoints,
+    movingAvg,
+    handicap:    handicapEntries.map((e) => ({ date: e.createdAt, value: e.handicap })),
+  });
+});
+
 // DELETE Runde löschen
 roundRouter.delete('/:id', async (req: AuthRequest, res: Response) => {
   const round = await prisma.round.findFirst({
