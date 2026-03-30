@@ -70,6 +70,26 @@ progressRouter.get('/overview', async (req: AuthRequest, res: Response) => {
     };
   });
 
+  // WHS Handicap Index aus echten Runden-Differenzialen
+  const diffs = rounds
+    .filter((r) => r.handicapDifferential !== null)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 20)
+    .map((r) => ({ date: r.date, value: r.handicapDifferential as number }));
+
+  const WHS_TABLE: Record<number, number> = {
+    3: 1, 4: 1, 5: 1, 6: 2, 7: 2, 8: 2,
+    9: 3, 10: 3, 11: 3, 12: 3, 13: 4, 14: 4,
+    15: 5, 16: 6, 17: 7, 18: 8, 19: 8, 20: 8,
+  };
+  let whsIndex: number | null = null;
+  if (diffs.length >= 3) {
+    const take = WHS_TABLE[Math.min(diffs.length, 20)];
+    const sorted = [...diffs].sort((a, b) => a.value - b.value).slice(0, take);
+    const avg = sorted.reduce((s, d) => s + d.value, 0) / sorted.length;
+    whsIndex = Math.round(avg * 0.96 * 10) / 10;
+  }
+
   // Trainingsstatistiken
   const trainingStats = {
     totalSessions: sessionLogs.length,
@@ -89,6 +109,8 @@ progressRouter.get('/overview', async (req: AuthRequest, res: Response) => {
     roundHistory,
     trainingStats,
     latestWeaknesses: latestAssessment?.weaknesses ?? [],
+    whsIndex,
+    roundDifferentials: diffs.slice().reverse(), // chronological order
   });
 });
 

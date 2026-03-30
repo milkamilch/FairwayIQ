@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, RefreshControl,
-  Modal, TextInput, Alert, ActivityIndicator,
+  Modal, TextInput, Alert, ActivityIndicator, Dimensions,
 } from 'react-native';
+import Svg, { Path, Circle, Line, Text as SvgText, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -11,10 +12,14 @@ import { api } from '../src/lib/api';
 import { useTheme } from '../src/lib/theme';
 import { SkillRadar } from '../src/components/SkillRadar';
 
+const SCREEN_W = Dimensions.get('window').width;
+
 // ── Types ──────────────────────────────────────────────────────────────
 interface HandicapEntry { id: string; handicap: number; note?: string; date: string; }
 interface RoundStat { id: string; date: string; totalStrokes: number; scoreToPar: number; avgPutts: number; girPercent: number; firPercent: number | null; }
 interface SessionLog { feeling: number; difficulty: number; createdAt: string; }
+
+interface RoundDifferential { date: string; value: number; }
 
 interface ProgressData {
   skillRadar: Record<string, number> | null;
@@ -23,6 +28,94 @@ interface ProgressData {
   roundHistory: RoundStat[];
   trainingStats: { totalSessions: number; avgFeeling: number | null; avgDifficulty: number | null; recentSessions: SessionLog[] };
   latestWeaknesses: string[];
+  whsIndex: number | null;
+  roundDifferentials: RoundDifferential[];
+}
+
+// ── Handicap SVG Chart ─────────────────────────────────────────────────
+function HandicapChart({ entries, diffs, c }: {
+  entries: HandicapEntry[];
+  diffs:   RoundDifferential[];
+  c:       any;
+}) {
+  const [mode, setMode] = useState<'manual' | 'diffs'>('manual');
+  const data: { label: string; value: number }[] = mode === 'manual'
+    ? entries.map((e) => ({ label: new Date(e.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' }), value: e.handicap }))
+    : diffs.map((d)  => ({ label: new Date(d.date).toLocaleDateString('de-DE', { day: 'numeric', month: 'short' }), value: d.value }));
+
+  if (data.length < 2) return null;
+
+  const W = SCREEN_W - 40;
+  const H = 130;
+  const PL = 32, PR = 8, PT = 12, PB = 24;
+  const PW = W - PL - PR;
+  const PH = H - PT - PB;
+
+  const vals  = data.map((d) => d.value);
+  const minV  = Math.min(...vals) - 0.5;
+  const maxV  = Math.max(...vals) + 0.5;
+  const range = Math.max(maxV - minV, 1);
+
+  const toX = (i: number) => PL + (i / Math.max(data.length - 1, 1)) * PW;
+  const toY = (v: number) => PT + (1 - (v - minV) / range) * PH;
+
+  const pts = data.map((d, i) => ({ x: toX(i), y: toY(d.value) }));
+
+  let linePath = '';
+  pts.forEach((p, i) => {
+    if (i === 0) { linePath += `M${p.x.toFixed(1)},${p.y.toFixed(1)}`; return; }
+    const prev = pts[i - 1];
+    const cpX  = (prev.x + p.x) / 2;
+    linePath += ` C${cpX.toFixed(1)},${prev.y.toFixed(1)} ${cpX.toFixed(1)},${p.y.toFixed(1)} ${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+  });
+  const areaPath = linePath + ` L${pts[pts.length - 1].x.toFixed(1)},${PT + PH} L${PL},${PT + PH} Z`;
+
+  const yMid   = (minV + maxV) / 2;
+  const yLabels = [maxV, yMid, minV];
+
+  // improving = handicap going down
+  const improving = vals[vals.length - 1] < vals[0];
+  const lineColor = improving ? '#6ee7b7' : '#f97316';
+
+  return (
+    <View>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 6, marginBottom: 8 }}>
+        {[['manual', 'Manuell'], ['diffs', 'Differenziale']] .map(([m, label]) => (
+          <TouchableOpacity key={m} onPress={() => setMode(m as any)}
+            style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
+              backgroundColor: mode === m ? '#FF653520' : c.bgElevated,
+              borderWidth: 1, borderColor: mode === m ? '#FF653540' : c.bgBorder }}>
+            <Text style={{ color: mode === m ? '#FF6535' : c.inkMuted, fontSize: 10, fontWeight: '700' }}>{label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+      <Svg width={W} height={H}>
+        <Defs>
+          <LinearGradient id="hcpGrad" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={lineColor} stopOpacity="0.2" />
+            <Stop offset="1" stopColor={lineColor} stopOpacity="0" />
+          </LinearGradient>
+        </Defs>
+        {yLabels.map((v, i) => {
+          const y = toY(v);
+          return (
+            <View key={i}>
+              <Line x1={PL} y1={y} x2={PL + PW} y2={y} stroke={c.bgBorder} strokeWidth={1} strokeDasharray="3,4" />
+              <SvgText x={PL - 4} y={y + 4} fontSize={9} fill={c.inkMuted} textAnchor="end">{v.toFixed(1)}</SvgText>
+            </View>
+          );
+        })}
+        <Path d={areaPath} fill="url(#hcpGrad)" />
+        <Path d={linePath}  stroke={lineColor} strokeWidth={2} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        {pts.map((p, i) => (
+          <Circle key={i} cx={p.x} cy={p.y} r={i === pts.length - 1 ? 5 : 3} fill={i === pts.length - 1 ? lineColor : c.bgCard} stroke={lineColor} strokeWidth={1.5} />
+        ))}
+        {[0, Math.floor((pts.length - 1) / 2), pts.length - 1].filter((v, i, a) => a.indexOf(v) === i).map((i) => (
+          <SvgText key={i} x={pts[i].x} y={H - 4} fontSize={8} fill={c.inkMuted} textAnchor="middle">{data[i].label}</SvgText>
+        ))}
+      </Svg>
+    </View>
+  );
 }
 
 const FEELING_ICONS = ['', 'sad-outline', 'remove-circle-outline', 'happy-outline', 'thumbs-up-outline', 'flame-outline'] as const;
@@ -284,6 +377,44 @@ export default function ProgressScreen() {
           {/* ── HANDICAP ─────────────────────────────────────────────── */}
           {activeSection === 'handicap' && (
             <View className="px-5 pt-4 gap-4">
+
+              {/* WHS Index Card */}
+              {data?.whsIndex != null && (
+                <View style={{ backgroundColor: c.bgCard, borderRadius: 20, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: c.inkMuted, fontSize: 10, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 }}>
+                      WHS Handicap Index
+                    </Text>
+                    <Text style={{ color: '#FF6535', fontSize: 40, fontWeight: '900', lineHeight: 44 }}>
+                      {data.whsIndex.toFixed(1)}
+                    </Text>
+                    <Text style={{ color: c.inkMuted, fontSize: 11, marginTop: 2 }}>
+                      Berechnet aus {data.roundDifferentials.length} Runden
+                    </Text>
+                  </View>
+                  <View style={{ alignItems: 'center', gap: 4 }}>
+                    <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: '#FF653515', alignItems: 'center', justifyContent: 'center' }}>
+                      <Ionicons name="golf" size={24} color="#FF6535" />
+                    </View>
+                    <Text style={{ color: c.inkMuted, fontSize: 9, fontWeight: '700' }}>OFFIZ. INDEX</Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Chart */}
+              {((data?.handicapHistory?.length ?? 0) >= 2 || (data?.roundDifferentials?.length ?? 0) >= 2) && (
+                <View style={{ backgroundColor: c.bgCard, borderRadius: 20, padding: 16 }}>
+                  <Text style={{ color: c.inkPrimary, fontWeight: '800', fontSize: 13, marginBottom: 12 }}>
+                    Entwicklung
+                  </Text>
+                  <HandicapChart
+                    entries={data?.handicapHistory ?? []}
+                    diffs={data?.roundDifferentials ?? []}
+                    c={c}
+                  />
+                </View>
+              )}
+
               <TouchableOpacity
                 className="rounded-xl py-3.5 items-center flex-row justify-center gap-2"
                 style={{ backgroundColor: '#FF6535' }}
@@ -294,70 +425,61 @@ export default function ProgressScreen() {
               </TouchableOpacity>
 
               {data?.handicapHistory && data.handicapHistory.length > 0 ? (
-                <>
-                  <View className="bg-bg-card rounded-2xl p-4">
-                    <View className="flex-row items-start justify-between mb-4">
-                      <View>
-                        <Text className="text-ink-primary font-bold">{t('progress.handicap.title')}</Text>
-                        <Text className="text-ink-muted text-xs">{data.handicapHistory.length} {t('progress.handicap.entries')}</Text>
-                      </View>
-                      <View className="items-end">
-                        <Text className="text-3xl font-black" style={{ color: '#FF6535' }}>
-                          {data.handicapHistory[data.handicapHistory.length - 1].handicap.toFixed(1)}
-                        </Text>
-                        {data.handicapHistory.length >= 2 && (() => {
-                          const diff = data.handicapHistory[data.handicapHistory.length - 1].handicap
-                            - data.handicapHistory[data.handicapHistory.length - 2].handicap;
-                          const improving = diff < 0;
-                          return (
-                            <View className="flex-row items-center gap-1">
-                              <Ionicons name={improving ? 'trending-down' : 'trending-up'} size={12} color={improving ? '#FF6535' : '#f97316'} />
-                              <Text className="text-xs font-semibold" style={{ color: improving ? '#FF6535' : '#f97316' }}>
-                                {diff > 0 ? '+' : ''}{diff.toFixed(1)}
-                              </Text>
-                            </View>
-                          );
-                        })()}
-                      </View>
-                    </View>
-                    {data.handicapHistory.length >= 2 && (
-                      <Sparkline data={data.handicapHistory.map((e) => -e.handicap)} color="#FF6535" height={48} />
-                    )}
+                <View className="bg-bg-card rounded-2xl overflow-hidden">
+                  <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: c.bgBorder }}>
+                    <Text style={{ color: c.inkMuted, fontSize: 10, fontWeight: '800', letterSpacing: 0.8, textTransform: 'uppercase' }}>
+                      Manuelle Einträge
+                    </Text>
                   </View>
-
-                  <View className="bg-bg-card rounded-2xl overflow-hidden">
-                    {data.handicapHistory.slice().reverse().slice(0, 10).map((entry, i, arr) => {
-                      const prev = arr[i + 1];
-                      const diff = prev ? entry.handicap - prev.handicap : null;
-                      const improving = diff !== null && diff < 0;
-                      return (
-                        <View key={entry.id} className="flex-row items-center px-4 py-3 border-b border-bg-border">
-                          <View className="flex-1">
-                            <View className="flex-row items-center gap-2">
-                              <Text className="text-ink-primary font-bold text-base">{entry.handicap.toFixed(1)}</Text>
-                              {diff !== null && (
-                                <View className="flex-row items-center gap-0.5">
-                                  <Ionicons
-                                    name={improving ? 'trending-down' : diff === 0 ? 'remove' : 'trending-up'}
-                                    size={11}
-                                    color={improving ? '#FF6535' : diff === 0 ? c.inkMuted : '#f97316'}
-                                  />
-                                  <Text className="text-xs" style={{ color: improving ? '#FF6535' : diff === 0 ? c.inkMuted : '#f97316' }}>
-                                    {diff > 0 ? '+' : ''}{diff.toFixed(1)}
-                                  </Text>
-                                </View>
-                              )}
-                            </View>
-                            {entry.note && <Text className="text-ink-muted text-xs mt-0.5">{entry.note}</Text>}
+                  {data.handicapHistory.slice().reverse().slice(0, 10).map((entry, i, arr) => {
+                    const prev = arr[i + 1];
+                    const diff = prev ? entry.handicap - prev.handicap : null;
+                    const improving = diff !== null && diff < 0;
+                    return (
+                      <View key={entry.id} className="flex-row items-center px-4 py-3 border-b border-bg-border">
+                        <View className="flex-1">
+                          <View className="flex-row items-center gap-2">
+                            <Text className="text-ink-primary font-bold text-base">{entry.handicap.toFixed(1)}</Text>
+                            {diff !== null && (
+                              <View className="flex-row items-center gap-0.5">
+                                <Ionicons
+                                  name={improving ? 'trending-down' : diff === 0 ? 'remove' : 'trending-up'}
+                                  size={11}
+                                  color={improving ? '#6ee7b7' : diff === 0 ? c.inkMuted : '#f97316'}
+                                />
+                                <Text className="text-xs" style={{ color: improving ? '#6ee7b7' : diff === 0 ? c.inkMuted : '#f97316' }}>
+                                  {diff > 0 ? '+' : ''}{diff.toFixed(1)}
+                                </Text>
+                              </View>
+                            )}
                           </View>
-                          <Text className="text-ink-muted text-xs">{formatDate(entry.date)}</Text>
+                          {entry.note && <Text className="text-ink-muted text-xs mt-0.5">{entry.note}</Text>}
                         </View>
-                      );
-                    })}
-                  </View>
-                </>
+                        <Text className="text-ink-muted text-xs mr-3">{formatDate(entry.date)}</Text>
+                        <TouchableOpacity
+                          onPress={() => Alert.alert(
+                            'Eintrag löschen',
+                            `Handicap ${entry.handicap.toFixed(1)} wirklich löschen?`,
+                            [
+                              { text: 'Abbrechen', style: 'cancel' },
+                              { text: 'Löschen', style: 'destructive', onPress: async () => {
+                                try {
+                                  await api.delete(`/progress/handicap/${entry.id}`);
+                                  load();
+                                } catch {}
+                              }},
+                            ]
+                          )}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Ionicons name="trash-outline" size={15} color={c.inkMuted} />
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
               ) : (
-                <View className="items-center py-16 gap-3">
+                <View className="items-center py-12 gap-3">
                   <Ionicons name="trending-down-outline" size={48} color={c.bgBorder} />
                   <Text className="text-ink-secondary font-semibold">{t('progress.handicap.noEntries')}</Text>
                   <Text className="text-ink-muted text-sm text-center">{t('progress.handicap.noEntriesHint')}</Text>
