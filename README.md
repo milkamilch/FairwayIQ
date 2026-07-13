@@ -32,6 +32,18 @@ docker-compose.yml   Orchestrates backend, swing-ml, nginx (and DB) for local/pr
 
 **swing-ml** is a FastAPI service that runs MediaPipe Pose over an uploaded swing video, detects swing phases (address → backswing → top → downswing → impact → follow-through), and computes the biomechanical metrics listed above.
 
+```mermaid
+flowchart LR
+    Mobile["📱 Expo App\n(React Native)"] -->|REST + JWT| Nginx["nginx"]
+    Nginx --> Backend["Express API\n(Prisma)"]
+    Backend -->|internal: axios call| MLService["swing-ml\n(FastAPI + MediaPipe Pose)"]
+    Backend --> Postgres[("PostgreSQL")]
+    Backend -->|avatars, swing videos| R2[("Cloudflare R2 / S3")]
+    Backend -->|transactional mail| Resend["Resend"]
+    Backend -->|push| ExpoPush["Expo Push"]
+    MLService -->|swing metrics webhook| Backend
+```
+
 ## Tech Stack
 
 `TypeScript` · `Express` · `Prisma` · `PostgreSQL` · `Expo / React Native` · `NativeWind` · `Zustand` · `Python` · `FastAPI` · `MediaPipe` · `OpenCV` · `Docker`
